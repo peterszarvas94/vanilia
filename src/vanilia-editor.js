@@ -12,10 +12,12 @@ import { createBubbleMenuExtension } from "./extensions/bubble-menu.js";
 import { createFindReplaceExtension } from "./extensions/find-replace.js";
 
 /**
- * <vanilla-editor> — Form-Associated Custom Element (ElementInternals)
+ * <vanilia-editor> — Form-Associated Custom Element (ElementInternals)
  * powered by vendored Fastmail Squire + modular modern Web/CSS API extensions.
  */
-export class VanillaEditorElement extends HTMLElement {
+const BaseHTMLElement = typeof HTMLElement !== "undefined" ? HTMLElement : class {};
+
+export class VaniliaEditorElement extends BaseHTMLElement {
   static formAssociated = true;
   static observedAttributes = ["placeholder", "disabled", "required", "upload-url"];
 
@@ -737,8 +739,8 @@ export class VanillaEditorElement extends HTMLElement {
   }
 }
 
-if (!customElements.get("vanilla-editor")) {
-  customElements.define("vanilla-editor", VanillaEditorElement);
+if (typeof customElements !== "undefined" && !customElements.get("vanilia-editor")) {
+  customElements.define("vanilia-editor", VaniliaEditorElement);
 }
 
 function escapeAttr(str) {

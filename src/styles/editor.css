@@ -1,15 +1,10 @@
 @layer ve-tokens, ve-base, ve-chrome, ve-surface, ve-popovers;
 
 @layer ve-tokens {
-  vanilla-editor {
-    display: block;
-    color-scheme: inherit;
-
+  :root {
     --ve-accent: oklch(0.58 0.19 258);
-    --ve-accent-soft: oklch(from var(--ve-accent) l c h / 0.14);
-    --ve-accent-ring: oklch(from var(--ve-accent) l c h / 0.35);
+    --ve-accent-contrast: #ffffff;
     --ve-danger: oklch(0.58 0.21 25);
-    --ve-danger-soft: oklch(from var(--ve-danger) l c h / 0.13);
 
     --ve-bg: light-dark(#ffffff, #14161a);
     --ve-surface-bg: light-dark(#ffffff, #14161a);
@@ -28,13 +23,34 @@
 
     --ve-radius: 12px;
     --ve-radius-sm: 7px;
+    --ve-min-height: 280px;
+    --ve-max-height: none;
+    --ve-padding-x: 20px;
+    --ve-padding-y: 18px;
+    --ve-font-size: 15px;
+    --ve-line-height: 1.65;
     --ve-font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --ve-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    --ve-highlight-bg: oklch(0.88 0.16 95 / 0.55);
+    --ve-highlight-active-bg: oklch(0.75 0.2 55 / 0.8);
+    --ve-highlight-active-text: #111111;
+  }
+
+  vanilia-editor {
+    display: block;
+    color-scheme: inherit;
   }
 }
 
 @layer ve-base {
   .ve-root {
+    --_ve-accent-soft: var(--ve-accent-soft, oklch(from var(--ve-accent) l c h / 0.14));
+    --_ve-accent-ring: var(--ve-accent-ring, oklch(from var(--ve-accent) l c h / 0.35));
+    --_ve-accent-border: var(--ve-accent-border, oklch(from var(--ve-accent) l c h / 0.25));
+    --_ve-accent-hover: var(--ve-accent-hover, oklch(from var(--ve-accent) calc(l - 0.06) c h));
+    --_ve-danger-soft: var(--ve-danger-soft, oklch(from var(--ve-danger) l c h / 0.13));
+
     container-type: inline-size;
     container-name: ve-editor;
     position: relative;
@@ -49,7 +65,7 @@
 
     &:focus-within {
       border-color: var(--ve-accent);
-      box-shadow: 0 0 0 3px var(--ve-accent-ring);
+      box-shadow: 0 0 0 3px var(--_ve-accent-ring);
     }
 
     &.is-disabled {
@@ -126,9 +142,9 @@
     }
 
     &.is-active {
-      background: var(--ve-accent-soft);
+      background: var(--_ve-accent-soft);
       color: var(--ve-accent);
-      border-color: oklch(from var(--ve-accent) l c h / 0.25);
+      border-color: var(--_ve-accent-border);
     }
 
     &:disabled {
@@ -149,16 +165,16 @@
 
     &.ve-btn--primary {
       background: var(--ve-accent);
-      color: #ffffff;
+      color: var(--ve-accent-contrast);
       &:hover:not(:disabled) {
-        background: oklch(from var(--ve-accent) calc(l - 0.06) c h);
+        background: var(--_ve-accent-hover);
       }
     }
 
     &.ve-btn--danger {
       color: var(--ve-danger);
       &:hover:not(:disabled) {
-        background: var(--ve-danger-soft);
+        background: var(--_ve-danger-soft);
       }
     }
 
@@ -188,7 +204,7 @@
     &:focus {
       outline: none;
       border-color: var(--ve-accent);
-      box-shadow: 0 0 0 2px var(--ve-accent-ring);
+      box-shadow: 0 0 0 2px var(--_ve-accent-ring);
     }
 
     &.ve-input--sm {
@@ -267,30 +283,32 @@
   .ve-stage {
     position: relative;
     background: var(--ve-surface-bg);
+    max-height: var(--ve-max-height);
+    overflow-y: auto;
   }
 
   .ve-surface {
     position: relative;
-    min-height: 280px;
-    padding: 18px 20px;
+    min-height: var(--ve-min-height);
+    padding: var(--ve-padding-y) var(--ve-padding-x);
     outline: none;
-    font-size: 15px;
-    line-height: 1.65;
+    font-size: var(--ve-font-size);
+    line-height: var(--ve-line-height);
     color: var(--ve-text);
     overflow-wrap: break-word;
 
     &[data-empty]::before {
       content: attr(data-placeholder);
       position: absolute;
-      inset-block-start: 18px;
-      inset-inline-start: 20px;
+      inset-block-start: var(--ve-padding-y);
+      inset-inline-start: var(--ve-padding-x);
       color: var(--ve-text-muted);
       pointer-events: none;
       opacity: 0.75;
     }
 
     &.ve-drag-over {
-      background: var(--ve-accent-soft);
+      background: var(--_ve-accent-soft);
       outline: 2px dashed var(--ve-accent);
       outline-offset: -6px;
     }
@@ -404,7 +422,7 @@
       transition: box-shadow 120ms ease;
 
       &:hover {
-        box-shadow: 0 0 0 2px var(--ve-accent-ring);
+        box-shadow: 0 0 0 2px var(--_ve-accent-ring);
       }
 
       &[data-align="left"] {
@@ -429,8 +447,8 @@
 
   /* Rendered HTML preview container matching editor surface typography */
   .ve-prose {
-    font-size: 15px;
-    line-height: 1.65;
+    font-size: var(--ve-font-size);
+    line-height: var(--ve-line-height);
     color: var(--ve-text, inherit);
     overflow-wrap: break-word;
 
@@ -447,31 +465,31 @@
       margin-inline: 0;
       padding-block: 4px;
       padding-inline-start: 14px;
-      border-inline-start: 3px solid var(--ve-accent, oklch(0.58 0.19 258));
-      color: var(--ve-text-muted, light-dark(#5c6577, #97a1b3));
+      border-inline-start: 3px solid var(--ve-accent);
+      color: var(--ve-text-muted);
       font-style: italic;
     }
     & code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: var(--ve-font-mono);
       font-size: 0.88em;
       padding: 0.12em 0.38em;
       border-radius: 5px;
-      background: var(--ve-code-bg, light-dark(#f2f4f8, #20242d));
+      background: var(--ve-code-bg);
     }
     & pre {
       margin-block: 0.9em;
       padding: 12px 14px;
-      border-radius: 7px;
-      background: var(--ve-code-bg, light-dark(#f2f4f8, #20242d));
-      border: 1px solid var(--ve-border, light-dark(#e2e5ec, #2c313c));
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      border-radius: var(--ve-radius-sm);
+      background: var(--ve-code-bg);
+      border: 1px solid var(--ve-border);
+      font-family: var(--ve-font-mono);
       font-size: 13px;
       line-height: 1.55;
       overflow-x: auto;
       & code { padding: 0; background: transparent; }
     }
-    & hr { border: 0; border-block-start: 1px solid var(--ve-border-strong, light-dark(#cbd2df, #3c4352)); margin-block: 1.25em; }
-    & a { color: var(--ve-accent, oklch(0.58 0.19 258)); text-decoration: underline; text-underline-offset: 2px; }
+    & hr { border: 0; border-block-start: 1px solid var(--ve-border-strong); margin-block: 1.25em; }
+    & a { color: var(--ve-accent); text-decoration: underline; text-underline-offset: 2px; }
     & s, & del { text-decoration: line-through; }
     & u { text-decoration: underline; }
     & img {
@@ -733,11 +751,11 @@
 
 /* CSS Custom Highlight API paint styles (non-destructive Find & Replace) */
 ::highlight(ve-find) {
-  background-color: oklch(0.88 0.16 95 / 0.55);
+  background-color: var(--ve-highlight-bg);
   color: inherit;
 }
 
 ::highlight(ve-find-active) {
-  background-color: oklch(0.75 0.2 55 / 0.8);
-  color: #111111;
+  background-color: var(--ve-highlight-active-bg);
+  color: var(--ve-highlight-active-text);
 }

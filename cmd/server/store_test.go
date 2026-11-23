@@ -119,3 +119,23 @@ func TestSanitizeEditorHTMLPreservesLeftRightImageAlignment(t *testing.T) {
 		t.Fatalf("left alignment lost: %s", gotLeft)
 	}
 }
+
+func TestDistAssetsServedWithCORS(t *testing.T) {
+	t.Chdir("../..")
+	e := newServer("", newContentStore(10, ""), newUploadStore())
+
+	for _, asset := range []string{"/dist/vanilia-editor.js", "/dist/vanilia-editor.css"} {
+		req := httptest.NewRequest(http.MethodGet, asset, nil)
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, req)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("GET %s status = %d, want 200", asset, rec.Code)
+		}
+		if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "*" {
+			t.Fatalf("GET %s Access-Control-Allow-Origin = %q, want *", asset, got)
+		}
+		if rec.Body.Len() < 1000 {
+			t.Fatalf("GET %s body unexpectedly small: %d bytes", asset, rec.Body.Len())
+		}
+	}
+}

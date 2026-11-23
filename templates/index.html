@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vanilla WYSIWYG + Datastar</title>
+    <title>Vanilia — Drop-In Rich Text Editor</title>
     <link rel="stylesheet" href="{{.BasePath}}/src/styles/editor.css" />
     <style>
       :root {
@@ -319,9 +319,9 @@
     <div class="shell">
       <header class="topbar">
         <div class="brand">
-          <h1>Vanilla WYSIWYG + Datastar</h1>
+          <h1>Vanilia</h1>
           <p>
-            Zero-build-step <code>&lt;vanilla-editor&gt;</code> · Squire core · Custom Image Resize · Go + Datastar SSE
+            Zero-build-step <code>&lt;vanilia-editor&gt;</code> · Squire core · Custom Image Resize · Go + Datastar SSE
           </p>
         </div>
 
@@ -349,7 +349,7 @@
               </span>
             </div>
 
-            <vanilla-editor
+            <vanilia-editor
               id="editor"
               name="content"
               upload-url="{{.BasePath}}/api/upload"
@@ -376,7 +376,7 @@
                 $canRedo = evt.detail.canRedo;
                 $dirty = ($editorHtml !== $rawPreview);
               "
-            ></vanilla-editor>
+            ></vanilia-editor>
 
             <div class="action-bar">
               <span class="hint" style="margin: 0">
@@ -437,7 +437,7 @@
               <h2 class="card-title">Datastar External Controls</h2>
             </div>
             <p class="hint">
-              Drive <code>&lt;vanilla-editor&gt;</code> directly from external Datastar buttons &amp; reactive signals:
+              Drive <code>&lt;vanilia-editor&gt;</code> directly from external Datastar buttons &amp; reactive signals:
             </p>
             <div class="ds-remote-bar">
               <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('bold')" data-class:is-active="$bold">Bold</button>
@@ -484,7 +484,7 @@
       window.formatHTML = formatHTML;
       window.editor = document.getElementById("editor");
 
-      // Load Datastar after <vanilla-editor> is registered so data-effect sees el.setHTML immediately
+      // Load Datastar after <vanilia-editor> is registered so data-effect sees el.setHTML immediately
       await import("{{.BasePath}}/static/vendor/datastar.js");
 
       const themeBtn = document.getElementById("toggle-theme");

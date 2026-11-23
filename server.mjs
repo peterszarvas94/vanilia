@@ -136,5 +136,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Vanilla WYSIWYG dev server running at http://${HOST}:${PORT}`);
+  console.log(`Vanilia dev server running at http://${HOST}:${PORT}`);
 });

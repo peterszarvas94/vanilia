@@ -5,8 +5,8 @@ import "sync"
 const defaultMaxEntries = 1000
 
 func buildSeedContent(basePath string) string {
-	return `<h2>Welcome to Vanilla WYSIWYG + Datastar</h2>
-<p>This is a drop-in <strong>form-associated Web Component</strong> (<code>&lt;vanilla-editor&gt;</code>) powered by a vendored Squire core, modern Web &amp; CSS APIs, and a <strong>Go + Datastar SSE</strong> backend — with zero JS build step.</p>
+	return `<h2>Welcome to Vanilia</h2>
+<p>This is a drop-in <strong>form-associated Web Component</strong> (<code>&lt;vanilia-editor&gt;</code>) powered by a vendored Squire core, modern Web &amp; CSS APIs, and a <strong>Go + Datastar SSE</strong> demo backend — with zero JS build step.</p>
 <p><img src="` + basePath + `/assets/sample-mountain.svg" alt="Sample mountain landscape" data-align="center" style="width: 75%; height: auto; display: block; margin-left: auto; margin-right: auto;"></p>
 <blockquote>Click the image above to drag-resize (desktop &amp; mobile), pick width presets, align, or edit alt text — then hit <strong>Save</strong> to stream it through Datastar SSE.</blockquote>
 <ul><li>Select text for the floating <code>Popover</code> + <code>CSS Anchor Positioning</code> menu</li><li>Press <code>Ctrl+F</code> for non-destructive Find &amp; Replace via <code>CSS.highlights</code></li><li>Drop or paste any PNG / JPEG / WebP image — uploads to <code>POST /api/upload</code></li></ul>`

@@ -43,6 +43,18 @@ func newServer(basePath string, store *contentStore, uploads *uploadStore) *echo
 	e.Static("/static", "static")
 	e.Static("/assets", "assets")
 
+	// Serve single-file drop-in distribution assets with CORS so other projects can link directly
+	distGroup := e.Group("/dist", func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			h := c.Response().Header()
+			h.Set("Access-Control-Allow-Origin", "*")
+			h.Set("Cross-Origin-Resource-Policy", "cross-origin")
+			h.Set("Cache-Control", "public, max-age=300")
+			return next(c)
+		}
+	})
+	distGroup.Static("/", "dist")
+
 	e.GET("/healthz", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
