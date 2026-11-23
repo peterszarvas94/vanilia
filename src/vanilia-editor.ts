@@ -874,6 +874,10 @@ declare global {
   interface HTMLElementTagNameMap {
     "vanilia-editor": VaniliaEditorElement;
   }
+  interface HTMLElementEventMap {
+    editorupdate: CustomEvent<VaniliaEditorDetail>;
+    "ve:update": CustomEvent<VaniliaEditorDetail>;
+  }
 }
 
 function escapeAttr(str: string): string {

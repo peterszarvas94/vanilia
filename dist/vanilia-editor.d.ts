@@ -345,6 +345,10 @@ declare global {
   interface HTMLElementTagNameMap {
     "vanilia-editor": VaniliaEditorElement;
   }
+  interface HTMLElementEventMap {
+    editorupdate: CustomEvent<VaniliaEditorDetail>;
+    "ve:update": CustomEvent<VaniliaEditorDetail>;
+  }
 }
 /** Whether a URL is safe to keep in an `href` (`"link"`) or `src` (`"image"`). */
 export declare function isSafeUrl(url: unknown, kind?: "link" | "image"): boolean;
