@@ -66,6 +66,7 @@ export function createImageResizeExtension({
     h.style.cursor = cursor;
     h.setAttribute("aria-label", `Resize image (${pos})`);
     h.addEventListener("pointerdown", onHandlePointerDown);
+    h.addEventListener("touchstart", preventTouchScroll, { passive: false });
     box.appendChild(h);
     handleEls.set(pos, h);
   }
@@ -228,9 +229,9 @@ export function createImageResizeExtension({
 
   function deselect() {
     if (!selectedImg) return;
+    endDrag({ commit: false });
     selectedImg = null;
     altEditing = false;
-    dragState = null;
     box.hidden = true;
     dimBadge.hidden = true;
     try {
@@ -300,6 +301,9 @@ export function createImageResizeExtension({
       ratio,
     };
 
+    overlayHost.classList.add("is-resizing");
+    toolbar.style.visibility = "hidden";
+    window.addEventListener("touchmove", preventTouchScroll, { passive: false });
     handle.setPointerCapture(e.pointerId);
     handle.addEventListener("pointermove", onHandlePointerMove);
     handle.addEventListener("pointerup", onHandlePointerUp);
@@ -343,7 +347,11 @@ export function createImageResizeExtension({
     positionOverlay();
   }
 
-  function onHandlePointerUp(e) {
+  function preventTouchScroll(e) {
+    e.preventDefault();
+  }
+
+  function endDrag({ commit = true } = {}) {
     if (!dragState) return;
     const { handle, pointerId } = dragState;
     try {
@@ -354,11 +362,20 @@ export function createImageResizeExtension({
     handle.removeEventListener("pointermove", onHandlePointerMove);
     handle.removeEventListener("pointerup", onHandlePointerUp);
     handle.removeEventListener("pointercancel", onHandlePointerUp);
+    window.removeEventListener("touchmove", preventTouchScroll);
+    overlayHost.classList.remove("is-resizing");
+    toolbar.style.visibility = "";
     dragState = null;
     dimBadge.hidden = true;
-    renderToolbar();
-    positionOverlay();
-    onChange?.();
+    if (commit) {
+      renderToolbar();
+      positionOverlay();
+      onChange?.();
+    }
+  }
+
+  function onHandlePointerUp() {
+    endDrag({ commit: true });
   }
 
   function updateBadge(w, h, maxWidth) {
