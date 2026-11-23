@@ -53,6 +53,10 @@ type pageData struct {
 	Examples []example
 	// RenderedPreview fills the demo page's "rendered-preview" block (streamed later via SSE)
 	RenderedPreview template.HTML
+	Integrations    []integration
+	Integration     *integration
+	// Modules are extra import-map specifiers imported by the page's entry script
+	Modules []string
 }
 
 func pageHandler(basePath, name, title string) echo.HandlerFunc {

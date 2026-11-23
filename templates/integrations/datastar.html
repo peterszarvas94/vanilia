@@ -1,0 +1,12 @@
+<div data-signals="{savedAt: ''}">
+  <vanilia-editor data-bind:body placeholder="Write something, then save...">
+    <template>
+      <p>Every change lands in the <code>$body</code> signal. <strong>Save</strong> posts it to Go over SSE.</p>
+    </template>
+  </vanilia-editor>
+  <div class="row">
+    <button type="button" data-on:click="@post('/integrations/datastar/save')">Save</button>
+    <span class="hint" data-text="$savedAt ? 'Saved at ' + $savedAt : $body.length + ' characters of HTML'"></span>
+  </div>
+  <div id="datastar-output" class="result ve-prose"></div>
+</div>

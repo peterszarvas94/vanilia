@@ -17,6 +17,7 @@ type saveSignals struct {
 func main() {
 	mustLoadTemplates("templates/*.html")
 	mustLoadExamples("templates/examples")
+	mustLoadIntegrations("templates/integrations")
 
 	basePath := normalizeBasePath(os.Getenv("BASE_PATH"))
 	port := os.Getenv("PORT")
@@ -61,6 +62,10 @@ func newServer(basePath string, store *contentStore, uploads *uploadStore) *echo
 	e.GET("/", pageHandler(basePath, "home", ""))
 	e.GET("/docs", pageHandler(basePath, "docs", "Docs"))
 	e.GET("/examples", pageHandler(basePath, "examples", "Examples"))
+	e.GET("/integrations", integrationsHandler(basePath))
+	e.GET("/integrations/:slug", integrationHandler(basePath))
+	e.POST("/integrations/datastar/save", saveDatastarPost, middleware.BodyLimit("256K"))
+	e.POST("/integrations/htmx/save", saveHtmxPost, middleware.BodyLimit("256K"))
 	e.GET("/demo", pageHandler(basePath, "demo", "Demo"))
 
 	e.GET("/content", func(c echo.Context) error {

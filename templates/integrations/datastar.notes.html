@@ -1,0 +1,21 @@
+<ul>
+  <li>
+    <code>data-bind:body</code> works because the editor behaves like a native field: it has a <code>value</code>
+    property and fires <code>input</code>. Leave <code>body</code> out of <code>data-signals</code> so the signal starts
+    from the editor's content instead of overwriting it.
+  </li>
+  <li>
+    <code>@post</code> sends every signal as JSON. The Go handler reads <code>body</code> with
+    <code>datastar.ReadSignals</code>, sanitizes it and answers with SSE events: one patches
+    <code>#datastar-output</code>, one sets <code>$savedAt</code>.
+  </li>
+  <li>
+    The editor marks its internals with <code>data-ignore</code>, so Datastar never walks or morphs them. Patch the
+    elements around the editor, not the editor itself.
+  </li>
+  <li>
+    For formatting state, use the <code>editorupdate</code> event:
+    <code>data-on:editorupdate="$bold = evt.detail.active.bold"</code>. The
+    <a href="../demo">playground</a> wires up all of it, including session storage and a live preview.
+  </li>
+</ul>

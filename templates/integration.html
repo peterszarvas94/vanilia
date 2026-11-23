@@ -1,0 +1,44 @@
+{{define "integration"}}{{template "head" .}}
+  </head>
+  <body>
+    {{template "nav" .}}
+    <div class="container with-sidebar">
+      {{template "sidebar-toggle" .Integration.Name}}
+      <nav class="sidebar" id="sidebar" popover
+        data-on:click="evt.target.closest('a') && el.matches(':popover-open') && el.hidePopover()"
+        aria-label="Integrations">
+        <h2>Integrations</h2>
+        <ul>
+          <li><a href="{{.BasePath}}/integrations">Overview</a></li>
+          {{range .Integrations}}<li><a href="{{$.BasePath}}/integrations/{{.Slug}}" {{if eq .Slug $.Integration.Slug}}class="is-current" aria-current="page"{{end}}>{{.Name}}</a></li>
+          {{end}}<li><a href="{{.BasePath}}/demo">Go + Datastar playground</a></li>
+        </ul>
+      </nav>
+      <main id="main" class="prose">
+        {{with .Integration}}
+        <h1>{{.Name}}</h1>
+        <p class="lede">{{.Tagline}}</p>
+
+        <h2 id="demo">Live demo</h2>
+        <div class="example-preview">
+          {{.DemoHTML}}
+        </div>
+
+        <h2 id="markup">Markup</h2>
+        {{template "code" .Demo}}
+
+        {{if .Server}}
+        <h2 id="server">Server</h2>
+        <p>The Go handler behind the demo, straight from <code>cmd/server/integrations.go</code>:</p>
+        {{template "code" .Server}}
+        {{end}}
+
+        <h2 id="how">How it works</h2>
+        {{.Notes}}
+        {{end}}
+      </main>
+    </div>
+    {{template "foot" .}}
+  </body>
+</html>
+{{end}}
