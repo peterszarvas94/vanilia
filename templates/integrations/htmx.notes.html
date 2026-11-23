@@ -1,0 +1,15 @@
+<ul>
+  <li>
+    The editor is form-associated, so htmx sends it with the rest of the form, as <code>body</code> here, like any
+    <code>&lt;input&gt;</code>. No extra attributes or JavaScript.
+  </li>
+  <li><code>required</code> blocks the request until there is content, the same as for a native field.</li>
+  <li>
+    Swap the output, not the editor. Point <code>hx-target</code> at an element next to it, so the editor keeps its
+    content, selection and undo history.
+  </li>
+  <li>
+    Sanitize on the server. The editor cleans pasted HTML in the browser, but anyone can send any request. The handler
+    uses the same <a href="../docs#sanitize">bluemonday policy</a> as the rest of this site.
+  </li>
+</ul>

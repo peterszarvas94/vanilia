@@ -121,6 +121,9 @@ export class VaniliaEditorElement extends BaseHTMLElement {
       this.#pendingValue = str;
       return;
     }
+    // Like a native input: writing back the current value is a no-op and keeps the caret.
+    // Two-way bindings (Datastar data-bind, Alpine x-model) do this on every keystroke.
+    if (str === this.getHTML()) return;
     this.setHTML(str);
   }
 

@@ -1,5 +1,5 @@
 /*! Vanilia | includes Squire, MIT License, Copyright (c) 2011-2023 Neil Jenkins */
-// node_modules/squire-rte/dist/squire-raw.mjs
+// ../vanilia-pin/node_modules/squire-rte/dist/squire-raw.mjs
 var SHOW_ELEMENT = 1;
 var SHOW_TEXT = 4;
 var SHOW_ELEMENT_OR_TEXT = 5;
@@ -4876,6 +4876,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			this.#pendingValue = str;
 			return;
 		}
+		if (str === this.getHTML()) return;
 		this.setHTML(str);
 	}
 	get form() {

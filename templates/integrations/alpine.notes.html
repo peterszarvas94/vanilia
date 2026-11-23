@@ -1,0 +1,15 @@
+<ul>
+  <li>
+    <code>x-model</code> works in both directions: Alpine reads the editor's <code>value</code> on every
+    <code>input</code> event, and setting the model writes <code>value</code>, which replaces the content.
+  </li>
+  <li>
+    <code>@editorupdate</code> fires on every change and selection move. Its <code>detail</code> has
+    <code>html</code>, <code>text</code>, <code>words</code>, <code>images</code>, <code>active</code> (formatting at the
+    cursor), <code>canUndo</code> and <code>canRedo</code>.
+  </li>
+  <li>
+    No server needed. To save, put the editor in a <code>&lt;form&gt;</code> with a <code>name</code>, or send
+    <code>html</code> with <code>fetch</code>.
+  </li>
+</ul>
