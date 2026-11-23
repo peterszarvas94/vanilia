@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Vanilia — Drop-In Rich Text Editor</title>
-    <link rel="stylesheet" href="{{.BasePath}}/src/styles/editor.css" />
+    <link rel="stylesheet" href="{{.BasePath}}/dist/vanilia-editor.css" />
     <style>
       :root {
         color-scheme: light dark;
@@ -479,7 +479,7 @@
     </div>
 
     <script type="module">
-      import { formatHTML } from "{{.BasePath}}/src/index.js";
+      import { formatHTML } from "{{.BasePath}}/dist/vanilia-editor.js";
 
       window.formatHTML = formatHTML;
       window.editor = document.getElementById("editor");
