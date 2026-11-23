@@ -1,0 +1,5 @@
+export { VanillaEditorElement } from "./vanilla-editor.js";
+export { sanitizeToDOMFragment, normalizeExportHTML, formatHTML, isSafeUrl } from "./sanitizer.js";
+export { createImageResizeExtension } from "./extensions/image-resize.js";
+export { createBubbleMenuExtension } from "./extensions/bubble-menu.js";
+export { createFindReplaceExtension } from "./extensions/find-replace.js";

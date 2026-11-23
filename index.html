@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla WYSIWYG — Modern Web & CSS APIs</title>
+    <link rel="stylesheet" href="/src/styles/editor.css" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: light-dark(#f2f4f8, #0d0f13);
+        --card-bg: light-dark(#ffffff, #14161a);
+        --card-border: light-dark(#e2e5ec, #262b35);
+        --text: light-dark(#171a21, #eceff4);
+        --muted: light-dark(#5c6577, #95a0b3);
+      }
+
+      :root[data-theme="light"] {
+        color-scheme: light;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: var(--page-bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+
+      .shell {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 24px 20px 48px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .brand p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .swatches {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+      }
+
+      .swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .swatch.is-active {
+        border-color: var(--text);
+        transform: scale(1.1);
+      }
+
+      .pill-btn {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        color: var(--text);
+        font: 500 13px / 1 inherit;
+        cursor: pointer;
+      }
+
+      .pill-btn:hover {
+        border-color: var(--ve-accent, #3b82f6);
+      }
+
+      .pill-btn--primary {
+        background: var(--ve-accent, oklch(0.58 0.19 258));
+        border-color: transparent;
+        color: #ffffff;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      @media (max-width: 960px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      .form-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .code-box {
+        margin: 0;
+        padding: 12px 14px;
+        max-height: 460px;
+        overflow: auto;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        background: light-dark(#f7f8fa, #0f1116);
+        font: 12.5px / 1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .submit-log {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        background: light-dark(#f7f8fa, #0f1116);
+        font-size: 12.5px;
+      }
+
+      .submit-log strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .submit-log code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Vanilla WYSIWYG</h1>
+          <p>
+            Drop-in <code>&lt;vanilla-editor&gt;</code> · Vendored Squire core · Custom Image Resize · Popover + CSS Anchor Positioning + Custom Highlight API
+          </p>
+        </div>
+
+        <div class="controls">
+          <div class="swatches" role="group" aria-label="Accent color">
+            <button type="button" class="swatch is-active" data-accent="oklch(0.58 0.19 258)" style="background: oklch(0.58 0.19 258)" title="Blue"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 305)" style="background: oklch(0.58 0.21 305)" title="Violet"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.58 0.17 158)" style="background: oklch(0.58 0.17 158)" title="Emerald"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.62 0.19 42)" style="background: oklch(0.62 0.19 42)" title="Amber"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 15)" style="background: oklch(0.58 0.21 15)" title="Rose"></button>
+          </div>
+          <button type="button" class="pill-btn" id="toggle-theme">Theme: Auto</button>
+        </div>
+      </header>
+
+      <div class="grid">
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Editor (&lt;form&gt; associated)</h2>
+            <span class="hint">Try: select text for bubble menu · click image to resize · drop/paste an image · Ctrl+F to find</span>
+          </div>
+
+          <form id="demo-form">
+            <vanilla-editor
+              id="editor"
+              name="content"
+              required
+              upload-url="/api/upload"
+              placeholder="Write something, paste an image, or drag & drop a photo..."
+            >
+              <template>
+                <h2>Welcome to Vanilla WYSIWYG</h2>
+                <p>
+                  This is a drop-in <strong>form-associated Web Component</strong> with
+                  <em>zero build step</em> and modern browser APIs. Select any text to see the
+                  floating <code>Popover</code> + <code>CSS Anchor Positioning</code> toolbar, or
+                  press <code>Ctrl+F</code> to test non-destructive Find &amp; Replace via the
+                  CSS Custom Highlight API.
+                </p>
+                <p>
+                  <img
+                    src="/assets/sample-mountain.svg"
+                    alt="Sample mountain landscape"
+                    data-align="center"
+                    style="width: 75%; height: auto; display: block; margin-left: auto; margin-right: auto;"
+                  />
+                </p>
+                <blockquote>
+                  Click the image above to test the custom TipTap-style resize handles, percentage
+                  presets (25% / 50% / 75% / 100%), alignment, alt-text editor, and Undo/Redo.
+                </blockquote>
+                <ul>
+                  <li>Drop or paste any PNG / JPEG / WebP image — uploads to <code>POST /api/upload</code></li>
+                  <li>Works inside any plain HTML <code>&lt;form&gt;</code> (Go + Datastar, Rails, HTMX)</li>
+                  <li>Allowlist HTML sanitizer built in — no DOMPurify required</li>
+                </ul>
+              </template>
+            </vanilla-editor>
+
+            <div class="form-bar">
+              <span class="hint">Standard <code>new FormData(form)</code> reads <code>content</code> directly.</span>
+              <div class="controls">
+                <button type="reset" class="pill-btn">Reset Form</button>
+                <button type="submit" class="pill-btn pill-btn--primary">Test Form Submit</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="submit-log" id="submit-log" hidden></div>
+        </section>
+
+        <aside class="card">
+          <div class="card-header">
+            <h2 class="card-title">Live HTML Output</h2>
+            <button type="button" class="pill-btn" id="copy-html">Copy HTML</button>
+          </div>
+          <pre class="code-box" id="html-output"></pre>
+        </aside>
+      </div>
+    </div>
+
+    <script type="module">
+      import "/src/index.js";
+
+      const editor = document.getElementById("editor");
+      const output = document.getElementById("html-output");
+      const form = document.getElementById("demo-form");
+      const submitLog = document.getElementById("submit-log");
+      const copyBtn = document.getElementById("copy-html");
+      const themeBtn = document.getElementById("toggle-theme");
+
+      function syncOutput() {
+        output.textContent = editor.getFormattedHTML() || "<!-- empty -->";
+      }
+
+      editor.addEventListener("ve:update", syncOutput);
+      editor.addEventListener("input", syncOutput);
+      syncOutput();
+
+      // Expose globally for easy console inspection (like datastar-tiptap)
+      window.editor = editor;
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const content = fd.get("content") || "";
+        submitLog.hidden = false;
+        submitLog.innerHTML = `
+          <strong>FormData("content") captured (${content.length} chars)</strong>
+          <code>${content.slice(0, 260).replace(/</g, "&lt;")}${content.length > 260 ? "…" : ""}</code>
+        `;
+      });
+
+      form.addEventListener("reset", () => {
+        submitLog.hidden = true;
+        requestAnimationFrame(syncOutput);
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(editor.getFormattedHTML());
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => (copyBtn.textContent = prev), 1200);
+      });
+
+      const themes = ["auto", "light", "dark"];
+      let themeIdx = 0;
+      themeBtn.addEventListener("click", () => {
+        themeIdx = (themeIdx + 1) % themes.length;
+        const next = themes[themeIdx];
+        if (next === "auto") document.documentElement.removeAttribute("data-theme");
+        else document.documentElement.setAttribute("data-theme", next);
+        themeBtn.textContent = `Theme: ${next[0].toUpperCase() + next.slice(1)}`;
+      });
+
+      for (const btn of document.querySelectorAll(".swatch")) {
+        btn.addEventListener("click", () => {
+          for (const b of document.querySelectorAll(".swatch")) b.classList.remove("is-active");
+          btn.classList.add("is-active");
+          editor.style.setProperty("--ve-accent", btn.dataset.accent);
+        });
+      }
+    </script>
+  </body>
+</html>

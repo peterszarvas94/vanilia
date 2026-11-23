@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="55%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#bfdbfe"/>
+    </linearGradient>
+    <linearGradient id="m1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="m2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#sky)"/>
+  <circle cx="720" cy="145" r="56" fill="#fef08a" opacity="0.92"/>
+  <circle cx="720" cy="145" r="84" fill="#fef08a" opacity="0.22"/>
+  <polygon points="0,420 210,190 430,420" fill="url(#m2)"/>
+  <polygon points="210,190 165,245 205,232 232,254 260,245" fill="#e2e8f0" opacity="0.85"/>
+  <polygon points="270,460 540,140 820,460" fill="url(#m1)"/>
+  <polygon points="540,140 480,212 524,196 558,224 600,210" fill="#f8fafc" opacity="0.9"/>
+  <polygon points="620,460 810,235 960,410 960,460" fill="url(#m2)"/>
+  <rect y="420" width="960" height="120" fill="#0f172a"/>
+  <rect y="420" width="960" height="4" fill="#60a5fa" opacity="0.45"/>
+  <text x="40" y="492" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="24" font-weight="600">Click this image to drag-resize, align, or edit alt text</text>
+</svg>
