@@ -322,6 +322,16 @@ p {
     background: none;
     font: inherit;
   }
+
+  /* Syntax tokens, set by site.js */
+  & .tk-c { color: var(--muted); font-style: italic; }
+  & .tk-s { color: light-dark(#0a7f4f, #7ee2a8); }
+  & .tk-k { color: light-dark(#a3268f, #e39bf0); }
+  & .tk-t { color: light-dark(#1d5fd6, #7cb0ff); }
+  & .tk-a,
+  & .tk-p { color: light-dark(#a35200, #f5b36b); }
+  & .tk-f { color: light-dark(#5a3fd1, #b4a4ff); }
+  & .tk-n { color: light-dark(#b3261e, #ff9b8f); }
 }
 
 .copy-btn {
