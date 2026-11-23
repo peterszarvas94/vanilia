@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,23 +14,38 @@ import (
 
 // example is a live snippet on /examples. The same file is rendered as markup
 // and shown as source, so the code on the page is always the code that runs.
+// Optional parts: <slug>.notes.html is shown under the code, and a
+// "// region <slug>" block in integrations.go is shown as the server code.
 type example struct {
 	Slug        string
 	Title       string
 	Description template.HTML
-	Source      string
-	HTML        template.HTML
+	// Group is the sidebar category ("Examples" or "Integrations")
+	Group  string
+	Source string
+	HTML   template.HTML
+	Notes  template.HTML
+	Server string
 }
 
 var exampleIndex = []example{
-	{Slug: "basic", Title: "Basic editor", Description: "The smallest setup: one element with initial content in a <code>&lt;template&gt;</code>."},
-	{Slug: "form", Title: "Inside a form", Description: "The editor is form-associated: <code>name</code>, <code>required</code>, <code>FormData</code> and <code>reset</code> work like a native field."},
-	{Slug: "api", Title: "JavaScript API", Description: "Read and write content, run commands and listen to state updates."},
-	{Slug: "theme", Title: "Custom theme", Description: "Restyle everything with <code>--ve-*</code> CSS custom properties."},
-	{Slug: "icons", Title: "Custom icons", Description: "Swap individual icons per editor with <code>&lt;template data-ve-icon&gt;</code>, and tune the built-in ones with CSS."},
-	{Slug: "headless", Title: "Your own toolbar", Description: "Hide the built-in toolbar with <code>toolbar=\"none\"</code> and drive the editor from your own buttons."},
-	{Slug: "uploads", Title: "Image uploads", Description: "Upload pasted, dropped and picked images to your server. Without <code>upload-url</code> images are inlined as <code>data:</code> URLs."},
+	{Group: "Examples", Slug: "basic", Title: "Basic editor", Description: "The smallest setup: one element with initial content in a <code>&lt;template&gt;</code>."},
+	{Group: "Examples", Slug: "form", Title: "Inside a form", Description: "The editor is form-associated: <code>name</code>, <code>required</code>, <code>FormData</code> and <code>reset</code> work like a native field."},
+	{Group: "Examples", Slug: "api", Title: "JavaScript API", Description: "Read and write content, run commands and listen to state updates."},
+	{Group: "Examples", Slug: "theme", Title: "Custom theme", Description: "Restyle everything with <code>--ve-*</code> CSS custom properties."},
+	{Group: "Examples", Slug: "icons", Title: "Custom icons", Description: "Swap individual icons per editor with <code>&lt;template data-ve-icon&gt;</code>, and tune the built-in ones with CSS."},
+	{Group: "Examples", Slug: "headless", Title: "Your own toolbar", Description: "Hide the built-in toolbar with <code>toolbar=\"none\"</code> and drive the editor from your own buttons."},
+	{Group: "Examples", Slug: "uploads", Title: "Image uploads", Description: "Upload pasted, dropped and picked images to your server. Without <code>upload-url</code> images are inlined as <code>data:</code> URLs."},
+	{Group: "Integrations", Slug: "datastar", Title: "Datastar", Description: "Bind the editor to a signal and save it over SSE."},
+	{Group: "Integrations", Slug: "htmx", Title: "htmx", Description: "Post the editor like any form field and swap in the server's HTML."},
+	{Group: "Integrations", Slug: "alpine", Title: "Alpine.js", Description: "Bind the content both ways with <code>x-model</code> and react to editor events."},
 }
+
+// exampleGroups is the sidebar order of exampleIndex's groups.
+var exampleGroups = []string{"Examples", "Integrations"}
+
+// exampleModules are import-map specifiers the examples page imports for its integrations.
+var exampleModules = []string{"htmx.org", "alpine"}
 
 var examples []example
 
@@ -42,30 +59,59 @@ func mustLoadExamples(dir string) {
 		src := strings.TrimSpace(string(raw))
 		ex.Source = src
 		ex.HTML = template.HTML(src) // trusted, checked-in markup
+
+		notes, err := os.ReadFile(filepath.Join(dir, ex.Slug+".notes.html"))
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			panic(fmt.Sprintf("load example notes %q: %v", ex.Slug, err))
+		}
+		ex.Notes = template.HTML(notes)
+		ex.Server = sourceRegion(integrationsSource, ex.Slug)
 		examples = append(examples, ex)
 	}
 }
 
-type pageData struct {
-	BasePath string
-	Active   string
-	Title    string
+// exampleGroup is one sidebar category with its examples.
+type exampleGroup struct {
+	Name     string
 	Examples []example
+}
+
+func groupedExamples() []exampleGroup {
+	groups := make([]exampleGroup, 0, len(exampleGroups))
+	for _, name := range exampleGroups {
+		group := exampleGroup{Name: name}
+		for _, ex := range examples {
+			if ex.Group == name {
+				group.Examples = append(group.Examples, ex)
+			}
+		}
+		groups = append(groups, group)
+	}
+	return groups
+}
+
+type pageData struct {
+	BasePath      string
+	Active        string
+	Title         string
+	ExampleGroups []exampleGroup
 	// RenderedPreview fills the demo page's "rendered-preview" block (streamed later via SSE)
 	RenderedPreview template.HTML
-	Integrations    []integration
-	Integration     *integration
 	// Modules are extra import-map specifiers imported by the page's entry script
 	Modules []string
 }
 
 func pageHandler(basePath, name, title string) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		return renderTemplate(c, name, pageData{
+		data := pageData{
 			BasePath: basePath,
 			Active:   name,
 			Title:    title,
-			Examples: examples,
-		})
+		}
+		if name == "examples" {
+			data.ExampleGroups = groupedExamples()
+			data.Modules = exampleModules
+		}
+		return renderTemplate(c, name, data)
 	}
 }

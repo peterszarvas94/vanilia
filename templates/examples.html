@@ -7,11 +7,14 @@
       <nav class="sidebar" id="sidebar" popover data-scroll-spy
         data-on:click="evt.target.closest('a') && el.matches(':popover-open') && el.hidePopover()"
         aria-label="Examples">
-        <h2>Examples</h2>
+        {{range .ExampleGroups}}
+        <h2>{{.Name}}</h2>
         <ul>
           {{range .Examples}}<li><a href="#{{.Slug}}">{{.Title}}</a></li>
-          {{end}}<li><a href="{{$.BasePath}}/demo">Go + Datastar ↗</a></li>
+          {{end}}{{if eq .Name "Integrations"}}<li><a href="{{$.BasePath}}/demo">Go + Datastar playground ↗</a></li>
+          {{end}}
         </ul>
+        {{end}}
       </nav>
       <main id="main" class="prose">
         <h1>Examples</h1>
@@ -19,7 +22,7 @@
           Every example is live, and the code under it is exactly the markup that runs. They all assume the
           <a href="{{.BasePath}}/docs#install">setup from the docs</a> (import map, stylesheet and module).
         </p>
-        {{range .Examples}}
+        {{range .ExampleGroups}}{{range .Examples}}
         <section class="example" id="{{.Slug}}">
           <h2>{{.Title}}</h2>
           <p>{{.Description}}</p>
@@ -27,15 +30,13 @@
             {{.HTML}}
           </div>
           {{template "code" .Source}}
+          {{if .Server}}
+          <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
+          {{template "code" .Server}}
+          {{end}}
+          {{.Notes}}
         </section>
-        {{end}}
-        <section class="example" id="datastar">
-          <h2>Go + Datastar</h2>
-          <p>
-            A full server round trip (session storage, sanitizing on save, an SSE-rendered preview and editor state as
-            Datastar signals) is on the <a href="{{.BasePath}}/demo">demo page</a>.
-          </p>
-        </section>
+        {{end}}{{end}}
       </main>
     </div>
     {{template "foot" .}}
