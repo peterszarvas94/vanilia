@@ -105,3 +105,17 @@ func TestImageUploadAndServe(t *testing.T) {
 		t.Fatalf("GET %s failed: status=%d len=%d", resp.URL, getRec.Code, getRec.Body.Len())
 	}
 }
+
+func TestSanitizeEditorHTMLPreservesLeftRightImageAlignment(t *testing.T) {
+	right := `<p><img src="/assets/sample-mountain.svg" data-align="right" style="width: 50%; height: auto; display: block; margin-left: auto; margin-right: 0px;"></p>`
+	gotRight := sanitizeEditorHTML(right)
+	if !strings.Contains(gotRight, `data-align="right"`) || !strings.Contains(gotRight, "margin-left: auto") || !strings.Contains(gotRight, "margin-right: 0px") {
+		t.Fatalf("right alignment lost: %s", gotRight)
+	}
+
+	left := `<p><img src="/assets/sample-mountain.svg" data-align="left" style="width: 50%; height: auto; display: block; margin-left: 0px; margin-right: auto;"></p>`
+	gotLeft := sanitizeEditorHTML(left)
+	if !strings.Contains(gotLeft, `data-align="left"`) || !strings.Contains(gotLeft, "margin-left: 0px") || !strings.Contains(gotLeft, "margin-right: auto") {
+		t.Fatalf("left alignment lost: %s", gotLeft)
+	}
+}

@@ -50,7 +50,7 @@ func init() {
 		Matching(regexp.MustCompile(`^(block|inline-block)$`)).
 		OnElements("img")
 	p.AllowStyles("margin-left", "margin-right").
-		Matching(regexp.MustCompile(`^(0|auto)$`)).
+		Matching(regexp.MustCompile(`^(0(px)?|auto)$`)).
 		OnElements("img")
 	p.AllowStyles("text-align").
 		Matching(regexp.MustCompile(`^(left|center|right|justify)$`)).

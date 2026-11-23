@@ -33,7 +33,9 @@ export function createImageResizeExtension({
   squire,
   surface,
   overlayHost,
+  editorToolbar,
   onChange,
+  onSelectChange,
   getUploadHandler,
   onStatus,
 }) {
@@ -225,6 +227,10 @@ export function createImageResizeExtension({
       toolbar.hidden = false;
     }
     positionOverlay();
+    requestAnimationFrame(() => {
+      if (selectedImg) positionOverlay();
+    });
+    onSelectChange?.(selectedImg);
   }
 
   function deselect() {
@@ -239,6 +245,7 @@ export function createImageResizeExtension({
     } catch {
       toolbar.hidden = true;
     }
+    onSelectChange?.(null);
   }
 
   function positionOverlay() {
@@ -254,15 +261,19 @@ export function createImageResizeExtension({
     box.style.width = `${imgRect.width}px`;
     box.style.height = `${imgRect.height}px`;
 
-    // Position top-layer popover cleanly above image (or below if near top edge)
+    // Position top-layer popover cleanly above image, below if near top edge, or clamped inside viewport
     const tbRect = toolbar.getBoundingClientRect();
     const gap = 8;
+    const maxTop = Math.max(8, window.innerHeight - tbRect.height - 8);
     let top = imgRect.top - tbRect.height - gap;
     if (top < 8) {
-      top = imgRect.bottom + gap;
+      const below = imgRect.bottom + gap;
+      top = below <= maxTop ? below : Math.max(8, Math.min(maxTop, imgRect.top + 8));
+    } else if (top > maxTop) {
+      top = maxTop;
     }
     let left = imgRect.left + imgRect.width / 2 - tbRect.width / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - tbRect.width - 8));
+    left = Math.max(8, Math.min(left, Math.max(8, window.innerWidth - tbRect.width - 8)));
 
     toolbar.style.top = `${Math.round(top)}px`;
     toolbar.style.left = `${Math.round(left)}px`;
@@ -398,6 +409,11 @@ export function createImageResizeExtension({
     if (!selectedImg) return;
     const path = e.composedPath ? e.composedPath() : [e.target];
     if (path.includes(selectedImg) || path.includes(box) || path.includes(toolbar)) return;
+    // Keep image selected when clicking alignment controls in the main editor toolbar
+    if (editorToolbar && path.includes(editorToolbar)) {
+      const alignBtn = e.target?.closest?.("button[data-cmd^=align]");
+      if (alignBtn) return;
+    }
     deselect();
   }
 
@@ -522,6 +538,9 @@ export function createImageResizeExtension({
     name: "imageResize",
     selectImage,
     deselect,
+    applyAlignment,
+    applyWidth,
+    getAlignment: () => (selectedImg ? selectedImg.getAttribute("data-align") || inferAlign(selectedImg) : null),
     insertImageFile,
     insertImageUrl,
     getSelectedImage: () => selectedImg,

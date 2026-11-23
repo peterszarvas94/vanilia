@@ -406,6 +406,24 @@
       &:hover {
         box-shadow: 0 0 0 2px var(--ve-accent-ring);
       }
+
+      &[data-align="left"] {
+        display: block;
+        margin-left: 0;
+        margin-right: auto;
+      }
+
+      &[data-align="center"] {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      &[data-align="right"] {
+        display: block;
+        margin-left: auto;
+        margin-right: 0;
+      }
     }
   }
 
@@ -456,7 +474,14 @@
     & a { color: var(--ve-accent, oklch(0.58 0.19 258)); text-decoration: underline; text-underline-offset: 2px; }
     & s, & del { text-decoration: line-through; }
     & u { text-decoration: underline; }
-    & img { max-width: 100%; height: auto; border-radius: 6px; }
+    & img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      &[data-align="left"] { display: block; margin-left: 0; margin-right: auto; }
+      &[data-align="center"] { display: block; margin-left: auto; margin-right: auto; }
+      &[data-align="right"] { display: block; margin-left: auto; margin-right: 0; }
+    }
   }
 
 
@@ -584,6 +609,8 @@
   }
 
   .ve-popover {
+    inset: auto;
+    overflow: visible;
     margin: 0;
     padding: 5px;
     border: 1px solid var(--ve-border-strong);
@@ -618,11 +645,20 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    white-space: nowrap;
+    max-width: calc(100vw - 16px);
 
     &:not(:popover-open) {
       display: none;
     }
+  }
+
+  .ve-img-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ve-bubble-menu {
+    white-space: nowrap;
   }
 
   @supports (anchor-name: --a) {

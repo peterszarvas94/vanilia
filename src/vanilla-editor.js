@@ -203,6 +203,18 @@ export class VanillaEditorElement extends HTMLElement {
       this.#findReplace?.toggle();
       return;
     }
+    if (command === "alignLeft" || command === "alignCenter" || command === "alignRight") {
+      const align = command === "alignCenter" ? "center" : command === "alignRight" ? "right" : "left";
+      const targetImg = this.#imageResize?.getSelectedImage() || this.#findImageOnlyBlock();
+      if (targetImg) {
+        if (!this.#imageResize?.getSelectedImage()) {
+          this.#imageResize?.selectImage(targetImg);
+        }
+        this.#imageResize?.applyAlignment(align);
+        this.#syncToolbar();
+        return;
+      }
+    }
     execCommand(this.#squire, command, arg);
     this.#syncFormState();
     this.#syncToolbar();
@@ -364,7 +376,12 @@ export class VanillaEditorElement extends HTMLElement {
       squire: this.#squire,
       surface: this.#surface,
       overlayHost: this.#overlayHost,
+      editorToolbar: this.#toolbar,
       onChange: onEditorMutate,
+      onSelectChange: () => {
+        this.#syncToolbar();
+        this.#emitStateEvent();
+      },
       getUploadHandler: () => this.#resolveUploadHandler(),
       onStatus: (msg) => {
         if (this.#statusEl) this.#statusEl.textContent = msg || "";
@@ -588,9 +605,43 @@ export class VanillaEditorElement extends HTMLElement {
     }
   }
 
+  #findImageOnlyBlock() {
+    const sel = this.#squire?.getSelection();
+    if (!sel || !this.#surface) return null;
+    let node = sel.commonAncestorContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    const block = node?.closest?.("p, div, figure");
+    if (!block || block === this.#surface || !this.#surface.contains(block)) return null;
+    const imgs = block.querySelectorAll("img");
+    if (imgs.length === 1 && !(block.textContent || "").trim()) {
+      return imgs[0];
+    }
+    return null;
+  }
+
+  #getActiveAlignment() {
+    const imgAlign = this.#imageResize?.getAlignment?.();
+    if (imgAlign) return imgAlign;
+    const sel = this.#squire?.getSelection();
+    if (!sel || !this.#surface) return null;
+    let node = sel.commonAncestorContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    const block = node?.closest?.("p, div, h1, h2, h3, h4, h5, h6, li, blockquote");
+    if (!block || !this.#surface.contains(block)) return null;
+    if (block.style.textAlign) return block.style.textAlign;
+    if (block.classList.contains("align-center")) return "center";
+    if (block.classList.contains("align-right")) return "right";
+    if (block.classList.contains("align-left")) return "left";
+    return null;
+  }
+
   #syncToolbar() {
     if (!this.#toolbar || !this.#squire) return;
     const active = getActiveState(this.#squire);
+    const activeAlign = this.#getActiveAlignment();
+    active.alignLeft = activeAlign === "left";
+    active.alignCenter = activeAlign === "center";
+    active.alignRight = activeAlign === "right";
     for (const btn of this.#toolbar.querySelectorAll("button[data-cmd]")) {
       const cmd = btn.dataset.cmd;
       if (cmd in active) {

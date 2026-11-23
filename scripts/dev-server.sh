@@ -3,7 +3,9 @@
 # Usage: scripts/dev-server.sh {start|stop|restart|status|logs}
 set -euo pipefail
 
-root="$(git -C "${T3CODE_WORKTREE_PATH:-$PWD}" rev-parse --show-toplevel 2>/dev/null || pwd)"
+script_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+root="$(git -C "${T3CODE_WORKTREE_PATH:-$PWD}" rev-parse --show-toplevel 2>/dev/null || true)"
+[[ -f "${root}/go.mod" ]] || root="$script_root"
 state="$root/.dev"
 logfile="$state/log"
 bin="$state/server"
