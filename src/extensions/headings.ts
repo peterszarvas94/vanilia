@@ -1,11 +1,18 @@
 /**
  * Headings extension for Squire (`toggleHeading(1|2|3)` and `setParagraph()`).
  */
+import type Squire from "squire-rte";
+
+export type HeadingLevel = 1 | 2 | 3;
 
 const BLOCK_SELECTOR = "p, div, h1, h2, h3, h4, h5, h6";
 
-function convertFragmentBlocks(squire, frag, targetTag) {
-  const doc = squire._doc || document;
+function convertFragmentBlocks(
+  squire: Squire,
+  frag: DocumentFragment,
+  targetTag: string,
+): DocumentFragment {
+  const doc = squire.getRoot().ownerDocument;
   const upperTarget = targetTag.toUpperCase();
   const blocks = Array.from(frag.children);
 
@@ -21,7 +28,7 @@ function convertFragmentBlocks(squire, frag, targetTag) {
       // Unwrap nested list/quote items if toggling heading directly on them
       continue;
     }
-    if (child.matches && child.matches(BLOCK_SELECTOR)) {
+    if (child instanceof HTMLElement && child.matches(BLOCK_SELECTOR)) {
       if (child.nodeName === upperTarget) continue;
       const next = doc.createElement(targetTag);
       if (child.dir) next.dir = child.dir;
@@ -33,12 +40,12 @@ function convertFragmentBlocks(squire, frag, targetTag) {
   return frag;
 }
 
-export function isHeadingActive(squire, level) {
+export function isHeadingActive(squire: Squire, level?: HeadingLevel): boolean {
   if (level) return squire.hasFormat(`H${level}`);
   return squire.hasFormat("H1") || squire.hasFormat("H2") || squire.hasFormat("H3");
 }
 
-export function setParagraph(squire) {
+export function setParagraph(squire: Squire): void {
   if (squire.hasFormat("UL") || squire.hasFormat("OL")) {
     squire.removeList();
   }
@@ -52,7 +59,7 @@ export function setParagraph(squire) {
   squire.focus();
 }
 
-export function toggleHeading(squire, level = 2) {
+export function toggleHeading(squire: Squire, level: HeadingLevel = 2): void {
   const tag = `h${level}`;
   if (squire.hasFormat(tag.toUpperCase())) {
     setParagraph(squire);

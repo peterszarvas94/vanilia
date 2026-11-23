@@ -59,7 +59,8 @@ attribute({
     const update = () => {
       frame = 0;
       // The current section is the last one whose top has scrolled under the header
-      const offset = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) + 8 || 80;
+      const offset =
+        parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) + 8 || 80;
       const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
       let current = 0;
       targets.forEach((t, i) => {
@@ -84,7 +85,10 @@ const span = (cls, s) => `<span class="tk-${cls}">${esc(s)}</span>`;
 const CODE_RULES = [
   ["c", /\/\/[^\n]*|\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->/],
   ["s", /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`[^`]*`/],
-  ["k", /\b(?:import|from|export|default|const|let|var|function|return|if|else|for|of|in|new|await|async|class|true|false|null|undefined|this|func|package|type|struct|range|nil)\b/],
+  [
+    "k",
+    /\b(?:import|from|export|default|const|let|var|function|return|if|else|for|of|in|new|await|async|class|true|false|null|undefined|this|func|package|type|struct|range|nil)\b/,
+  ],
   ["p", /--[\w-]+|[\w-]+(?=\s*:(?!=))/],
   ["f", /[A-Za-z_$][\w$]*(?=\()/],
   ["n", /#[0-9a-fA-F]{3,8}\b|\b\d+(?:\.\d+)?(?:px|rem|em|ms|s|%)?/],
@@ -106,10 +110,15 @@ function highlightTag(tag) {
   return tag.replace(
     /^(<\/?)([\w-]+)|([\w:.@-]+)(=)("[^"]*"|'[^']*')|(\/?>)$|([^\s=]+|\s+|=)/g,
     (m, open, name, attr, eq, val, close) =>
-      open ? esc(open) + span("t", name)
-      : attr ? span("a", attr) + eq + span("s", val)
-      : close ? esc(close)
-      : m.trim() ? span("a", m) : m,
+      open
+        ? esc(open) + span("t", name)
+        : attr
+          ? span("a", attr) + eq + span("s", val)
+          : close
+            ? esc(close)
+            : m.trim()
+              ? span("a", m)
+              : m,
   );
 }
 

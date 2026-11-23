@@ -39,8 +39,6 @@ func newServer(basePath string, store *contentStore, uploads *uploadStore) *echo
 	e := echo.New()
 	e.HideBanner = true
 
-	// Serve standalone vanilla JS/CSS editor assets directly (zero build step)
-	e.Static("/src", "src")
 	e.Static("/static", "static")
 	e.Static("/assets", "assets")
 

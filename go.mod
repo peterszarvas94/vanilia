@@ -2,6 +2,8 @@ module vanilla-wysiwyg
 
 go 1.25.0
 
+ignore ./node_modules
+
 require (
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/microcosm-cc/bluemonday v1.0.27

@@ -1,40 +1,38 @@
 # Vanilia
 
-A drop-in, zero-build-step, framework-agnostic `<vanilia-editor>` Web Component powered by a vendored [Fastmail Squire](https://github.com/fastmail/Squire) v2.4.11 core (~16 kB gzipped, MIT) and modern Web & CSS Platform APIs — paired with a lightweight **Go + Datastar SSE** demo backend.
+A drop-in, framework-agnostic `<vanilia-editor>` Web Component powered by a pinned, bundled [Fastmail Squire](https://github.com/fastmail/Squire) 2.4.11 core (MIT) and modern Web & CSS Platform APIs — paired with a lightweight **Go + Datastar SSE** demo backend.
 
 **Live demo:** https://vanilia.peterszarvas.hu
 
 ## Features
 
-- **Zero JS/CSS Build Step**: Pure ES modules and modern CSS (`@layer`, native CSS Nesting, `@container`, `light-dark()`, `oklch()`, `@starting-style`, `::highlight()`).
+- **No Build Step for Users**: One readable ES module with types and modern CSS (`@layer`, native CSS Nesting, `@container`, `light-dark()`, `oklch()`, `@starting-style`, `::highlight()`).
 - **Drop-In Form-Associated Custom Element (`ElementInternals`)**: `<vanilia-editor name="content" upload-url="/api/upload">` works natively with `<form>` / `FormData` as well as hypermedia frameworks like **Datastar** (`data-on:editorupdate`, `data-effect`, `data-ignore` on internal surface mutations).
-- **Custom TipTap-style Image Resize & Upload Plugin** ([`src/extensions/image-resize.js`](./src/extensions/image-resize.js)):
+- **Custom TipTap-style Image Resize & Upload Plugin** ([`src/extensions/image-resize.ts`](./src/extensions/image-resize.ts)):
   - 6 aspect-ratio drag handles (desktop & touch-scroll-locked mobile) + live pixel/percent dimension badge.
   - Floating native `popover="manual"` toolbar with `25%` / `50%` / `75%` / `100%` presets, Left / Center / Right alignment, inline Alt-text editor, and Delete.
   - Full Undo/Redo integration, drag-and-drop image upload, clipboard image paste, and file picker (`POST /api/upload`).
-- **Floating Selection Bubble Toolbar** ([`src/extensions/bubble-menu.js`](./src/extensions/bubble-menu.js)): Native Popover API + CSS Anchor Positioning.
-- **Non-Destructive Find & Replace** ([`src/extensions/find-replace.js`](./src/extensions/find-replace.js)): Native CSS Custom Highlight API (`CSS.highlights`).
-- **Defense-in-Depth Sanitization**: Client-side allowlist `<template>` sanitizer ([`src/sanitizer.js`](./src/sanitizer.js)) + server-side `bluemonday` allowlist sanitizer ([`cmd/server/utils.go`](./cmd/server/utils.go)).
+- **Floating Selection Bubble Toolbar** ([`src/extensions/bubble-menu.ts`](./src/extensions/bubble-menu.ts)): Native Popover API + CSS Anchor Positioning.
+- **Non-Destructive Find & Replace** ([`src/extensions/find-replace.ts`](./src/extensions/find-replace.ts)): Native CSS Custom Highlight API (`CSS.highlights`).
+- **Defense-in-Depth Sanitization**: Client-side allowlist `<template>` sanitizer ([`src/sanitizer.ts`](./src/sanitizer.ts)) + server-side `bluemonday` allowlist sanitizer ([`cmd/server/utils.go`](./cmd/server/utils.go)).
 - **Go + Datastar SSE Backend** ([`cmd/server/`](./cmd/server/)): Per-session persistence (`GET /content`, `PATCH /content`, `POST /reset`), live Datastar signals & SSE-rendered preview, and bounded in-memory image uploads (`POST /api/upload`, `GET /uploads/:id`).
 
 ## Drop-In Integration (ESM + import map)
 
-Three static files, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~20 kB gzipped, Vanilia only), [`dist/squire.mjs`](./dist/squire.mjs) (~18 kB gzipped, pinned Squire build, MIT) and [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped). Copy them into your project or link the hosted deployment (CORS-enabled).
-
-`vanilia-editor.js` imports Squire through the bare specifier `squire-rte`, so map it once in your base layout:
+One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~44 kB gzipped, readable, Squire built in, no imports), [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped) and optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts). Copy them into your project or link the hosted deployment (CORS-enabled). Map the module once in your base layout:
 
 ```html
 <script type="importmap">
   {
     "imports": {
-      "squire-rte": "https://vanilia.peterszarvas.hu/dist/squire.mjs",
       "vanilia-editor": "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"
     }
   }
 </script>
-<link rel="modulepreload" href="https://vanilia.peterszarvas.hu/dist/squire.mjs" />
 <link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
-<script type="module">import "vanilia-editor";</script>
+<script type="module">
+  import "vanilia-editor";
+</script>
 
 <form method="POST" action="/save">
   <vanilia-editor name="content" placeholder="Start writing..."></vanilia-editor>
@@ -42,13 +40,13 @@ Three static files, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-edi
 </form>
 ```
 
-With a bundler (Vite, esbuild, ...) no import map is needed: `squire-rte` resolves from the npm package.
+With a bundler (Vite, esbuild, ...) no import map is needed: import the copied `vanilia-editor.js` and `vanilia-editor.css` directly.
 
 - **Forms:** `<vanilia-editor>` is form-associated (`ElementInternals`), so `name`, `required`, `disabled`, `FormData`, and `form.reset()` work natively.
 - **Events & API:** listens/emits `input`, `change`, `editorupdate`, and `ve:update`; supports `.value`, `.getHTML()`, `.setHTML(html)`, `.getText()`, `.exec(cmd)`.
 - **Images:** works out of the box with no backend (falls back to inline `data:` URLs). For server uploads, set `upload-url="/api/upload"` (raw binary `POST` returning `{ "url": "..." }`) or assign `editor.onImageUpload = async (file) => url`.
 - **Rendered output:** add `class="ve-prose"` to any container rendering saved HTML to match the editor's typography and image alignment.
-- **Regenerate `dist/` after editing `src/`:** `node scripts/pack.mjs` (writes `vanilia-editor.js`, `squire.mjs`, `vanilia-editor.css`) (verify sync with `node scripts/pack.mjs --check`).
+- **Regenerate `dist/` after editing `src/`:** `npm run build` and commit `dist/` (the Docker image has no Node).
 
 ### Styling with CSS Variables
 
@@ -56,10 +54,10 @@ All editor styles live inside `@layer ve-tokens, ve-base, ve-chrome, ve-surface,
 
 ```css
 :root {
-  --ve-accent: #e11d48;       /* derives soft/ring/hover states automatically */
+  --ve-accent: #e11d48; /* derives soft/ring/hover states automatically */
   --ve-radius: 8px;
   --ve-min-height: 220px;
-  --ve-max-height: 520px;     /* enables internal scrolling when set */
+  --ve-max-height: 520px; /* enables internal scrolling when set */
   --ve-font-size: 16px;
 }
 ```
@@ -85,15 +83,28 @@ The built-in icons are inlined Lucide-compatible SVGs (no icon library needed). 
    // every editor on the page (re-renders already mounted editors); pass null to restore a default
    VaniliaEditorElement.setIcons({ undo: "<svg>…</svg>", redo: null });
    // one editor from JS
-   document.querySelector("vanilia-editor").setIcons({ italic: '<i class="ph ph-text-italic"></i>' });
+   document
+     .querySelector("vanilia-editor")
+     .setIcons({ italic: '<i class="ph ph-text-italic"></i>' });
    ```
 
    Icon names: `VaniliaEditorElement.iconNames` (`bold`, `italic`, `underline`, `strike`, `code`, `paragraph`, `h1`–`h3`, `bulletList`, `orderedList`, `quote`, `hr`, `alignLeft`, `alignCenter`, `alignRight`, `link`, `image`, `clear`, `undo`, `redo`, `search`, `upload`, `trash`, `check`, `x`, …).
+
 3. **Bring your own toolbar** with `toolbar="none"`: the built-in toolbar is hidden and your own buttons call `editor.exec("bold")`. Active state comes from `ve:update` / `editorupdate` (`evt.detail.active.bold`, `.h2`, `.alignCenter`, …, plus `canUndo` / `canRedo`). The bubble menu, image handles, link/image popovers (anchored to the selection) and Find & Replace keep working.
 
    ```html
-   <button data-on:mousedown="evt.preventDefault()" data-on:click="document.getElementById('post').exec('bold')" data-class:is-active="$bold">…</button>
-   <vanilia-editor id="post" toolbar="none" data-on:editorupdate="$bold = evt.detail.active.bold"></vanilia-editor>
+   <button
+     data-on:mousedown="evt.preventDefault()"
+     data-on:click="document.getElementById('post').exec('bold')"
+     data-class:is-active="$bold"
+   >
+     …
+   </button>
+   <vanilia-editor
+     id="post"
+     toolbar="none"
+     data-on:editorupdate="$bold = evt.detail.active.bold"
+   ></vanilia-editor>
    ```
 
 ## Local Development
@@ -108,12 +119,14 @@ go run ./cmd/server
 ./scripts/dev-server.sh start
 ```
 
-Pack drop-in bundle & run tests:
+The editor is TypeScript in `src/`, built with [Vite+](https://viteplus.dev) (`vp`): `vp pack` bundles it into `dist/`, `vp check` formats (Oxfmt), lints and type-checks (Oxlint), `vp test` runs Vitest. Squire comes from npm at a pinned version (`squire-rte` in `package.json`).
 
 ```bash
-node scripts/pack.mjs
+npm install
+npm run build   # vp pack: dist/vanilia-editor.{js,d.ts,css}
+npm run check   # vp check
+npm test        # vp test
 go test ./...
-node --test
 ```
 
 See [`DOCKER.md`](./DOCKER.md) for container deployment and [`PLAN.md`](./PLAN.md) for the prior-art architecture research.

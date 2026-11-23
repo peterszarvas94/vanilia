@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{if .Title}}{{.Title}} · {{end}}Vanilia</title>
-    <meta name="description" content="Vanilia is a drop-in rich text editor web component: one custom element, three static files, no build step." />
+    <meta name="description" content="Vanilia is a drop-in rich text editor web component: one custom element, one ES module and one stylesheet, no build step." />
     <link rel="icon" href="{{.BasePath}}/static/favicon.svg" type="image/svg+xml" />
     <script>
       try {
@@ -15,14 +15,12 @@
     <script type="importmap">
       {
         "imports": {
-          "squire-rte": "{{.BasePath}}/dist/squire.mjs",
           "vanilia-editor": "{{.BasePath}}/dist/vanilia-editor.js",
           "datastar": "{{.BasePath}}/static/vendor/datastar.js",
           "site": "{{.BasePath}}/static/site.js"
         }
       }
     </script>
-    <link rel="modulepreload" href="{{.BasePath}}/dist/squire.mjs" />
     <link rel="modulepreload" href="{{.BasePath}}/dist/vanilia-editor.js" />
     <link rel="modulepreload" href="{{.BasePath}}/static/vendor/datastar.js" />
     <link rel="modulepreload" href="{{.BasePath}}/static/site.js" />

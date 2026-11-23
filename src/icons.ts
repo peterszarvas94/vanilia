@@ -1,4 +1,38 @@
-const SVG_PATHS = {
+/** Name of a built-in icon. */
+export type IconName =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "strike"
+  | "paragraph"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "bulletList"
+  | "orderedList"
+  | "quote"
+  | "code"
+  | "hr"
+  | "link"
+  | "unlink"
+  | "image"
+  | "alignLeft"
+  | "alignCenter"
+  | "alignRight"
+  | "undo"
+  | "redo"
+  | "clear"
+  | "search"
+  | "trash"
+  | "check"
+  | "x"
+  | "upload"
+  | "moon"
+  | "sun"
+  | "copy"
+  | "text";
+
+const SVG_PATHS: Record<IconName, string> = {
   bold: `<path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/>`,
   italic: `<line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/>`,
   underline: `<path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/>`,
@@ -32,11 +66,14 @@ const SVG_PATHS = {
   text: `<path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/>`,
 };
 
-/** Names of all built-in icons (each can be overridden). */
-export const ICON_NAMES = Object.freeze(Object.keys(SVG_PATHS));
+/** Icon overrides: icon name to trusted markup. `null` or `""` restores the built-in icon. */
+export type IconMap = Partial<Record<IconName, string | null | undefined>>;
 
-const globalIcons = new Map();
-const iconListeners = new Set();
+/** Names of all built-in icons (each can be overridden). */
+export const ICON_NAMES: readonly IconName[] = Object.freeze(Object.keys(SVG_PATHS) as IconName[]);
+
+const globalIcons = new Map<string, string>();
+const iconListeners = new Set<() => void>();
 
 /**
  * Override built-in icons for every <vanilia-editor> on the page.
@@ -45,7 +82,7 @@ const iconListeners = new Set();
  *
  *   setIcons({ bold: '<svg viewBox="0 0 256 256">...</svg>' });
  */
-export function setIcons(map = {}) {
+export function setIcons(map: IconMap = {}): void {
   for (const [name, markup] of Object.entries(map)) {
     if (markup == null || markup === "") globalIcons.delete(name);
     else globalIcons.set(name, String(markup));
@@ -54,21 +91,26 @@ export function setIcons(map = {}) {
 }
 
 /** Subscribe to global icon changes; returns an unsubscribe function. */
-export function onIconsChange(listener) {
+export function onIconsChange(listener: () => void): () => void {
   iconListeners.add(listener);
-  return () => iconListeners.delete(listener);
+  return () => {
+    iconListeners.delete(listener);
+  };
 }
+
+/** Renders an icon by name and pixel size as trusted markup. */
+export type IconRenderer = (name: string, size?: number) => string;
 
 /**
  * Render an icon as markup. Lookup order: per-editor `overrides` (Map),
  * global `setIcons()` registry, built-in Lucide-compatible SVG.
  * Every icon carries `data-icon` / `data-size` so editors can re-render it in place.
  */
-export function icon(name, size = 16, overrides) {
+export function icon(name: string, size = 16, overrides?: ReadonlyMap<string, string>): string {
   const custom = overrides?.get(name) ?? globalIcons.get(name);
   if (custom != null) {
     return `<span class="ve-icon ve-icon--custom" data-icon="${name}" data-size="${size}" aria-hidden="true">${custom}</span>`;
   }
-  const path = SVG_PATHS[name] || "";
+  const path = name in SVG_PATHS ? SVG_PATHS[name as IconName] : "";
   return `<svg class="ve-icon" data-icon="${name}" data-size="${size}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 }
