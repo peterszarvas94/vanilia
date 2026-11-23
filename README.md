@@ -2,7 +2,7 @@
 
 A drop-in, zero-build-step, framework-agnostic `<vanilia-editor>` Web Component powered by a vendored [Fastmail Squire](https://github.com/fastmail/Squire) v2.4.11 core (~16 kB gzipped, MIT) and modern Web & CSS Platform APIs — paired with a lightweight **Go + Datastar SSE** demo backend.
 
-**Live demo:** https://wysiwyg.peterszarvas.hu
+**Live demo:** https://vanilia.peterszarvas.hu
 
 ## Features
 
@@ -27,13 +27,13 @@ Three static files, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-edi
 <script type="importmap">
   {
     "imports": {
-      "squire-rte": "https://wysiwyg.peterszarvas.hu/dist/squire.mjs",
-      "vanilia-editor": "https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.js"
+      "squire-rte": "https://vanilia.peterszarvas.hu/dist/squire.mjs",
+      "vanilia-editor": "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"
     }
   }
 </script>
-<link rel="modulepreload" href="https://wysiwyg.peterszarvas.hu/dist/squire.mjs" />
-<link rel="stylesheet" href="https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.css" />
+<link rel="modulepreload" href="https://vanilia.peterszarvas.hu/dist/squire.mjs" />
+<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
 <script type="module">import "vanilia-editor";</script>
 
 <form method="POST" action="/save">
