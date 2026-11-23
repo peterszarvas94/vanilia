@@ -1,0 +1,102 @@
+{{define "home"}}{{template "head" .}}
+  </head>
+  <body>
+    {{template "nav" .}}
+    <main id="main" class="container">
+      <section class="hero">
+        <h1>A rich text editor you can just drop in</h1>
+        <p class="lede">
+          <code>&lt;vanilia-editor&gt;</code> is one custom element that works in any stack (plain HTML, Go, Rails,
+          Datastar, htmx or a bundler) with three static files and no build step.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn--primary" href="{{.BasePath}}/docs#install">Get started</a>
+          <a class="btn" href="{{.BasePath}}/examples">See examples</a>
+        </div>
+        <div class="hero-install">
+{{template "code" `<script type="importmap">
+  { "imports": { "squire-rte": "https://wysiwyg.peterszarvas.hu/dist/squire.mjs" } }
+</script>
+<link rel="stylesheet" href="https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.css" />
+<script type="module" src="https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.js"></script>
+
+<vanilia-editor name="content"></vanilia-editor>`}}
+        </div>
+      </section>
+
+      <vanilia-editor class="home-editor" placeholder="Try it: write something, paste an image...">
+        <template>
+          <h2>Try it right here</h2>
+          <p>
+            This is the real editor. Select some text to get the <strong>floating menu</strong>, press
+            <code>Ctrl+K</code> for a link or <code>Ctrl+F</code> to find &amp; replace, and paste or drop an image, then
+            click it to <em>resize and align</em> it.
+          </p>
+          <ul>
+            <li>Undo / redo, headings, lists, quotes, code</li>
+            <li>Clean, semantic HTML output</li>
+          </ul>
+        </template>
+      </vanilia-editor>
+
+      <div class="features">
+        <div class="card">
+          <h3>Works like a form field</h3>
+          <p>Form-associated via <code>ElementInternals</code>: <code>name</code>, <code>required</code>, <code>FormData</code> and form reset just work.</p>
+        </div>
+        <div class="card">
+          <h3>No build step</h3>
+          <p>Native ES modules and an import map. About 42 kB gzipped in total, with Squire as a separate, cacheable file.</p>
+        </div>
+        <div class="card">
+          <h3>Images done properly</h3>
+          <p>Paste, drop or pick images, upload them to your endpoint, then drag-resize, align and add alt text.</p>
+        </div>
+        <div class="card">
+          <h3>Your design system</h3>
+          <p>Every color, font, size and radius is a <code>--ve-*</code> CSS variable. Light and dark mode included.</p>
+        </div>
+        <div class="card">
+          <h3>Your icons, your toolbar</h3>
+          <p>Replace any icon with your own markup, or hide the toolbar and build your own with <code>editor.exec()</code>.</p>
+        </div>
+        <div class="card">
+          <h3>Safe HTML</h3>
+          <p>Pasted content is sanitized in the browser, and a matching Go (bluemonday) policy is ready for your server.</p>
+        </div>
+      </div>
+
+      <h2 class="section-title">Three steps</h2>
+      <p class="section-lede">Map Squire, load the module and stylesheet, then use the element. That's the whole setup.</p>
+      <div class="steps">
+        <div class="card">
+          <h3>1. Load it</h3>
+{{template "code" `<script type="importmap">
+  { "imports": {
+    "squire-rte": "/vendor/squire.mjs",
+    "vanilia-editor": "/vendor/vanilia-editor.js"
+  } }
+</script>
+<link rel="stylesheet" href="/vendor/vanilia-editor.css" />
+<script type="module">import "vanilia-editor";</script>`}}
+        </div>
+        <div class="card">
+          <h3>2. Use it</h3>
+{{template "code" `<form method="post" action="/posts">
+  <vanilia-editor name="body" required></vanilia-editor>
+  <button>Save</button>
+</form>`}}
+        </div>
+        <div class="card">
+          <h3>3. Sanitize on save</h3>
+{{template "code" `// Go: reuse Vanilia's bluemonday policy
+clean := policy.Sanitize(r.FormValue("body"))`}}
+          <p class="hint">See <a href="{{.BasePath}}/docs#sanitize">server-side sanitization</a>.</p>
+        </div>
+      </div>
+    </main>
+    {{template "foot" .}}
+    <script type="module">import "vanilia-editor";</script>
+  </body>
+</html>
+{{end}}

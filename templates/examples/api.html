@@ -1,0 +1,29 @@
+<div class="row">
+  <button type="button" data-action="get">getHTML()</button>
+  <button type="button" data-action="set">setHTML()</button>
+  <button type="button" data-action="bold">exec("bold")</button>
+  <button type="button" data-action="disable">Toggle disabled</button>
+</div>
+<vanilia-editor id="api-editor">
+  <template><p>Use the buttons to read and change this editor from JavaScript.</p></template>
+</vanilia-editor>
+<pre class="output" id="api-output"></pre>
+
+<script type="module">
+  const editor = document.getElementById("api-editor");
+  const output = document.getElementById("api-output");
+
+  document.querySelector("[data-action=get]").onclick = () => {
+    output.textContent = editor.getHTML();
+  };
+  document.querySelector("[data-action=set]").onclick = () => {
+    editor.setHTML("<h2>Replaced</h2><p>Set at " + new Date().toLocaleTimeString() + "</p>");
+  };
+  document.querySelector("[data-action=bold]").onmousedown = (e) => e.preventDefault(); // keep the selection
+  document.querySelector("[data-action=bold]").onclick = () => editor.exec("bold");
+  document.querySelector("[data-action=disable]").onclick = () => editor.toggleAttribute("disabled");
+
+  editor.addEventListener("ve:update", (e) => {
+    output.textContent = `${e.detail.words} words · bold: ${e.detail.active.bold}`;
+  });
+</script>

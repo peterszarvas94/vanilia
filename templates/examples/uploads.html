@@ -1,0 +1,13 @@
+<!-- POSTs the raw file to upload-url, which must answer { "url": "..." } -->
+<vanilia-editor upload-url="api/upload" placeholder="Paste, drop or insert an image...">
+  <template><p>Drop an image here, paste one, or use the image button. Click it to resize and align.</p></template>
+</vanilia-editor>
+
+<!-- Or handle uploads yourself:
+<script type="module">
+  document.querySelector("vanilia-editor").onImageUpload = async (file) => {
+    const res = await fetch("/my/upload", { method: "POST", body: file });
+    return (await res.json()).url;
+  };
+</script>
+-->

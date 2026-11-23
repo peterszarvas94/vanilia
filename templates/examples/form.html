@@ -1,0 +1,23 @@
+<form id="post-form">
+  <label>
+    Title
+    <input name="title" value="Release notes" />
+  </label>
+  <vanilia-editor name="body" required placeholder="Write the post..."></vanilia-editor>
+  <div class="row">
+    <button type="submit">Submit</button>
+    <button type="reset">Reset</button>
+  </div>
+</form>
+<pre class="output" id="post-output"></pre>
+
+<script type="module">
+  const form = document.getElementById("post-form");
+  const output = document.getElementById("post-output");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault(); // a real form would just POST
+    output.textContent = JSON.stringify(Object.fromEntries(new FormData(form)), null, 2);
+  });
+  form.addEventListener("reset", () => (output.textContent = ""));
+</script>

@@ -98,6 +98,8 @@ The built-in icons are inlined Lucide-compatible SVGs (no icon library needed). 
 
 ## Local Development
 
+The Go server also hosts the project website: home (`/`), docs (`/docs`), examples (`/examples`) and the Go + Datastar demo (`/demo`). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Each example in `templates/examples/` is rendered live and shown as source from the same file; register new ones in `cmd/server/pages.go`.
+
 Start the Go + Datastar server:
 
 ```bash
