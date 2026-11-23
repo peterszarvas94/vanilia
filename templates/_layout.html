@@ -17,14 +17,23 @@
         "imports": {
           "squire-rte": "{{.BasePath}}/dist/squire.mjs",
           "vanilia-editor": "{{.BasePath}}/dist/vanilia-editor.js",
-          "datastar": "{{.BasePath}}/static/vendor/datastar.js"
+          "datastar": "{{.BasePath}}/static/vendor/datastar.js",
+          "site": "{{.BasePath}}/static/site.js"
         }
       }
     </script>
     <link rel="modulepreload" href="{{.BasePath}}/dist/squire.mjs" />
+    <link rel="modulepreload" href="{{.BasePath}}/dist/vanilia-editor.js" />
+    <link rel="modulepreload" href="{{.BasePath}}/static/vendor/datastar.js" />
+    <link rel="modulepreload" href="{{.BasePath}}/static/site.js" />
     <link rel="stylesheet" href="{{.BasePath}}/dist/vanilia-editor.css" />
     <link rel="stylesheet" href="{{.BasePath}}/static/site.css" />
-    <script type="module" src="{{.BasePath}}/static/site.js"></script>
+    <!-- The one module entry point: the editor first, so Datastar finds it defined -->
+    <script type="module">
+      import "vanilia-editor";
+      import "datastar";
+      import "site";
+    </script>
 {{end}}
 
 {{define "nav"}}
@@ -41,7 +50,10 @@
           <li><a href="{{.BasePath}}/demo" {{if eq .Active "demo"}}aria-current="page"{{end}}>Demo</a></li>
           <li><a href="https://github.com/peterszarvas94/vanilla-wysiwyg" target="_blank" rel="noopener noreferrer">GitHub</a></li>
         </ul>
-        <button type="button" class="icon-btn" data-theme-toggle aria-label="Toggle color theme" title="Theme: system">
+        <button type="button" class="icon-btn" aria-label="Toggle color theme"
+          data-signals:_theme="document.documentElement.dataset.theme || 'system'"
+          data-attr:title="'Theme: ' + $_theme"
+          data-on:click="$_theme = ({system: 'light', light: 'dark', dark: 'system'})[$_theme]; @theme($_theme)">
           <svg class="theme-icon theme-icon--system" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
           <svg class="theme-icon theme-icon--light" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
           <svg class="theme-icon theme-icon--dark" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3a6.5 6.5 0 1 0 9 9 9 9 0 1 1-9-9"/></svg>
@@ -59,4 +71,10 @@
     </footer>
 {{end}}
 
-{{define "code"}}<div class="code-block"><button type="button" class="copy-btn" data-copy>Copy</button><pre><code>{{.}}</code></pre></div>{{end}}
+{{define "code"}}<div class="code-block"><button type="button" class="copy-btn" data-on:click="@copy(el)">Copy</button><pre><code data-highlight>{{.}}</code></pre></div>{{end}}
+
+{{define "sidebar-toggle"}}<button type="button" class="sidebar-toggle" popovertarget="sidebar" aria-label="Open {{.}} menu">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span data-signals:_section="'{{.}}'" data-text="$_section">{{.}}</span>
+        <svg class="sidebar-toggle-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>{{end}}
