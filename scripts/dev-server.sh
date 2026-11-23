@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start and stop the Vanilla WYSIWYG (Go + Datastar) dev server persistently in the background.
+# Start and stop the Vanilia (Go + Datastar) dev server persistently in the background.
 # Usage: scripts/dev-server.sh {start|stop|restart|status|logs}
 set -euo pipefail
 
@@ -10,7 +10,7 @@ state="$root/.dev"
 logfile="$state/log"
 bin="$state/server"
 port="${PORT:-4173}"
-unit="vanilla-wysiwyg-dev-${port}"
+unit="vanilia-dev-${port}"
 
 host="$(tailscale status --json 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{console.log(JSON.parse(s)?.Self?.HostName||"")}catch{}})' 2>/dev/null || true)"
 host="${host:-$(hostname -s)}"
@@ -30,7 +30,7 @@ cmd_start() {
   systemctl --user reset-failed "${unit}.service" 2>/dev/null || true
   systemd-run --user \
     --unit="$unit" \
-    --description="Vanilla WYSIWYG Dev Server ($port)" \
+    --description="Vanilia Dev Server ($port)" \
     --working-directory="$root" \
     --setenv="PORT=$port" \
     --setenv="BIND=[::]:$port" \
