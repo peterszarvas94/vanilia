@@ -1,10 +1,70 @@
-import { isHeadingActive, setParagraph, toggleHeading } from "./headings.js";
+import type Squire from "squire-rte";
+import { isHeadingActive, setParagraph, toggleHeading, type HeadingLevel } from "./headings.js";
 
 /**
  * TipTap-inspired command & active-state adapter on top of Squire.
  */
 
-export function isActive(squire, name, attrs = {}) {
+/** Names accepted by `isActive()`. */
+export type FormatName =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "strike"
+  | "code"
+  | "link"
+  | "bulletList"
+  | "orderedList"
+  | "blockquote"
+  | "heading"
+  | "paragraph";
+
+/** Commands accepted by `editor.exec()`. */
+export type Command =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "strike"
+  | "code"
+  | "paragraph"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "bulletList"
+  | "orderedList"
+  | "blockquote"
+  | "hr"
+  | "alignLeft"
+  | "alignCenter"
+  | "alignRight"
+  | "clearFormatting"
+  | "undo"
+  | "redo"
+  | "makeLink"
+  | "removeLink";
+
+/** Which formats are active at the selection. */
+export interface ActiveState {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  code: boolean;
+  link: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+  blockquote: boolean;
+  paragraph: boolean;
+  h1: boolean;
+  h2: boolean;
+  h3: boolean;
+}
+
+export function isActive(
+  squire: Squire | null,
+  name: string,
+  attrs: { level?: HeadingLevel } = {},
+): boolean {
   if (!squire) return false;
   switch (name) {
     case "bold":
@@ -40,7 +100,7 @@ export function isActive(squire, name, attrs = {}) {
   }
 }
 
-export function getActiveState(squire) {
+export function getActiveState(squire: Squire | null): ActiveState {
   return {
     bold: isActive(squire, "bold"),
     italic: isActive(squire, "italic"),
@@ -58,22 +118,24 @@ export function getActiveState(squire) {
   };
 }
 
-export function execCommand(squire, command, arg) {
+export function execCommand(squire: Squire | null, command: string, arg?: string): void {
   if (!squire) return;
   switch (command) {
     case "bold":
-      isActive(squire, "bold") ? squire.removeBold() : squire.bold();
+      if (isActive(squire, "bold")) squire.removeBold();
+      else squire.bold();
       break;
     case "italic":
-      isActive(squire, "italic") ? squire.removeItalic() : squire.italic();
+      if (isActive(squire, "italic")) squire.removeItalic();
+      else squire.italic();
       break;
     case "underline":
-      isActive(squire, "underline") ? squire.removeUnderline() : squire.underline();
+      if (isActive(squire, "underline")) squire.removeUnderline();
+      else squire.underline();
       break;
     case "strike":
-      isActive(squire, "strike")
-        ? squire.changeFormat(null, { tag: "S" })
-        : squire.changeFormat({ tag: "S" }, null);
+      if (isActive(squire, "strike")) squire.changeFormat(null, { tag: "S" });
+      else squire.changeFormat({ tag: "S" }, null);
       break;
     case "code":
       squire.toggleCode();
@@ -91,13 +153,16 @@ export function execCommand(squire, command, arg) {
       toggleHeading(squire, 3);
       break;
     case "bulletList":
-      squire.hasFormat("UL") ? squire.removeList() : squire.makeUnorderedList();
+      if (squire.hasFormat("UL")) squire.removeList();
+      else squire.makeUnorderedList();
       break;
     case "orderedList":
-      squire.hasFormat("OL") ? squire.removeList() : squire.makeOrderedList();
+      if (squire.hasFormat("OL")) squire.removeList();
+      else squire.makeOrderedList();
       break;
     case "blockquote":
-      squire.hasFormat("BLOCKQUOTE") ? squire.decreaseQuoteLevel() : squire.increaseQuoteLevel();
+      if (squire.hasFormat("BLOCKQUOTE")) squire.decreaseQuoteLevel();
+      else squire.increaseQuoteLevel();
       break;
     case "hr":
       squire.insertHTML("<hr><p><br></p>");

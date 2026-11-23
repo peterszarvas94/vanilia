@@ -36,13 +36,13 @@
         <p class="lede">Everything you need to use <code>&lt;vanilia-editor&gt;</code>. It's a small library, so this is a short page.</p>
 
         <h2 id="install">Installation</h2>
-        <p>Vanilia ships as three static files:</p>
+        <p>Vanilia ships as one ES module and one stylesheet:</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>File</th><th>Size (gzip)</th><th>What</th></tr></thead>
             <tbody>
-              <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.js"><code>vanilia-editor.js</code></a></td><td>~20 kB</td><td>The element and its extensions (ES module)</td></tr>
-              <tr><td><a href="{{.BasePath}}/dist/squire.mjs"><code>squire.mjs</code></a></td><td>~18 kB</td><td>Pinned build of <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a> 2.4 (MIT), imported as <code>squire-rte</code></td></tr>
+              <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.js"><code>vanilia-editor.js</code></a></td><td>~44 kB</td><td>The element and its extensions, with a pinned <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a> 2.4.11 (MIT) built in. Readable, not minified.</td></tr>
+              <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a></td><td></td><td>TypeScript types (optional)</td></tr>
               <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.css"><code>vanilia-editor.css</code></a></td><td>~4 kB</td><td>All styles, in cascade layers</td></tr>
             </tbody>
           </table>
@@ -53,35 +53,32 @@
 {{template "code" `<script type="importmap">
   {
     "imports": {
-      "squire-rte": "https://vanilia.peterszarvas.hu/dist/squire.mjs",
       "vanilia-editor": "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"
     }
   }
 </script>
-<link rel="modulepreload" href="https://vanilia.peterszarvas.hu/dist/squire.mjs" />
 <link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
 <script type="module">import "vanilia-editor";</script>`}}
 
         <h3>Option B: copy them into your project</h3>
-        <p>Download the three files into your static folder (for example <code>/static/vendor/</code>) and use the same snippet with local paths:</p>
+        <p>Download the files into your static folder (for example <code>/static/vendor/</code>) and use the same snippet with local paths:</p>
 {{template "code" `curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.js
 curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.css
-curl -LO https://vanilia.peterszarvas.hu/dist/squire.mjs`}}
+curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.d.ts  # optional, for types`}}
         <div class="callout">
           The import map has to come before any module script that imports Vanilia. Put it once in your base layout.
         </div>
 
         <h3>Option C: with a bundler</h3>
         <p>
-          With Vite, esbuild or similar, skip the import map: install <code>squire-rte</code> from npm, and the bare
-          <code>import Squire from "squire-rte"</code> inside <code>vanilia-editor.js</code> resolves from
-          <code>node_modules</code>.
+          The module has no imports of its own, so a bundler needs nothing extra: import the copied files, and keep
+          <code>vanilia-editor.d.ts</code> next to the module for types.
         </p>
-{{template "code" `npm install squire-rte
-
-// main.js
+{{template "code" `// main.ts
 import "./vendor/vanilia-editor.js";
-import "./vendor/vanilia-editor.css";`}}
+import "./vendor/vanilia-editor.css";
+
+const editor = document.querySelector("vanilia-editor"); // VaniliaEditorElement | null`}}
 
         <h2 id="usage">Usage</h2>
         <p>Use the element anywhere. Put initial content in a <code>&lt;template&gt;</code> (or the <code>value</code> attribute):</p>

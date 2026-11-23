@@ -1,5 +1,6 @@
-import { icon } from "../icons.js";
-import { execCommand, getActiveState } from "./formatting.js";
+import type Squire from "squire-rte";
+import { icon, type IconRenderer } from "../icons.js";
+import { execCommand, getActiveState, type ActiveState } from "./formatting.js";
 
 /**
  * Floating selection toolbar powered by native Popover API (`popover="manual"`)
@@ -9,6 +10,25 @@ import { execCommand, getActiveState } from "./formatting.js";
 const SUPPORTS_ANCHOR = typeof CSS !== "undefined" && CSS.supports("anchor-name: --a");
 let anchorCounter = 0;
 
+export interface BubbleMenuOptions {
+  squire: Squire;
+  /** The editable element the selection must be inside. */
+  surface: HTMLElement;
+  /** Where the menu and its anchor are mounted. */
+  overlayHost: HTMLElement;
+  onCommand?: () => void;
+  onOpenLink?: () => void;
+  isImageSelected?: () => boolean;
+  renderIcon?: IconRenderer;
+}
+
+export interface BubbleMenuExtension {
+  name: "bubbleMenu";
+  hide(): void;
+  update(): void;
+  destroy(): void;
+}
+
 export function createBubbleMenuExtension({
   squire,
   surface,
@@ -17,7 +37,7 @@ export function createBubbleMenuExtension({
   onOpenLink,
   isImageSelected,
   renderIcon = icon,
-}) {
+}: BubbleMenuOptions): BubbleMenuExtension {
   const anchorName = `--ve-sel-anchor-${++anchorCounter}`;
 
   const anchor = document.createElement("div");
@@ -55,9 +75,9 @@ export function createBubbleMenuExtension({
   });
 
   menu.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-cmd]");
-    if (!btn) return;
-    const cmd = btn.dataset.cmd;
+    const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-cmd]");
+    const cmd = btn?.dataset.cmd;
+    if (!cmd) return;
     if (cmd === "link") {
       hide();
       onOpenLink?.();
@@ -71,8 +91,8 @@ export function createBubbleMenuExtension({
 
   function syncActive() {
     const active = getActiveState(squire);
-    for (const btn of menu.querySelectorAll("button[data-cmd]")) {
-      const isOn = Boolean(active[btn.dataset.cmd]);
+    for (const btn of menu.querySelectorAll<HTMLButtonElement>("button[data-cmd]")) {
+      const isOn = Boolean(active[btn.dataset.cmd as keyof ActiveState]);
       btn.classList.toggle("is-active", isOn);
       btn.setAttribute("aria-pressed", String(isOn));
     }

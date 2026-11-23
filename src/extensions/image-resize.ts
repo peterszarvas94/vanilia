@@ -1,4 +1,5 @@
-import { icon } from "../icons.js";
+import type Squire from "squire-rte";
+import { icon, type IconRenderer } from "../icons.js";
 import { isSafeUrl } from "../sanitizer.js";
 
 /**
@@ -20,10 +21,55 @@ const HANDLES = [
 
 const WIDTH_PRESETS = ["25%", "50%", "75%", "100%"];
 
-function fileToDataUrl(file) {
+export type ImageAlign = "left" | "center" | "right";
+
+/** Uploads an image file and resolves to its public URL. */
+export type UploadHandler = (file: File) => Promise<string>;
+
+export interface ImageResizeOptions {
+  squire: Squire;
+  /** The editable element containing the images. */
+  surface: HTMLElement;
+  /** Where the selection box is mounted. */
+  overlayHost: HTMLElement;
+  /** The editor's main toolbar; its align buttons keep the image selected. */
+  editorToolbar?: HTMLElement | null;
+  onChange?: () => void;
+  onSelectChange?: (img: HTMLImageElement | null) => void;
+  getUploadHandler?: () => UploadHandler | null | undefined;
+  onStatus?: (message: string) => void;
+  renderIcon?: IconRenderer;
+}
+
+export interface ImageResizeExtension {
+  name: "imageResize";
+  selectImage(img: HTMLImageElement): void;
+  deselect(): void;
+  applyAlignment(align: ImageAlign): void;
+  applyWidth(width: string): void;
+  getAlignment(): ImageAlign | null;
+  insertImageFile(file: File): Promise<HTMLImageElement | null>;
+  insertImageUrl(url: string, alt?: string): HTMLImageElement | null;
+  getSelectedImage(): HTMLImageElement | null;
+  destroy(): void;
+}
+
+interface DragState {
+  handle: HTMLElement;
+  pos: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  startWidth: number;
+  startHeight: number;
+  maxWidth: number;
+  ratio: number;
+}
+
+function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
     reader.onerror = () => reject(reader.error || new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
@@ -39,14 +85,14 @@ export function createImageResizeExtension({
   getUploadHandler,
   onStatus,
   renderIcon = icon,
-}) {
+}: ImageResizeOptions): ImageResizeExtension {
   // Disable Squire's built-in DOM-polluting image resizer cleanly
   if (squire._imageResizer && typeof squire._imageResizer.destroy === "function") {
     squire._imageResizer.destroy();
   }
 
-  let selectedImg = null;
-  let dragState = null;
+  let selectedImg: HTMLImageElement | null = null;
+  let dragState: DragState | null = null;
   let altEditing = false;
 
   // Selection box & handles (inside overlayHost, outside contenteditable)
@@ -59,7 +105,6 @@ export function createImageResizeExtension({
   dimBadge.hidden = true;
   box.appendChild(dimBadge);
 
-  const handleEls = new Map();
   for (const { pos, cursor } of HANDLES) {
     const h = document.createElement("button");
     h.type = "button";
@@ -71,7 +116,6 @@ export function createImageResizeExtension({
     h.addEventListener("pointerdown", onHandlePointerDown);
     h.addEventListener("touchstart", preventTouchScroll, { passive: false });
     box.appendChild(h);
-    handleEls.set(pos, h);
   }
   overlayHost.appendChild(box);
 
@@ -94,8 +138,8 @@ export function createImageResizeExtension({
           <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="Cancel">${renderIcon("x", 14)}</button>
         </form>
       `;
-      const form = toolbar.querySelector("form");
-      const input = form.querySelector("input");
+      const form = toolbar.querySelector("form")!;
+      const input = form.querySelector("input")!;
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (!selectedImg) return;
@@ -108,7 +152,7 @@ export function createImageResizeExtension({
         positionOverlay();
         onChange?.();
       });
-      toolbar.querySelector('[data-action="cancel-alt"]').addEventListener("click", () => {
+      toolbar.querySelector('[data-action="cancel-alt"]')!.addEventListener("click", () => {
         altEditing = false;
         renderToolbar();
         positionOverlay();
@@ -142,18 +186,18 @@ export function createImageResizeExtension({
 
   toolbar.addEventListener("mousedown", (e) => {
     // Allow focusing the alt input, prevent stealing focus on buttons
-    if (e.target.closest("input")) return;
+    if ((e.target as Element).closest("input")) return;
     e.preventDefault();
   });
 
   toolbar.addEventListener("click", (e) => {
-    const btn = e.target.closest("button");
+    const btn = (e.target as Element).closest("button");
     if (!btn || !selectedImg) return;
 
     if (btn.dataset.width) {
       applyWidth(btn.dataset.width);
     } else if (btn.dataset.align) {
-      applyAlignment(btn.dataset.align);
+      applyAlignment(btn.dataset.align as ImageAlign);
     } else if (btn.dataset.action === "edit-alt") {
       altEditing = true;
       renderToolbar();
@@ -163,13 +207,13 @@ export function createImageResizeExtension({
     }
   });
 
-  function inferAlign(img) {
+  function inferAlign(img: HTMLImageElement): ImageAlign {
     if (img.style.marginLeft === "auto" && img.style.marginRight === "auto") return "center";
     if (img.style.marginLeft === "auto") return "right";
     return "left";
   }
 
-  function applyWidth(widthValue) {
+  function applyWidth(widthValue: string) {
     if (!selectedImg) return;
     squire.saveUndoState();
     selectedImg.style.width = widthValue;
@@ -181,7 +225,7 @@ export function createImageResizeExtension({
     onChange?.();
   }
 
-  function applyAlignment(align) {
+  function applyAlignment(align: ImageAlign) {
     if (!selectedImg) return;
     squire.saveUndoState();
     selectedImg.setAttribute("data-align", align);
@@ -209,14 +253,19 @@ export function createImageResizeExtension({
     deselect();
     img.remove();
     // Ensure empty paragraph still has a <br> sentinel
-    if (parent && parent !== surface && !parent.textContent && !parent.querySelector("img, br")) {
+    if (
+      parent instanceof Element &&
+      parent !== surface &&
+      !parent.textContent &&
+      !parent.querySelector("img, br")
+    ) {
       parent.appendChild(document.createElement("br"));
     }
     squire.focus();
     onChange?.();
   }
 
-  function selectImage(img) {
+  function selectImage(img: HTMLImageElement) {
     if (!img || !surface.contains(img)) return;
     selectedImg = img;
     altEditing = false;
@@ -280,18 +329,20 @@ export function createImageResizeExtension({
     toolbar.style.left = `${Math.round(left)}px`;
   }
 
-  function onHandlePointerDown(e) {
+  function onHandlePointerDown(e: PointerEvent) {
     if (!selectedImg) return;
     e.preventDefault();
     e.stopPropagation();
 
-    const handle = e.currentTarget;
-    const pos = handle.dataset.handle;
+    const handle = e.currentTarget as HTMLElement;
+    const pos = handle.dataset.handle ?? "";
     const imgRect = selectedImg.getBoundingClientRect();
     const surfaceStyle = getComputedStyle(surface);
     const maxWidth = Math.max(
       MIN_WIDTH,
-      surface.clientWidth - parseFloat(surfaceStyle.paddingLeft) - parseFloat(surfaceStyle.paddingRight),
+      surface.clientWidth -
+        parseFloat(surfaceStyle.paddingLeft) -
+        parseFloat(surfaceStyle.paddingRight),
     );
     const ratio =
       selectedImg.naturalWidth && selectedImg.naturalHeight
@@ -325,7 +376,7 @@ export function createImageResizeExtension({
     updateBadge(imgRect.width, imgRect.height, maxWidth);
   }
 
-  function onHandlePointerMove(e) {
+  function onHandlePointerMove(e: PointerEvent) {
     if (!dragState || !selectedImg) return;
     e.preventDefault();
     const dx = e.clientX - dragState.startX;
@@ -359,7 +410,7 @@ export function createImageResizeExtension({
     positionOverlay();
   }
 
-  function preventTouchScroll(e) {
+  function preventTouchScroll(e: Event) {
     e.preventDefault();
   }
 
@@ -390,14 +441,14 @@ export function createImageResizeExtension({
     endDrag({ commit: true });
   }
 
-  function updateBadge(w, h, maxWidth) {
+  function updateBadge(w: number, h: number, maxWidth: number) {
     const pct = Math.min(100, Math.round((w / maxWidth) * 100));
     dimBadge.textContent = `${Math.round(w)} × ${Math.round(h)} px · ${pct}%`;
   }
 
   // Click selection & outside dismissal
-  function onSurfaceClick(e) {
-    const img = e.target.closest("img");
+  function onSurfaceClick(e: MouseEvent) {
+    const img = (e.target as Element).closest("img");
     if (img && surface.contains(img)) {
       e.preventDefault();
       selectImage(img);
@@ -406,19 +457,19 @@ export function createImageResizeExtension({
     }
   }
 
-  function onDocPointerDown(e) {
+  function onDocPointerDown(e: PointerEvent) {
     if (!selectedImg) return;
-    const path = e.composedPath ? e.composedPath() : [e.target];
+    const path = e.composedPath();
     if (path.includes(selectedImg) || path.includes(box) || path.includes(toolbar)) return;
     // Keep image selected when clicking alignment controls in the main editor toolbar
     if (editorToolbar && path.includes(editorToolbar)) {
-      const alignBtn = e.target?.closest?.("button[data-cmd^=align]");
+      const alignBtn = (e.target as Element | null)?.closest("button[data-cmd^=align]");
       if (alignBtn) return;
     }
     deselect();
   }
 
-  function onDocKeyDown(e) {
+  function onDocKeyDown(e: KeyboardEvent) {
     if (!selectedImg || altEditing) return;
     if (e.key === "Escape") {
       e.preventDefault();
@@ -440,7 +491,7 @@ export function createImageResizeExtension({
   }
 
   // Image upload / paste / drag-and-drop
-  async function insertImageFile(file) {
+  async function insertImageFile(file: File): Promise<HTMLImageElement | null> {
     if (!file || !file.type.startsWith("image/")) return null;
     onStatus?.(`Uploading ${file.name || "image"}...`);
     try {
@@ -460,15 +511,18 @@ export function createImageResizeExtension({
       }
       return img;
     } catch (err) {
-      onStatus?.(err?.message || "Image upload failed");
+      onStatus?.((err instanceof Error && err.message) || "Image upload failed");
       setTimeout(() => onStatus?.(""), 3000);
       return null;
     }
   }
 
-  function insertImageUrl(url, alt = "") {
+  function insertImageUrl(url: string, alt = ""): HTMLImageElement | null {
     if (!isSafeUrl(url, "image")) return null;
-    const img = squire.insertImage(url.trim(), { alt: alt.trim(), style: "width: 75%; height: auto;" });
+    const img = squire.insertImage(url.trim(), {
+      alt: alt.trim(),
+      style: "width: 75%; height: auto;",
+    });
     onChange?.();
     if (img) {
       const selectNow = () => selectImage(img);
@@ -478,41 +532,43 @@ export function createImageResizeExtension({
     return img;
   }
 
-  function onPasteImage(e) {
-    const items = e.detail?.clipboardData?.items;
+  function onPasteImage(e: Event) {
+    const items = (e as CustomEvent<{ clipboardData?: DataTransfer }>).detail?.clipboardData?.items;
     if (!items) return;
     for (const item of items) {
       if (item.type && item.type.startsWith("image/")) {
         const file = item.getAsFile();
         if (file) {
-          insertImageFile(file);
+          void insertImageFile(file);
           return;
         }
       }
     }
   }
 
-  function onDragOver(e) {
+  function onDragOver(e: DragEvent) {
     if (!e.dataTransfer?.types?.includes("Files")) return;
     e.preventDefault();
     surface.classList.add("ve-drag-over");
   }
 
-  function onDragLeave(e) {
-    if (!surface.contains(e.relatedTarget)) {
+  function onDragLeave(e: DragEvent) {
+    if (!surface.contains(e.relatedTarget as Node | null)) {
       surface.classList.remove("ve-drag-over");
     }
   }
 
-  function onDrop(e) {
+  function onDrop(e: DragEvent) {
     surface.classList.remove("ve-drag-over");
-    const files = Array.from(e.dataTransfer?.files || []).filter((f) => f.type.startsWith("image/"));
+    const files = Array.from(e.dataTransfer?.files || []).filter((f) =>
+      f.type.startsWith("image/"),
+    );
     if (!files.length) return;
     e.preventDefault();
     e.stopPropagation();
     deselect();
     for (const file of files) {
-      insertImageFile(file);
+      void insertImageFile(file);
     }
   }
 
@@ -541,7 +597,10 @@ export function createImageResizeExtension({
     deselect,
     applyAlignment,
     applyWidth,
-    getAlignment: () => (selectedImg ? selectedImg.getAttribute("data-align") || inferAlign(selectedImg) : null),
+    getAlignment: () =>
+      selectedImg
+        ? (selectedImg.getAttribute("data-align") as ImageAlign | null) || inferAlign(selectedImg)
+        : null,
     insertImageFile,
     insertImageUrl,
     getSelectedImage: () => selectedImg,
@@ -563,6 +622,10 @@ export function createImageResizeExtension({
   };
 }
 
-function escapeAttr(str) {
-  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function escapeAttr(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

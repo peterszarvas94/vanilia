@@ -10,7 +10,6 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=build /out/app ./app
 COPY templates/ ./templates/
-COPY src/ ./src/
 COPY dist/ ./dist/
 COPY static/ ./static/
 COPY assets/ ./assets/

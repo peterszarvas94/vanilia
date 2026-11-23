@@ -2,6 +2,7 @@
  * Zero-dependency allowlist HTML sanitizer for Squire (`sanitizeToDOMFragment`)
  * and semantic HTML cleanup / pretty printing.
  */
+import type Squire from "squire-rte";
 
 const ALLOWED_TAGS = new Set([
   "P",
@@ -60,7 +61,7 @@ const DROP_CONTENT_TAGS = new Set([
   "HEAD",
 ]);
 
-const ALLOWED_ATTRS = {
+const ALLOWED_ATTRS: Record<string, Set<string> | undefined> = {
   "*": new Set(["dir", "class", "style"]),
   A: new Set(["href", "title", "target", "rel"]),
   IMG: new Set(["src", "alt", "title", "width", "height", "data-align", "data-width"]),
@@ -85,17 +86,21 @@ const ALLOWED_STYLE_PROPS = new Set([
 ]);
 
 const SAFE_LINK_PROTOCOLS = /^(https?:|mailto:|tel:|#|\/(?!\/))/i;
-const SAFE_IMG_PROTOCOLS = /^(https?:|\/(?!\/)|blob:|data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,)/i;
+const SAFE_IMG_PROTOCOLS =
+  /^(https?:|\/(?!\/)|blob:|data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,)/i;
 
-export function isSafeUrl(url, kind = "link") {
+/** Whether a URL is safe to keep in an `href` (`"link"`) or `src` (`"image"`). */
+export function isSafeUrl(url: unknown, kind: "link" | "image" = "link"): boolean {
   if (!url || typeof url !== "string") return false;
+  // Strip control characters browsers ignore inside URLs (e.g. "java\u0000script:")
+  // oxlint-disable-next-line no-control-regex
   const trimmed = url.trim().replace(/[\u0000-\u001F\u007F]+/g, "");
   return kind === "image" ? SAFE_IMG_PROTOCOLS.test(trimmed) : SAFE_LINK_PROTOCOLS.test(trimmed);
 }
 
-function sanitizeStyle(rawStyle) {
+function sanitizeStyle(rawStyle: string): string {
   if (!rawStyle) return "";
-  const kept = [];
+  const kept: string[] = [];
   for (const decl of rawStyle.split(";")) {
     const colon = decl.indexOf(":");
     if (colon === -1) continue;
@@ -108,12 +113,12 @@ function sanitizeStyle(rawStyle) {
   return kept.join("; ");
 }
 
-function sanitizeNode(node, doc) {
+function sanitizeNode(node: Node, doc: Document): Node | null {
   if (node.nodeType === Node.TEXT_NODE) {
     return doc.createTextNode(node.nodeValue || "");
   }
 
-  if (node.nodeType !== Node.ELEMENT_NODE) {
+  if (!(node instanceof Element)) {
     return null;
   }
 
@@ -133,7 +138,7 @@ function sanitizeNode(node, doc) {
   }
 
   const el = doc.createElement(tag.toLowerCase());
-  const globalAllowed = ALLOWED_ATTRS["*"];
+  const globalAllowed = ALLOWED_ATTRS["*"]!;
   const tagAllowed = ALLOWED_ATTRS[tag];
 
   for (const attr of Array.from(node.attributes)) {
@@ -197,8 +202,8 @@ function sanitizeNode(node, doc) {
  * Squire-compatible `sanitizeToDOMFragment(html, editor)` callback.
  * Uses an inert <template> (never executes scripts or loads remote images while parsing).
  */
-export function sanitizeToDOMFragment(html, editor) {
-  const doc = editor?._doc || document;
+export function sanitizeToDOMFragment(html: string, editor?: Squire): DocumentFragment {
+  const doc = editor?.getRoot().ownerDocument ?? document;
   const tpl = doc.createElement("template");
   tpl.innerHTML = html || "";
 
@@ -213,11 +218,11 @@ export function sanitizeToDOMFragment(html, editor) {
 /**
  * Clean exported HTML (normalizes Squire's <b>/<i> -> <strong>/<em> and strips empty artifacts).
  */
-export function normalizeExportHTML(rawHtml) {
+export function normalizeExportHTML(rawHtml: string): string {
   const tpl = document.createElement("template");
   tpl.innerHTML = rawHtml || "";
 
-  const renameTag = (el, newTag) => {
+  const renameTag = (el: Element, newTag: string) => {
     const replacement = document.createElement(newTag);
     for (const attr of Array.from(el.attributes)) {
       replacement.setAttribute(attr.name, attr.value);
@@ -242,17 +247,15 @@ export function normalizeExportHTML(rawHtml) {
 /**
  * Lightweight zero-dependency HTML pretty printer for live preview inspection.
  */
-export function formatHTML(html) {
+export function formatHTML(html: string): string {
   if (!html) return "";
   const containerTags = /^(ul|ol|blockquote|table|thead|tbody|tfoot|tr|figure)$/i;
   const leafBlockTags = /^(p|h[1-6]|li|pre|hr|div|th|td|figcaption)$/i;
-  const tokens = html
-    .replace(/>\s+</g, "><")
-    .match(/<!--[\s\S]*?-->|<\/?[^>]+>|[^<]+/g);
+  const tokens = html.replace(/>\s+</g, "><").match(/<!--[\s\S]*?-->|<\/?[^>]+>|[^<]+/g);
   if (!tokens) return html;
 
   let indent = 0;
-  const lines = [];
+  const lines: string[] = [];
   let inPre = false;
 
   for (const token of tokens) {

@@ -1,63 +1,97 @@
 import Squire from "squire-rte";
-import { icon, onIconsChange, setIcons, ICON_NAMES } from "./icons.js";
+import { icon, onIconsChange, setIcons, ICON_NAMES, type IconMap, type IconName } from "./icons.js";
+import { formatHTML, isSafeUrl, normalizeExportHTML, sanitizeToDOMFragment } from "./sanitizer.js";
 import {
-  formatHTML,
-  isSafeUrl,
-  normalizeExportHTML,
-  sanitizeToDOMFragment,
-} from "./sanitizer.js";
-import { execCommand, getActiveState, isActive } from "./extensions/formatting.js";
-import { createImageResizeExtension } from "./extensions/image-resize.js";
-import { createBubbleMenuExtension } from "./extensions/bubble-menu.js";
-import { createFindReplaceExtension } from "./extensions/find-replace.js";
+  execCommand,
+  getActiveState,
+  isActive,
+  type ActiveState,
+  type Command,
+  type FormatName,
+} from "./extensions/formatting.js";
+import type { HeadingLevel } from "./extensions/headings.js";
+import {
+  createImageResizeExtension,
+  type ImageResizeExtension,
+  type UploadHandler,
+} from "./extensions/image-resize.js";
+import { createBubbleMenuExtension, type BubbleMenuExtension } from "./extensions/bubble-menu.js";
+import {
+  createFindReplaceExtension,
+  type FindReplaceExtension,
+} from "./extensions/find-replace.js";
+
+/** Commands accepted by `editor.exec()`: formatting commands plus the link, image and find UIs. */
+export type EditorCommand = Command | "link" | "image" | "find";
+
+/** Active formats at the selection, including alignment. */
+export interface EditorActiveState extends ActiveState {
+  alignLeft: boolean;
+  alignCenter: boolean;
+  alignRight: boolean;
+}
+
+/** `detail` of the `ve:update` / `editorupdate` events. */
+export interface VaniliaEditorDetail {
+  html: string;
+  text: string;
+  words: number;
+  images: number;
+  active: EditorActiveState;
+  canUndo: boolean;
+  canRedo: boolean;
+}
 
 /**
  * <vanilia-editor> — Form-Associated Custom Element (ElementInternals)
  * powered by vendored Fastmail Squire + modular modern Web/CSS API extensions.
  */
-const BaseHTMLElement = typeof HTMLElement !== "undefined" ? HTMLElement : class {};
+// Lets the module load where HTMLElement is missing (e.g. server-side imports)
+const BaseHTMLElement = (
+  typeof HTMLElement !== "undefined" ? HTMLElement : class {}
+) as typeof HTMLElement;
 
 export class VaniliaEditorElement extends BaseHTMLElement {
   static formAssociated = true;
   static observedAttributes = ["placeholder", "disabled", "required", "upload-url", "toolbar"];
 
   /** Override icons for every editor on the page (see `setIcons` in icons.js). */
-  static setIcons(map) {
+  static setIcons(map: IconMap): void {
     setIcons(map);
   }
 
   /** Names of all overridable icons. */
-  static get iconNames() {
+  static get iconNames(): readonly IconName[] {
     return ICON_NAMES;
   }
 
-  #iconOverrides = new Map();
-  #unsubscribeIcons = null;
-  #icon = (name, size) => icon(name, size, this.#iconOverrides);
+  #iconOverrides = new Map<string, string>();
+  #unsubscribeIcons: (() => void) | null = null;
+  #icon = (name: string, size?: number) => icon(name, size, this.#iconOverrides);
 
-  #internals;
-  #squire = null;
-  #extensions = [];
-  #imageResize = null;
-  #bubbleMenu = null;
-  #findReplace = null;
+  #internals: ElementInternals;
+  #squire: Squire | null = null;
+  #extensions: { destroy(): void }[] = [];
+  #imageResize: ImageResizeExtension | null = null;
+  #bubbleMenu: BubbleMenuExtension | null = null;
+  #findReplace: FindReplaceExtension | null = null;
 
-  #root = null;
-  #toolbar = null;
-  #surface = null;
-  #overlayHost = null;
-  #statusEl = null;
-  #linkPopover = null;
-  #imagePopover = null;
-  #fileInput = null;
+  #root: HTMLElement | null = null;
+  #toolbar: HTMLElement | null = null;
+  #surface: HTMLElement | null = null;
+  #overlayHost: HTMLElement | null = null;
+  #statusEl: HTMLElement | null = null;
+  #linkPopover: HTMLElement | null = null;
+  #imagePopover: HTMLElement | null = null;
+  #fileInput: HTMLInputElement | null = null;
 
   #initialHTML = "";
-  #pendingValue = null;
-  #savedRange = null;
+  #pendingValue: string | null = null;
+  #savedRange: Range | null = null;
   #canUndo = false;
   #canRedo = false;
   #mounted = false;
-  #uploadHandler = null;
+  #uploadHandler: UploadHandler | null = null;
 
   constructor() {
     super();
@@ -66,22 +100,22 @@ export class VaniliaEditorElement extends BaseHTMLElement {
   }
 
   /** Optional JS hook: `(file: File) => Promise<string>` returning an image URL */
-  get onImageUpload() {
+  get onImageUpload(): UploadHandler | null {
     return this.#uploadHandler;
   }
 
-  set onImageUpload(fn) {
+  set onImageUpload(fn: UploadHandler | null) {
     this.#uploadHandler = typeof fn === "function" ? fn : null;
   }
 
-  get value() {
+  get value(): string {
     if (!this.#squire) {
       return this.#pendingValue ?? this.getAttribute("value") ?? "";
     }
     return this.getHTML();
   }
 
-  set value(html) {
+  set value(html: string | null | undefined) {
     const str = html == null ? "" : String(html);
     if (!this.#squire) {
       this.#pendingValue = str;
@@ -90,23 +124,23 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     this.setHTML(str);
   }
 
-  get form() {
+  get form(): HTMLFormElement | null {
     return this.#internals.form;
   }
 
-  get validity() {
+  get validity(): ValidityState {
     return this.#internals.validity;
   }
 
-  get validationMessage() {
+  get validationMessage(): string {
     return this.#internals.validationMessage;
   }
 
-  checkValidity() {
+  checkValidity(): boolean {
     return this.#internals.checkValidity();
   }
 
-  reportValidity() {
+  reportValidity(): boolean {
     return this.#internals.reportValidity();
   }
 
@@ -117,7 +151,9 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     }
 
     // Declarative per-editor icon overrides: <template data-ve-icon="bold">...</template>
-    for (const tpl of this.querySelectorAll(":scope > template[data-ve-icon]")) {
+    for (const tpl of this.querySelectorAll<HTMLTemplateElement>(
+      ":scope > template[data-ve-icon]",
+    )) {
       const name = tpl.dataset.veIcon;
       if (name) this.#iconOverrides.set(name, tpl.innerHTML.trim());
       tpl.remove();
@@ -155,7 +191,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     this.#teardown();
   }
 
-  attributeChangedCallback(name, _oldVal, newVal) {
+  attributeChangedCallback(name: string, _oldVal: string | null, newVal: string | null) {
     if (!this.#mounted) return;
     if (name === "placeholder" && this.#surface) {
       this.#surface.dataset.placeholder = newVal || "Start writing...";
@@ -168,7 +204,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     }
   }
 
-  formDisabledCallback(disabled) {
+  formDisabledCallback(disabled: boolean) {
     this.#applyDisabled(disabled);
   }
 
@@ -176,7 +212,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     this.setHTML(this.#initialHTML || "");
   }
 
-  formStateRestoreCallback(state) {
+  formStateRestoreCallback(state: unknown) {
     if (typeof state === "string") {
       this.setHTML(state);
     }
@@ -184,25 +220,29 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
   // ---- Public API ----
 
-  getHTML() {
+  getHTML(): string {
     if (!this.#squire) return this.#pendingValue || "";
     const normalized = normalizeExportHTML(this.#squire.getHTML());
     // Treat empty placeholder paragraph as empty string
-    if (normalized === "<p><br></p>" || normalized === "<p></p>" || normalized === "<div><br></div>") {
+    if (
+      normalized === "<p><br></p>" ||
+      normalized === "<p></p>" ||
+      normalized === "<div><br></div>"
+    ) {
       return "";
     }
     return normalized;
   }
 
-  getFormattedHTML() {
+  getFormattedHTML(): string {
     return formatHTML(this.getHTML());
   }
 
-  getText() {
+  getText(): string {
     return (this.#surface?.textContent || "").trim();
   }
 
-  setHTML(html, { silent = false } = {}) {
+  setHTML(html: string, { silent = false }: { silent?: boolean } = {}): void {
     if (!this.#squire) {
       this.#pendingValue = html || "";
       return;
@@ -215,7 +255,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     else this.#emitUpdate();
   }
 
-  exec(command, arg) {
+  exec(command: EditorCommand, arg?: string): void {
     if (!this.#squire || this.hasAttribute("disabled")) return;
     if (command === "link") {
       this.#openLinkPopover();
@@ -230,7 +270,8 @@ export class VaniliaEditorElement extends BaseHTMLElement {
       return;
     }
     if (command === "alignLeft" || command === "alignCenter" || command === "alignRight") {
-      const align = command === "alignCenter" ? "center" : command === "alignRight" ? "right" : "left";
+      const align =
+        command === "alignCenter" ? "center" : command === "alignRight" ? "right" : "left";
       const targetImg = this.#imageResize?.getSelectedImage() || this.#findImageOnlyBlock();
       if (targetImg) {
         if (!this.#imageResize?.getSelectedImage()) {
@@ -247,7 +288,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     this.#emitUpdate();
   }
 
-  isActive(name, attrs) {
+  isActive(name: FormatName, attrs?: { level?: HeadingLevel }): boolean {
     return isActive(this.#squire, name, attrs);
   }
 
@@ -255,7 +296,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
    * Override icons for this editor only. Pass `null` for a name to fall back
    * to the global `setIcons()` registry / built-in icon.
    */
-  setIcons(map = {}) {
+  setIcons(map: IconMap = {}): void {
     for (const [name, markup] of Object.entries(map)) {
       if (markup == null || markup === "") this.#iconOverrides.delete(name);
       else this.#iconOverrides.set(name, String(markup));
@@ -263,11 +304,11 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     this.#refreshIcons();
   }
 
-  insertImage(url, alt = "") {
-    return this.#imageResize?.insertImageUrl(url, alt);
+  insertImage(url: string, alt = ""): HTMLImageElement | null {
+    return this.#imageResize?.insertImageUrl(url, alt) ?? null;
   }
 
-  focus() {
+  override focus(): void {
     this.#squire?.focus();
   }
 
@@ -385,24 +426,29 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
     this.appendChild(root);
 
+    const toolbar = root.querySelector<HTMLElement>(".ve-toolbar")!;
+    toolbar.hidden = this.getAttribute("toolbar") === "none";
+
     this.#root = root;
-    this.#toolbar = root.querySelector(".ve-toolbar");
-    this.#toolbar.hidden = this.getAttribute("toolbar") === "none";
-    this.#surface = root.querySelector(".ve-surface");
-    this.#overlayHost = root.querySelector(".ve-stage");
-    this.#statusEl = root.querySelector("[data-status]");
-    this.#linkPopover = root.querySelector("[data-link-popover]");
-    this.#imagePopover = root.querySelector("[data-image-popover]");
-    this.#fileInput = root.querySelector("[data-file-input]");
+    this.#toolbar = toolbar;
+    this.#surface = root.querySelector<HTMLElement>(".ve-surface");
+    this.#overlayHost = root.querySelector<HTMLElement>(".ve-stage");
+    this.#statusEl = root.querySelector<HTMLElement>("[data-status]");
+    this.#linkPopover = root.querySelector<HTMLElement>("[data-link-popover]");
+    this.#imagePopover = root.querySelector<HTMLElement>("[data-image-popover]");
+    this.#fileInput = root.querySelector<HTMLInputElement>("[data-file-input]");
 
     this.#bindUIEvents();
   }
 
   #initEditor() {
-    this.#squire = new Squire(this.#surface, {
+    const surface = this.#surface!;
+    const overlayHost = this.#overlayHost!;
+    const squire = new Squire(surface, {
       blockTag: "P",
       sanitizeToDOMFragment,
     });
+    this.#squire = squire;
 
     const onEditorMutate = () => {
       this.#syncFormState();
@@ -412,9 +458,9 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
     // Custom TipTap-style Image Resize & Upload extension
     this.#imageResize = createImageResizeExtension({
-      squire: this.#squire,
-      surface: this.#surface,
-      overlayHost: this.#overlayHost,
+      squire,
+      surface,
+      overlayHost,
       editorToolbar: this.#toolbar,
       onChange: onEditorMutate,
       onSelectChange: () => {
@@ -430,9 +476,9 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
     // Floating selection bubble toolbar (Popover + CSS Anchor Positioning)
     this.#bubbleMenu = createBubbleMenuExtension({
-      squire: this.#squire,
-      surface: this.#surface,
-      overlayHost: this.#overlayHost,
+      squire,
+      surface,
+      overlayHost,
       onCommand: onEditorMutate,
       onOpenLink: () => this.#openLinkPopover(),
       isImageSelected: () => Boolean(this.#imageResize?.getSelectedImage()),
@@ -441,9 +487,9 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
     // Non-destructive Find & Replace (CSS Custom Highlight API)
     this.#findReplace = createFindReplaceExtension({
-      surface: this.#surface,
-      barSlot: this.#root.querySelector(".ve-find-slot"),
-      squire: this.#squire,
+      surface,
+      barSlot: this.#root!.querySelector<HTMLElement>(".ve-find-slot")!,
+      squire,
       onChange: onEditorMutate,
       renderIcon: this.#icon,
     });
@@ -452,15 +498,15 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
     // Extra keyboard shortcuts
     const mod = navigator.platform?.toLowerCase().includes("mac") ? "Meta" : "Ctrl";
-    this.#squire.setKeyHandler(`${mod}-k`, (_ed, event) => {
+    squire.setKeyHandler(`${mod}-k`, (_ed, event) => {
       event.preventDefault();
       this.#openLinkPopover();
     });
-    this.#squire.setKeyHandler(`${mod}-f`, (_ed, event) => {
+    squire.setKeyHandler(`${mod}-f`, (_ed, event) => {
       event.preventDefault();
       this.#findReplace?.open();
     });
-    this.#squire.setKeyHandler(`${mod}-Shift-x`, (_ed, event) => {
+    squire.setKeyHandler(`${mod}-Shift-x`, (_ed, event) => {
       event.preventDefault();
       this.exec("strike");
     });
@@ -471,94 +517,103 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     };
 
     // Squire lifecycle events
-    this.#squire.addEventListener("input", onEditorMutate);
-    this.#squire.addEventListener("pathChange", onSelectionState);
-    this.#squire.addEventListener("select", onSelectionState);
-    this.#squire.addEventListener("cursor", onSelectionState);
-    this.#squire.addEventListener("undoStateChange", (e) => {
-      this.#canUndo = Boolean(e.detail?.canUndo);
-      this.#canRedo = Boolean(e.detail?.canRedo);
+    squire.addEventListener("input", onEditorMutate);
+    squire.addEventListener("pathChange", onSelectionState);
+    squire.addEventListener("select", onSelectionState);
+    squire.addEventListener("cursor", onSelectionState);
+    squire.addEventListener("undoStateChange", (e) => {
+      const detail = (e as CustomEvent<{ canUndo?: boolean; canRedo?: boolean }>).detail;
+      this.#canUndo = Boolean(detail?.canUndo);
+      this.#canRedo = Boolean(detail?.canRedo);
       onSelectionState();
     });
-    this.#squire.addEventListener("blur", () => {
+    squire.addEventListener("blur", () => {
       this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     });
   }
 
   #bindUIEvents() {
+    const toolbar = this.#toolbar!;
+    const linkPopover = this.#linkPopover!;
+    const imagePopover = this.#imagePopover!;
+    const fileInput = this.#fileInput!;
+
     // Prevent toolbar button mousedown from stealing focus/selection from Squire
-    this.#toolbar.addEventListener("mousedown", (e) => {
-      if (e.target.closest("button")) e.preventDefault();
+    toolbar.addEventListener("mousedown", (e) => {
+      if ((e.target as Element).closest("button")) e.preventDefault();
     });
 
-    this.#toolbar.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-cmd]");
+    toolbar.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-cmd]");
       if (!btn || btn.disabled) return;
-      this.exec(btn.dataset.cmd);
+      this.exec(btn.dataset.cmd as EditorCommand);
     });
 
     // Link popover handlers
-    const linkForm = this.#linkPopover.querySelector("[data-link-form]");
-    const removeLinkBtn = this.#linkPopover.querySelector("[data-remove-link]");
+    const linkForm = linkPopover.querySelector<HTMLFormElement>("[data-link-form]")!;
+    const hrefInput = linkForm.querySelector<HTMLInputElement>('input[name="href"]')!;
+    const removeLinkBtn = linkPopover.querySelector<HTMLButtonElement>("[data-remove-link]")!;
 
     linkForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const href = linkForm.elements.href.value.trim();
+      const href = hrefInput.value.trim();
       if (!isSafeUrl(href, "link")) return;
-      this.#hidePopover(this.#linkPopover);
+      this.#hidePopover(linkPopover);
       this.#restoreSavedRange();
       this.exec("makeLink", href);
     });
 
     removeLinkBtn.addEventListener("click", () => {
-      this.#hidePopover(this.#linkPopover);
+      this.#hidePopover(linkPopover);
       this.#restoreSavedRange();
       this.exec("removeLink");
     });
 
-    this.#linkPopover.querySelector("[data-close-popover]").addEventListener("click", () => {
-      this.#hidePopover(this.#linkPopover);
+    linkPopover.querySelector("[data-close-popover]")!.addEventListener("click", () => {
+      this.#hidePopover(linkPopover);
       this.#restoreSavedRange();
     });
 
     // Image popover handlers
-    const imageForm = this.#imagePopover.querySelector("[data-image-form]");
+    const imageForm = imagePopover.querySelector<HTMLFormElement>("[data-image-form]")!;
+    const srcInput = imageForm.querySelector<HTMLInputElement>('input[name="src"]')!;
+    const altInput = imageForm.querySelector<HTMLInputElement>('input[name="alt"]')!;
     imageForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const src = imageForm.elements.src.value.trim();
-      const alt = imageForm.elements.alt.value.trim();
+      const src = srcInput.value.trim();
+      const alt = altInput.value.trim();
       if (!isSafeUrl(src, "image")) return;
-      this.#hidePopover(this.#imagePopover);
+      this.#hidePopover(imagePopover);
       this.#restoreSavedRange();
       this.#imageResize?.insertImageUrl(src, alt);
       imageForm.reset();
     });
 
-    this.#imagePopover.querySelector("[data-pick-file]").addEventListener("click", () => {
-      this.#hidePopover(this.#imagePopover);
-      this.#fileInput.value = "";
-      this.#fileInput.click();
+    imagePopover.querySelector("[data-pick-file]")!.addEventListener("click", () => {
+      this.#hidePopover(imagePopover);
+      fileInput.value = "";
+      fileInput.click();
     });
 
-    this.#imagePopover.querySelector("[data-close-popover]").addEventListener("click", () => {
-      this.#hidePopover(this.#imagePopover);
+    imagePopover.querySelector("[data-close-popover]")!.addEventListener("click", () => {
+      this.#hidePopover(imagePopover);
       this.#restoreSavedRange();
     });
 
-    this.#fileInput.addEventListener("change", () => {
-      const file = this.#fileInput.files?.[0];
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
       if (!file) return;
       this.#restoreSavedRange();
-      this.#imageResize?.insertImageFile(file);
+      void this.#imageResize?.insertImageFile(file);
     });
   }
 
-  #resolveUploadHandler() {
+  #resolveUploadHandler(): UploadHandler | null {
     if (this.#uploadHandler) return this.#uploadHandler;
     const uploadUrl = this.getAttribute("upload-url");
     if (!uploadUrl) return null;
 
-    return async (file) => {
+    return async (file: File) => {
       const resp = await fetch(uploadUrl, {
         method: "POST",
         headers: { "Content-Type": file.type || "application/octet-stream" },
@@ -568,45 +623,54 @@ export class VaniliaEditorElement extends BaseHTMLElement {
         const text = await resp.text().catch(() => "");
         throw new Error(`Upload failed (${resp.status})${text ? `: ${text}` : ""}`);
       }
-      const data = await resp.json();
-      if (!data?.url) throw new Error("Upload endpoint did not return { url }");
+      const data = (await resp.json()) as { url?: unknown } | null;
+      if (typeof data?.url !== "string" || !data.url)
+        throw new Error("Upload endpoint did not return { url }");
       return data.url;
     };
   }
 
   #openLinkPopover() {
-    if (!this.#squire) return;
+    const popover = this.#linkPopover;
+    if (!this.#squire || !popover) return;
     this.#savedRange = this.#squire.getSelection()?.cloneRange() || null;
 
     const existingHref = this.#findSelectedLinkHref();
-    const form = this.#linkPopover.querySelector("[data-link-form]");
-    const removeBtn = this.#linkPopover.querySelector("[data-remove-link]");
-    form.elements.href.value = existingHref || "";
+    const hrefInput = popover.querySelector<HTMLInputElement>('input[name="href"]')!;
+    const removeBtn = popover.querySelector<HTMLButtonElement>("[data-remove-link]")!;
+    hrefInput.value = existingHref || "";
     removeBtn.hidden = !existingHref;
 
-    this.#showPopoverNearButton(this.#linkPopover, this.#toolbar.querySelector('[data-cmd="link"]'));
+    this.#showPopoverNearButton(popover, this.#toolbar?.querySelector('[data-cmd="link"]') ?? null);
     requestAnimationFrame(() => {
-      form.elements.href.focus();
-      form.elements.href.select();
+      hrefInput.focus();
+      hrefInput.select();
     });
   }
 
   #openImagePopover() {
-    if (!this.#squire) return;
+    const popover = this.#imagePopover;
+    if (!this.#squire || !popover) return;
     this.#savedRange = this.#squire.getSelection()?.cloneRange() || null;
-    const form = this.#imagePopover.querySelector("[data-image-form]");
+    const form = popover.querySelector<HTMLFormElement>("[data-image-form]")!;
     form.reset();
-    this.#showPopoverNearButton(this.#imagePopover, this.#toolbar.querySelector('[data-cmd="image"]'));
-    requestAnimationFrame(() => form.elements.src.focus());
+    this.#showPopoverNearButton(
+      popover,
+      this.#toolbar?.querySelector('[data-cmd="image"]') ?? null,
+    );
+    requestAnimationFrame(() => form.querySelector<HTMLInputElement>('input[name="src"]')?.focus());
   }
 
-  #findSelectedLinkHref() {
-    const sel = this.#squire?.getSelection();
-    if (!sel) return "";
-    let node = sel.commonAncestorContainer;
-    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-    const anchor = node?.closest?.("a");
-    return anchor && this.#surface.contains(anchor) ? anchor.getAttribute("href") || "" : "";
+  #findSelectedLinkHref(): string {
+    const anchor = this.#selectionElement()?.closest("a");
+    return anchor && this.#surface?.contains(anchor) ? anchor.getAttribute("href") || "" : "";
+  }
+
+  /** The element containing the selection (the parent element for a text node). */
+  #selectionElement(): Element | null {
+    const node = this.#squire?.getSelection()?.commonAncestorContainer;
+    if (!node) return null;
+    return node instanceof Element ? node : node.parentElement;
   }
 
   #restoreSavedRange() {
@@ -620,14 +684,16 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     this.#savedRange = null;
   }
 
-  #showPopoverNearButton(popoverEl, btnEl) {
+  #showPopoverNearButton(popoverEl: HTMLElement, btnEl: Element | null) {
     try {
       if (!popoverEl.matches(":popover-open")) popoverEl.showPopover();
     } catch {
       popoverEl.hidden = false;
     }
     // With toolbar="none" the trigger button is hidden: anchor to the caret / selection instead
-    const bRect = btnEl?.getClientRects().length ? btnEl.getBoundingClientRect() : this.#selectionRect();
+    const bRect = btnEl?.getClientRects().length
+      ? btnEl.getBoundingClientRect()
+      : this.#selectionRect();
     if (!bRect) return;
     const pRect = popoverEl.getBoundingClientRect();
     let top = bRect.bottom + 8;
@@ -640,22 +706,22 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     popoverEl.style.left = `${Math.round(left)}px`;
   }
 
-  #selectionRect() {
+  #selectionRect(): DOMRect | null {
     const range = this.#savedRange || this.#squire?.getSelection();
-    const rects = range?.getClientRects?.();
-    const rect = rects?.length ? rects[rects.length - 1] : range?.getBoundingClientRect?.();
+    const rects = range?.getClientRects();
+    const rect = rects?.length ? rects[rects.length - 1] : range?.getBoundingClientRect();
     if (rect && (rect.width || rect.height)) return rect;
     return this.#surface?.getBoundingClientRect() || null;
   }
 
   #refreshIcons() {
     if (!this.#root) return;
-    for (const el of this.#root.querySelectorAll("[data-icon]")) {
-      el.outerHTML = this.#icon(el.dataset.icon, Number(el.dataset.size) || 16);
+    for (const el of this.#root.querySelectorAll<HTMLElement>("[data-icon]")) {
+      el.outerHTML = this.#icon(el.dataset.icon ?? "", Number(el.dataset.size) || 16);
     }
   }
 
-  #hidePopover(popoverEl) {
+  #hidePopover(popoverEl: HTMLElement) {
     try {
       if (popoverEl.matches(":popover-open")) popoverEl.hidePopover();
     } catch {
@@ -663,12 +729,9 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     }
   }
 
-  #findImageOnlyBlock() {
-    const sel = this.#squire?.getSelection();
-    if (!sel || !this.#surface) return null;
-    let node = sel.commonAncestorContainer;
-    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-    const block = node?.closest?.("p, div, figure");
+  #findImageOnlyBlock(): HTMLImageElement | null {
+    if (!this.#surface) return null;
+    const block = this.#selectionElement()?.closest("p, div, figure");
     if (!block || block === this.#surface || !this.#surface.contains(block)) return null;
     const imgs = block.querySelectorAll("img");
     if (imgs.length === 1 && !(block.textContent || "").trim()) {
@@ -677,14 +740,13 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     return null;
   }
 
-  #getActiveAlignment() {
-    const imgAlign = this.#imageResize?.getAlignment?.();
+  #getActiveAlignment(): string | null {
+    const imgAlign = this.#imageResize?.getAlignment();
     if (imgAlign) return imgAlign;
-    const sel = this.#squire?.getSelection();
-    if (!sel || !this.#surface) return null;
-    let node = sel.commonAncestorContainer;
-    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-    const block = node?.closest?.("p, div, h1, h2, h3, h4, h5, h6, li, blockquote");
+    if (!this.#surface) return null;
+    const block = this.#selectionElement()?.closest<HTMLElement>(
+      "p, div, h1, h2, h3, h4, h5, h6, li, blockquote",
+    );
     if (!block || !this.#surface.contains(block)) return null;
     if (block.style.textAlign) return block.style.textAlign;
     if (block.classList.contains("align-center")) return "center";
@@ -693,23 +755,25 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     return null;
   }
 
-  #getActiveState() {
-    const active = getActiveState(this.#squire);
+  #getActiveState(): EditorActiveState {
     const activeAlign = this.#getActiveAlignment();
-    active.alignLeft = activeAlign === "left";
-    active.alignCenter = activeAlign === "center";
-    active.alignRight = activeAlign === "right";
-    return active;
+    return {
+      ...getActiveState(this.#squire),
+      alignLeft: activeAlign === "left",
+      alignCenter: activeAlign === "center",
+      alignRight: activeAlign === "right",
+    };
   }
 
   #syncToolbar() {
     if (!this.#toolbar || !this.#squire) return;
     const active = this.#getActiveState();
-    for (const btn of this.#toolbar.querySelectorAll("button[data-cmd]")) {
-      const cmd = btn.dataset.cmd;
+    for (const btn of this.#toolbar.querySelectorAll<HTMLButtonElement>("button[data-cmd]")) {
+      const cmd = btn.dataset.cmd ?? "";
       if (cmd in active) {
-        btn.classList.toggle("is-active", active[cmd]);
-        btn.setAttribute("aria-pressed", String(active[cmd]));
+        const isOn = active[cmd as keyof EditorActiveState];
+        btn.classList.toggle("is-active", isOn);
+        btn.setAttribute("aria-pressed", String(isOn));
       }
       if (cmd === "undo") btn.disabled = !this.#canUndo || this.hasAttribute("disabled");
       if (cmd === "redo") btn.disabled = !this.#canRedo || this.hasAttribute("disabled");
@@ -750,17 +814,17 @@ export class VaniliaEditorElement extends BaseHTMLElement {
     }
   }
 
-  #applyDisabled(disabled) {
+  #applyDisabled(disabled: boolean) {
     if (!this.#surface || !this.#toolbar) return;
     this.#surface.setAttribute("contenteditable", disabled ? "false" : "true");
-    this.#root.classList.toggle("is-disabled", disabled);
+    this.#root?.classList.toggle("is-disabled", disabled);
     for (const btn of this.#toolbar.querySelectorAll("button")) {
       btn.disabled = disabled;
     }
     if (disabled) this.#imageResize?.deselect();
   }
 
-  #buildDetail() {
+  #buildDetail(): VaniliaEditorDetail {
     const text = this.getText();
     const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
     const images = this.#surface?.querySelectorAll("img").length || 0;
@@ -788,7 +852,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
   #teardown() {
     for (const ext of this.#extensions) {
-      ext?.destroy?.();
+      ext.destroy();
     }
     this.#extensions = [];
     this.#imageResize = null;
@@ -806,6 +870,16 @@ if (typeof customElements !== "undefined" && !customElements.get("vanilia-editor
   customElements.define("vanilia-editor", VaniliaEditorElement);
 }
 
-function escapeAttr(str) {
-  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+declare global {
+  interface HTMLElementTagNameMap {
+    "vanilia-editor": VaniliaEditorElement;
+  }
+}
+
+function escapeAttr(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

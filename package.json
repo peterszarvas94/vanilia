@@ -1,0 +1,30 @@
+{
+  "name": "vanilia-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Drop-in rich text editor web component built on Squire",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/vanilia-editor.d.ts",
+      "default": "./dist/vanilia-editor.js"
+    },
+    "./vanilia-editor.css": "./dist/vanilia-editor.css"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check",
+    "fix": "vp check --fix",
+    "test": "vp test run"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "squire-rte": "2.4.11",
+    "typescript": "7.0.2",
+    "vite-plus": "1.5.0"
+  }
+}

@@ -1,4 +1,5 @@
-import { icon } from "../icons.js";
+import type Squire from "squire-rte";
+import { icon, type IconRenderer } from "../icons.js";
 
 /**
  * Non-destructive Find & Replace extension powered by the native
@@ -9,7 +10,31 @@ import { icon } from "../icons.js";
 const SUPPORTS_HIGHLIGHTS =
   typeof CSS !== "undefined" && "highlights" in CSS && typeof Highlight !== "undefined";
 
-export function createFindReplaceExtension({ surface, barSlot, squire, onChange, renderIcon = icon }) {
+export interface FindReplaceOptions {
+  /** The editable element to search in. */
+  surface: HTMLElement;
+  /** Where the find bar is mounted. */
+  barSlot: HTMLElement;
+  squire: Squire;
+  onChange?: () => void;
+  renderIcon?: IconRenderer;
+}
+
+export interface FindReplaceExtension {
+  name: "findReplace";
+  open(): void;
+  close(): void;
+  toggle(): void;
+  destroy(): void;
+}
+
+export function createFindReplaceExtension({
+  surface,
+  barSlot,
+  squire,
+  onChange,
+  renderIcon = icon,
+}: FindReplaceOptions): FindReplaceExtension {
   const bar = document.createElement("div");
   bar.className = "ve-find-bar";
   bar.hidden = true;
@@ -27,11 +52,11 @@ export function createFindReplaceExtension({ surface, barSlot, squire, onChange,
   `;
   barSlot.appendChild(bar);
 
-  const findInput = bar.querySelector("[data-find-input]");
-  const replaceInput = bar.querySelector("[data-replace-input]");
-  const countEl = bar.querySelector("[data-find-count]");
+  const findInput = bar.querySelector<HTMLInputElement>("[data-find-input]")!;
+  const replaceInput = bar.querySelector<HTMLInputElement>("[data-replace-input]")!;
+  const countEl = bar.querySelector<HTMLElement>("[data-find-count]")!;
 
-  let matches = [];
+  let matches: Range[] = [];
   let activeIndex = -1;
 
   function clearHighlights() {
@@ -52,7 +77,7 @@ export function createFindReplaceExtension({ surface, barSlot, squire, onChange,
 
     const needle = query.toLowerCase();
     const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
-    let node;
+    let node: Node | null;
     while ((node = walker.nextNode())) {
       const haystack = (node.nodeValue || "").toLowerCase();
       let idx = 0;
@@ -92,7 +117,7 @@ export function createFindReplaceExtension({ surface, barSlot, squire, onChange,
     }
   }
 
-  function step(delta) {
+  function step(delta: number) {
     if (!matches.length) return;
     activeIndex = (activeIndex + delta + matches.length) % matches.length;
     paintHighlights();
@@ -149,7 +174,8 @@ export function createFindReplaceExtension({ surface, barSlot, squire, onChange,
   }
 
   function toggle() {
-    bar.hidden ? open() : close();
+    if (bar.hidden) open();
+    else close();
   }
 
   findInput.addEventListener("input", () => computeMatches());
@@ -173,7 +199,7 @@ export function createFindReplaceExtension({ surface, barSlot, squire, onChange,
   });
 
   bar.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-action]");
+    const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-action]");
     if (!btn) return;
     switch (btn.dataset.action) {
       case "prev":

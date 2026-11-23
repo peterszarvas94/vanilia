@@ -41,7 +41,13 @@ body {
   flex-direction: column;
   background: var(--page-bg);
   color: var(--text);
-  font: 15px / 1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font:
+    15px / 1.6 system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -260,7 +266,9 @@ p {
   color: var(--text);
   font: 500 13px / 1 inherit;
   cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
 
   &:hover {
     border-color: var(--accent);
@@ -324,14 +332,29 @@ p {
   }
 
   /* Syntax tokens, set by site.js */
-  & .tk-c { color: var(--muted); font-style: italic; }
-  & .tk-s { color: light-dark(#0a7f4f, #7ee2a8); }
-  & .tk-k { color: light-dark(#a3268f, #e39bf0); }
-  & .tk-t { color: light-dark(#1d5fd6, #7cb0ff); }
+  & .tk-c {
+    color: var(--muted);
+    font-style: italic;
+  }
+  & .tk-s {
+    color: light-dark(#0a7f4f, #7ee2a8);
+  }
+  & .tk-k {
+    color: light-dark(#a3268f, #e39bf0);
+  }
+  & .tk-t {
+    color: light-dark(#1d5fd6, #7cb0ff);
+  }
   & .tk-a,
-  & .tk-p { color: light-dark(#a35200, #f5b36b); }
-  & .tk-f { color: light-dark(#5a3fd1, #b4a4ff); }
-  & .tk-n { color: light-dark(#b3261e, #ff9b8f); }
+  & .tk-p {
+    color: light-dark(#a35200, #f5b36b);
+  }
+  & .tk-f {
+    color: light-dark(#5a3fd1, #b4a4ff);
+  }
+  & .tk-n {
+    color: light-dark(#b3261e, #ff9b8f);
+  }
 }
 
 .copy-btn {
@@ -576,7 +599,10 @@ p {
     border-inline-end: 1px solid var(--card-border);
     box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
     transform: translateX(0);
-    transition: transform 200ms ease, overlay 200ms allow-discrete, display 200ms allow-discrete;
+    transition:
+      transform 200ms ease,
+      overlay 200ms allow-discrete,
+      display 200ms allow-discrete;
 
     @starting-style {
       transform: translateX(-100%);

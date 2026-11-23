@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Vanilia — Modern Web & CSS APIs</title>
     <script type="importmap">
-      { "imports": { "squire-rte": "/dist/squire.mjs", "vanilia-editor": "/dist/vanilia-editor.js" } }
+      {
+        "imports": { "vanilia-editor": "/dist/vanilia-editor.js" }
+      }
     </script>
     <link rel="stylesheet" href="/dist/vanilia-editor.css" />
     <style>
@@ -180,7 +182,13 @@
         border-radius: 10px;
         border: 1px solid var(--card-border);
         background: light-dark(#f7f8fa, #0f1116);
-        font: 12.5px / 1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font:
+          12.5px / 1.55 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Monaco,
+          Consolas,
+          monospace;
         white-space: pre-wrap;
         word-break: break-word;
       }
@@ -211,17 +219,48 @@
         <div class="brand">
           <h1>Vanilia</h1>
           <p>
-            Drop-in <code>&lt;vanilia-editor&gt;</code> · Vendored Squire core · Custom Image Resize · Popover + CSS Anchor Positioning + Custom Highlight API
+            Drop-in <code>&lt;vanilia-editor&gt;</code> · Vendored Squire core · Custom Image Resize
+            · Popover + CSS Anchor Positioning + Custom Highlight API
           </p>
         </div>
 
         <div class="controls">
           <div class="swatches" role="group" aria-label="Accent color">
-            <button type="button" class="swatch is-active" data-accent="oklch(0.58 0.19 258)" style="background: oklch(0.58 0.19 258)" title="Blue"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 305)" style="background: oklch(0.58 0.21 305)" title="Violet"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.58 0.17 158)" style="background: oklch(0.58 0.17 158)" title="Emerald"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.62 0.19 42)" style="background: oklch(0.62 0.19 42)" title="Amber"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 15)" style="background: oklch(0.58 0.21 15)" title="Rose"></button>
+            <button
+              type="button"
+              class="swatch is-active"
+              data-accent="oklch(0.58 0.19 258)"
+              style="background: oklch(0.58 0.19 258)"
+              title="Blue"
+            ></button>
+            <button
+              type="button"
+              class="swatch"
+              data-accent="oklch(0.58 0.21 305)"
+              style="background: oklch(0.58 0.21 305)"
+              title="Violet"
+            ></button>
+            <button
+              type="button"
+              class="swatch"
+              data-accent="oklch(0.58 0.17 158)"
+              style="background: oklch(0.58 0.17 158)"
+              title="Emerald"
+            ></button>
+            <button
+              type="button"
+              class="swatch"
+              data-accent="oklch(0.62 0.19 42)"
+              style="background: oklch(0.62 0.19 42)"
+              title="Amber"
+            ></button>
+            <button
+              type="button"
+              class="swatch"
+              data-accent="oklch(0.58 0.21 15)"
+              style="background: oklch(0.58 0.21 15)"
+              title="Rose"
+            ></button>
           </div>
           <button type="button" class="pill-btn" id="toggle-theme">Theme: Auto</button>
         </div>
@@ -231,7 +270,10 @@
         <section class="card">
           <div class="card-header">
             <h2 class="card-title">Editor (&lt;form&gt; associated)</h2>
-            <span class="hint">Try: select text for bubble menu · click image to resize · drop/paste an image · Ctrl+F to find</span>
+            <span class="hint"
+              >Try: select text for bubble menu · click image to resize · drop/paste an image ·
+              Ctrl+F to find</span
+            >
           </div>
 
           <form id="demo-form">
@@ -248,15 +290,21 @@
                   This is a drop-in <strong>form-associated Web Component</strong> with
                   <em>zero build step</em> and modern browser APIs. Select any text to see the
                   floating <code>Popover</code> + <code>CSS Anchor Positioning</code> toolbar, or
-                  press <code>Ctrl+F</code> to test non-destructive Find &amp; Replace via the
-                  CSS Custom Highlight API.
+                  press <code>Ctrl+F</code> to test non-destructive Find &amp; Replace via the CSS
+                  Custom Highlight API.
                 </p>
                 <p>
                   <img
                     src="/assets/sample-mountain.svg"
                     alt="Sample mountain landscape"
                     data-align="center"
-                    style="width: 75%; height: auto; display: block; margin-left: auto; margin-right: auto;"
+                    style="
+                      width: 75%;
+                      height: auto;
+                      display: block;
+                      margin-left: auto;
+                      margin-right: auto;
+                    "
                   />
                 </p>
                 <blockquote>
@@ -264,15 +312,23 @@
                   presets (25% / 50% / 75% / 100%), alignment, alt-text editor, and Undo/Redo.
                 </blockquote>
                 <ul>
-                  <li>Drop or paste any PNG / JPEG / WebP image — uploads to <code>POST /api/upload</code></li>
-                  <li>Works inside any plain HTML <code>&lt;form&gt;</code> (Go + Datastar, Rails, HTMX)</li>
+                  <li>
+                    Drop or paste any PNG / JPEG / WebP image — uploads to
+                    <code>POST /api/upload</code>
+                  </li>
+                  <li>
+                    Works inside any plain HTML <code>&lt;form&gt;</code> (Go + Datastar, Rails,
+                    HTMX)
+                  </li>
                   <li>Allowlist HTML sanitizer built in — no DOMPurify required</li>
                 </ul>
               </template>
             </vanilia-editor>
 
             <div class="form-bar">
-              <span class="hint">Standard <code>new FormData(form)</code> reads <code>content</code> directly.</span>
+              <span class="hint"
+                >Standard <code>new FormData(form)</code> reads <code>content</code> directly.</span
+              >
               <div class="controls">
                 <button type="reset" class="pill-btn">Reset Form</button>
                 <button type="submit" class="pill-btn pill-btn--primary">Test Form Submit</button>
