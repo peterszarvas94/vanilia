@@ -3,7 +3,10 @@
   <body>
     {{template "nav" .}}
     <div class="container with-sidebar">
-      <nav class="sidebar" aria-label="Examples">
+      {{template "sidebar-toggle" "Examples"}}
+      <nav class="sidebar" id="sidebar" popover data-scroll-spy
+        data-on:click="evt.target.closest('a') && el.matches(':popover-open') && el.hidePopover()"
+        aria-label="Examples">
         <h2>Examples</h2>
         <ul>
           {{range .Examples}}<li><a href="#{{.Slug}}">{{.Title}}</a></li>
@@ -36,7 +39,6 @@
       </main>
     </div>
     {{template "foot" .}}
-    <script type="module">import "vanilia-editor";</script>
   </body>
 </html>
 {{end}}

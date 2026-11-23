@@ -1,62 +1,80 @@
-// Vanilia website behaviour: theme toggle, copy buttons, sidebar scroll-spy.
+// Vanilia website behaviour, as Datastar plugins. Markup wires them up:
+//   @theme(name)          apply and remember the color theme
+//   @formatHTML(html)     pretty-print editor HTML
+//   @copy(el)             copy the code block next to a button
+//   data-highlight        syntax-highlight a <code> element
+//   data-scroll-spy       mark the sidebar link of the section in view and
+//                         expose its title as $_section
 
-const root = document.documentElement;
-const THEMES = ["system", "light", "dark"];
+// The editor first: Datastar must see <vanilia-editor> already defined
+import { formatHTML } from "vanilia-editor";
+import { action, attribute, mergePatch } from "datastar";
 
-function applyTheme(theme) {
-  if (theme === "system") delete root.dataset.theme;
-  else root.dataset.theme = theme;
-  try {
-    if (theme === "system") localStorage.removeItem("vanilia-theme");
-    else localStorage.setItem("vanilia-theme", theme);
-  } catch {}
-  for (const btn of document.querySelectorAll("[data-theme-toggle]")) btn.title = `Theme: ${theme}`;
-}
+action({ name: "formatHTML", apply: (_ctx, html) => formatHTML(html) });
 
-for (const btn of document.querySelectorAll("[data-theme-toggle]")) {
-  btn.addEventListener("click", () => {
-    const current = root.dataset.theme || "system";
-    applyTheme(THEMES[(THEMES.indexOf(current) + 1) % THEMES.length]);
-  });
-}
-
-document.addEventListener("click", async (e) => {
-  const btn = e.target.closest("[data-copy]");
-  if (!btn) return;
-  const code = btn.parentElement.querySelector("code");
-  try {
-    await navigator.clipboard.writeText(code.textContent);
-    btn.textContent = "Copied";
-  } catch {
-    btn.textContent = "Press Ctrl+C";
-    getSelection().selectAllChildren(code);
-  }
-  setTimeout(() => (btn.textContent = "Copy"), 1500);
+action({
+  name: "theme",
+  apply(_ctx, theme) {
+    const root = document.documentElement;
+    if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+    else delete root.dataset.theme;
+    try {
+      if (root.dataset.theme) localStorage.setItem("vanilia-theme", theme);
+      else localStorage.removeItem("vanilia-theme");
+    } catch {}
+  },
 });
 
-// Highlight the sidebar link of the section currently in view
-const links = new Map(
-  [...document.querySelectorAll(".sidebar a[href^='#']")].map((a) => [a.getAttribute("href").slice(1), a]),
-);
-if (links.size) {
-  const visible = new Set();
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) visible.add(entry.target.id);
-        else visible.delete(entry.target.id);
-      }
-      const current = [...links.keys()].find((id) => visible.has(id));
-      if (!current) return;
-      for (const [id, a] of links) a.classList.toggle("is-current", id === current);
-    },
-    { rootMargin: "-70px 0px -55% 0px" },
-  );
-  for (const id of links.keys()) {
-    const el = document.getElementById(id);
-    if (el) observer.observe(el);
-  }
-}
+action({
+  name: "copy",
+  async apply(_ctx, btn) {
+    const code = btn.parentElement.querySelector("code");
+    try {
+      await navigator.clipboard.writeText(code.textContent);
+      btn.textContent = "Copied";
+    } catch {
+      btn.textContent = "Press Ctrl+C";
+      getSelection().selectAllChildren(code);
+    }
+    setTimeout(() => (btn.textContent = "Copy"), 1500);
+  },
+});
+
+attribute({
+  name: "highlight",
+  requirement: { key: "denied", value: "denied" },
+  apply({ el }) {
+    const src = el.textContent;
+    el.innerHTML = /^\s*</.test(src) ? highlightHTML(src) : highlightCode(src);
+  },
+});
+
+attribute({
+  name: "scroll-spy",
+  requirement: { key: "denied", value: "denied" },
+  apply({ el }) {
+    const links = [...el.querySelectorAll("a[href^='#']")];
+    const targets = links.map((a) => document.getElementById(a.getAttribute("href").slice(1)));
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      // The current section is the last one whose top has scrolled under the header
+      const offset = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) + 8 || 80;
+      const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+      let current = 0;
+      targets.forEach((t, i) => {
+        if (t && t.getBoundingClientRect().top <= offset) current = i;
+      });
+      if (atBottom) current = targets.length - 1;
+      links.forEach((a, i) => a.classList.toggle("is-current", i === current));
+      mergePatch({ _section: links[current].textContent });
+    };
+    const onScroll = () => (frame ||= requestAnimationFrame(update));
+    addEventListener("scroll", onScroll, { passive: true });
+    update();
+    return () => removeEventListener("scroll", onScroll);
+  },
+});
 
 // Minimal syntax highlighting for code blocks. HTML gets its own tokenizer;
 // everything else (JS, CSS, Go, JSON, shell) shares one generic C-like one.
@@ -107,9 +125,4 @@ function highlightHTML(src) {
     last = m.index + m[0].length;
   }
   return out + esc(src.slice(last));
-}
-
-for (const code of document.querySelectorAll(".code-block code")) {
-  const src = code.textContent;
-  code.innerHTML = /^\s*</.test(src) ? highlightHTML(src) : highlightCode(src);
 }

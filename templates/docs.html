@@ -3,7 +3,10 @@
   <body>
     {{template "nav" .}}
     <div class="container with-sidebar">
-      <nav class="sidebar" aria-label="Documentation">
+      {{template "sidebar-toggle" "Docs"}}
+      <nav class="sidebar" id="sidebar" popover data-scroll-spy
+        data-on:click="evt.target.closest('a') && el.matches(':popover-open') && el.hidePopover()"
+        aria-label="Documentation">
         <h2>Getting started</h2>
         <ul>
           <li><a href="#install">Installation</a></li>

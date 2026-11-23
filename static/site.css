@@ -497,41 +497,99 @@ p {
   }
 }
 
+/* The sidebar is a popover so it can be a drawer on small screens. On wide
+   screens it is never opened, so undo the popover UA styles and show it inline. */
+.sidebar[popover] {
+  display: block;
+  inset: 76px auto auto;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+}
+
+.sidebar-toggle {
+  display: none;
+}
+
 @media (max-width: 860px) {
+  html {
+    scroll-padding-top: 116px;
+  }
+
   .with-sidebar {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
-    padding-block: 20px;
+    padding-block: 0 20px;
   }
 
-  .sidebar {
-    position: static;
-    min-width: 0;
-    max-height: none;
+  .sidebar-toggle {
+    position: sticky;
+    top: 55px; /* .site-header height */
+    z-index: 40;
     display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    padding-bottom: 6px;
+    align-items: center;
+    gap: 10px;
+    margin-inline: -18px;
+    padding: 10px 18px;
+    border: 0;
+    border-block-end: 1px solid var(--card-border);
+    background: color-mix(in oklab, var(--page-bg) 82%, transparent);
+    backdrop-filter: blur(10px);
+    color: var(--text);
+    font: 600 14px / 1.3 inherit;
+    text-align: start;
+    cursor: pointer;
 
-    & ul {
-      display: flex;
-      gap: 4px;
-      margin: 0;
-    }
-
-    & li {
-      flex: none;
-    }
-
-    & a {
-      border: 1px solid var(--card-border);
-      background: var(--card-bg);
+    & span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    & h2 {
-      display: none;
+    & svg {
+      flex: none;
+      color: var(--muted);
     }
+  }
+
+  .sidebar[popover] {
+    display: none;
+  }
+
+  .sidebar[popover]:popover-open {
+    position: fixed;
+    inset: 0 auto 0 0;
+    display: block;
+    width: min(300px, 85vw);
+    height: 100dvh;
+    max-height: none;
+    padding: max(20px, env(safe-area-inset-top)) 16px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--card-bg);
+    border-inline-end: 1px solid var(--card-border);
+    box-shadow: 0 20px 50px rgb(0 0 0 / 0.25);
+    transform: translateX(0);
+    transition: transform 200ms ease, overlay 200ms allow-discrete, display 200ms allow-discrete;
+
+    @starting-style {
+      transform: translateX(-100%);
+    }
+
+    & a {
+      padding: 8px 10px;
+      font-size: 15px;
+    }
+  }
+
+  .sidebar[popover]::backdrop {
+    background: rgb(0 0 0 / 0.4);
   }
 }
 

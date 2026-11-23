@@ -289,12 +289,14 @@
         </div>
 
         <div class="controls">
-          <div class="swatches" role="group" aria-label="Accent color">
-            <button type="button" class="swatch is-active" data-accent="oklch(0.58 0.19 258)" style="background: oklch(0.58 0.19 258)" title="Blue"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 305)" style="background: oklch(0.58 0.21 305)" title="Violet"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.58 0.17 158)" style="background: oklch(0.58 0.17 158)" title="Emerald"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.62 0.19 42)" style="background: oklch(0.62 0.19 42)" title="Amber"></button>
-            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 15)" style="background: oklch(0.58 0.21 15)" title="Rose"></button>
+          <div class="swatches" role="group" aria-label="Accent color"
+            data-signals:_accent="'oklch(0.58 0.19 258)'"
+            data-effect="document.documentElement.style.setProperty('--accent', $_accent); document.getElementById('editor').style.setProperty('--ve-accent', $_accent)">
+            <button type="button" class="swatch" data-on:click="$_accent = 'oklch(0.58 0.19 258)'" data-class:is-active="$_accent === 'oklch(0.58 0.19 258)'" style="background: oklch(0.58 0.19 258)" title="Blue"></button>
+            <button type="button" class="swatch" data-on:click="$_accent = 'oklch(0.58 0.21 305)'" data-class:is-active="$_accent === 'oklch(0.58 0.21 305)'" style="background: oklch(0.58 0.21 305)" title="Violet"></button>
+            <button type="button" class="swatch" data-on:click="$_accent = 'oklch(0.58 0.17 158)'" data-class:is-active="$_accent === 'oklch(0.58 0.17 158)'" style="background: oklch(0.58 0.17 158)" title="Emerald"></button>
+            <button type="button" class="swatch" data-on:click="$_accent = 'oklch(0.62 0.19 42)'" data-class:is-active="$_accent === 'oklch(0.62 0.19 42)'" style="background: oklch(0.62 0.19 42)" title="Amber"></button>
+            <button type="button" class="swatch" data-on:click="$_accent = 'oklch(0.58 0.21 15)'" data-class:is-active="$_accent === 'oklch(0.58 0.21 15)'" style="background: oklch(0.58 0.21 15)" title="Rose"></button>
           </div>
         </div>
       </header>
@@ -379,7 +381,7 @@
               <button
                 type="button"
                 class="pill-btn"
-                data-on:click="navigator.clipboard.writeText(formatHTML($rawPreview))"
+                data-on:click="navigator.clipboard.writeText(@formatHTML($rawPreview))"
               >
                 Copy HTML
               </button>
@@ -387,7 +389,7 @@
             <pre
               id="db-preview"
               class="code-box"
-              data-text="formatHTML($rawPreview) || '<!-- empty -->'"
+              data-text="@formatHTML($rawPreview) || '<!-- empty -->'"
             ></pre>
           </section>
 
@@ -441,24 +443,6 @@
     </main>
     {{template "foot" .}}
 
-    <script type="module">
-      import { formatHTML } from "vanilia-editor";
-
-      window.formatHTML = formatHTML;
-      window.editor = document.getElementById("editor");
-
-      // Load Datastar after <vanilia-editor> is registered so data-effect sees el.setHTML immediately
-      await import("datastar");
-
-      for (const btn of document.querySelectorAll(".swatch")) {
-        btn.addEventListener("click", () => {
-          for (const b of document.querySelectorAll(".swatch")) b.classList.remove("is-active");
-          btn.classList.add("is-active");
-          document.documentElement.style.setProperty("--accent", btn.dataset.accent);
-          window.editor.style.setProperty("--ve-accent", btn.dataset.accent);
-        });
-      }
-    </script>
   </body>
 </html>
 {{end}}
