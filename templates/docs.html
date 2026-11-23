@@ -50,20 +50,20 @@
 {{template "code" `<script type="importmap">
   {
     "imports": {
-      "squire-rte": "https://wysiwyg.peterszarvas.hu/dist/squire.mjs",
-      "vanilia-editor": "https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.js"
+      "squire-rte": "https://vanilia.peterszarvas.hu/dist/squire.mjs",
+      "vanilia-editor": "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"
     }
   }
 </script>
-<link rel="modulepreload" href="https://wysiwyg.peterszarvas.hu/dist/squire.mjs" />
-<link rel="stylesheet" href="https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.css" />
+<link rel="modulepreload" href="https://vanilia.peterszarvas.hu/dist/squire.mjs" />
+<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
 <script type="module">import "vanilia-editor";</script>`}}
 
         <h3>Option B: copy them into your project</h3>
         <p>Download the three files into your static folder (for example <code>/static/vendor/</code>) and use the same snippet with local paths:</p>
-{{template "code" `curl -LO https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.js
-curl -LO https://wysiwyg.peterszarvas.hu/dist/vanilia-editor.css
-curl -LO https://wysiwyg.peterszarvas.hu/dist/squire.mjs`}}
+{{template "code" `curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.js
+curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.css
+curl -LO https://vanilia.peterszarvas.hu/dist/squire.mjs`}}
         <div class="callout">
           The import map has to come before any module script that imports Vanilia. Put it once in your base layout.
         </div>
