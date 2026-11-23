@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Start and stop the Vanilla WYSIWYG dev server persistently in the background.
+# Start and stop the Vanilla WYSIWYG (Go + Datastar) dev server persistently in the background.
 # Usage: scripts/dev-server.sh {start|stop|restart|status|logs}
 set -euo pipefail
 
 root="$(git -C "${T3CODE_WORKTREE_PATH:-$PWD}" rev-parse --show-toplevel 2>/dev/null || pwd)"
 state="$root/.dev"
 logfile="$state/log"
+bin="$state/server"
 port="${PORT:-4173}"
 unit="vanilla-wysiwyg-dev-${port}"
 
@@ -23,19 +24,20 @@ cmd_start() {
     return 0
   fi
   mkdir -p "$state"
+  go -C "$root" build -o "$bin" ./cmd/server
   systemctl --user reset-failed "${unit}.service" 2>/dev/null || true
   systemd-run --user \
     --unit="$unit" \
     --description="Vanilla WYSIWYG Dev Server ($port)" \
     --working-directory="$root" \
     --setenv="PORT=$port" \
-    --setenv="HOST=::" \
+    --setenv="BIND=[::]:$port" \
     --property="StandardOutput=append:$logfile" \
     --property="StandardError=append:$logfile" \
-    "$(command -v node)" "$root/server.mjs" >/dev/null
+    "$bin" >/dev/null
 
   for _ in $(seq 30); do
-    if curl -fsS -o /dev/null --max-time 2 "http://127.0.0.1:${port}/" 2>/dev/null; then
+    if curl -fsS -o /dev/null --max-time 2 "http://127.0.0.1:${port}/healthz" 2>/dev/null; then
       echo "Running: $url"
       echo "Logs: $logfile"
       return 0

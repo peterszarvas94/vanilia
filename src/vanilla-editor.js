@@ -1,4 +1,4 @@
-import Squire from "../vendor/squire.mjs";
+import Squire from "../static/vendor/squire.mjs";
 import { icon } from "./icons.js";
 import {
   formatHTML,
@@ -185,7 +185,8 @@ export class VanillaEditorElement extends HTMLElement {
     this.#squire.setHTML(html || "");
     this.#syncFormState();
     this.#syncToolbar();
-    if (!silent) this.#emitUpdate();
+    if (silent) this.#emitStateEvent();
+    else this.#emitUpdate();
   }
 
   exec(command, arg) {
@@ -227,6 +228,8 @@ export class VanillaEditorElement extends HTMLElement {
 
     const root = document.createElement("div");
     root.className = "ve-root";
+    // Keep hypermedia frameworks (e.g. Datastar) from scanning internal contenteditable mutations
+    root.setAttribute("data-ignore", "");
     root.innerHTML = `
       <div class="ve-toolbar" role="toolbar" aria-label="Formatting toolbar">
         <div class="ve-btn-group">
@@ -403,15 +406,20 @@ export class VanillaEditorElement extends HTMLElement {
       this.exec("strike");
     });
 
+    const onSelectionState = () => {
+      this.#syncToolbar();
+      this.#emitStateEvent();
+    };
+
     // Squire lifecycle events
     this.#squire.addEventListener("input", onEditorMutate);
-    this.#squire.addEventListener("pathChange", () => this.#syncToolbar());
-    this.#squire.addEventListener("select", () => this.#syncToolbar());
-    this.#squire.addEventListener("cursor", () => this.#syncToolbar());
+    this.#squire.addEventListener("pathChange", onSelectionState);
+    this.#squire.addEventListener("select", onSelectionState);
+    this.#squire.addEventListener("cursor", onSelectionState);
     this.#squire.addEventListener("undoStateChange", (e) => {
       this.#canUndo = Boolean(e.detail?.canUndo);
       this.#canRedo = Boolean(e.detail?.canRedo);
-      this.#syncToolbar();
+      onSelectionState();
     });
     this.#squire.addEventListener("blur", () => {
       this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
@@ -638,16 +646,30 @@ export class VanillaEditorElement extends HTMLElement {
     if (disabled) this.#imageResize?.deselect();
   }
 
-  #emitUpdate() {
-    const detail = {
+  #buildDetail() {
+    const text = this.getText();
+    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    const images = this.#surface?.querySelectorAll("img").length || 0;
+    return {
       html: this.getHTML(),
-      text: this.getText(),
+      text,
+      words,
+      images,
       active: getActiveState(this.#squire),
       canUndo: this.#canUndo,
       canRedo: this.#canRedo,
     };
-    this.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+  }
+
+  #emitStateEvent() {
+    const detail = this.#buildDetail();
     this.dispatchEvent(new CustomEvent("ve:update", { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent("editorupdate", { detail, bubbles: true, composed: true }));
+  }
+
+  #emitUpdate() {
+    this.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    this.#emitStateEvent();
   }
 
   #teardown() {

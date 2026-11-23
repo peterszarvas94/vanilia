@@ -1,0 +1,512 @@
+{{define "index"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla WYSIWYG + Datastar</title>
+    <link rel="stylesheet" href="{{.BasePath}}/src/styles/editor.css" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: light-dark(#f2f4f8, #0d0f13);
+        --card-bg: light-dark(#ffffff, #14161a);
+        --card-border: light-dark(#e2e5ec, #262b35);
+        --subtle-bg: light-dark(#f7f8fa, #0f1116);
+        --text: light-dark(#171a21, #eceff4);
+        --muted: light-dark(#5c6577, #95a0b3);
+        --accent: oklch(0.58 0.19 258);
+        --accent-soft: oklch(from var(--accent) l c h / 0.15);
+      }
+
+      :root[data-theme="light"] {
+        color-scheme: light;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: var(--page-bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+
+      .shell {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 24px 18px 56px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+      }
+
+      .brand p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .swatches {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+      }
+
+      .swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 2px solid transparent;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .swatch.is-active {
+        border-color: var(--text);
+        transform: scale(1.1);
+      }
+
+      .pill-btn {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid var(--card-border);
+        background: var(--card-bg);
+        color: var(--text);
+        font: 500 13px / 1 inherit;
+        cursor: pointer;
+        transition: border-color 120ms ease, background-color 120ms ease;
+      }
+
+      .pill-btn:hover {
+        border-color: var(--accent);
+      }
+
+      .pill-btn.is-active {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .pill-btn--primary {
+        background: var(--accent);
+        border-color: transparent;
+        color: #ffffff;
+      }
+
+      .pill-btn--primary:hover {
+        background: oklch(from var(--accent) calc(l - 0.06) c h);
+        border-color: transparent;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        min-width: 0;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 16px;
+        min-width: 0;
+      }
+
+      .card-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+
+      .action-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: oklch(0.66 0.17 152);
+      }
+
+      .status-dot.is-dirty {
+        background: oklch(0.72 0.18 65);
+      }
+
+      .code-box {
+        margin: 0;
+        padding: 12px 14px;
+        max-height: 360px;
+        overflow: auto;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        background: var(--subtle-bg);
+        font: 12.5px / 1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .preview-box {
+        padding: 14px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        background: var(--subtle-bg);
+      }
+
+      .signal-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font: 12.5px / 1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .signal-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: var(--subtle-bg);
+      }
+
+      .signal-key {
+        font-weight: 650;
+      }
+
+      .signal-val {
+        color: var(--muted);
+      }
+
+      .signal-val.is-true {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .ds-remote-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 10px;
+        line-height: 1.45;
+      }
+
+      a.gh-link {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      a.gh-link:hover {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body
+    data-signals="{
+      editorHtml: '',
+      rawPreview: '',
+      serverHtml: '',
+      serverRev: 0,
+      loadedRev: 0,
+      savedAt: 'Loading...',
+      dirty: false,
+      words: 0,
+      images: 0,
+      bold: false,
+      italic: false,
+      underline: false,
+      strike: false,
+      code: false,
+      link: false,
+      paragraph: true,
+      heading1: false,
+      heading2: false,
+      heading3: false,
+      bulletList: false,
+      orderedList: false,
+      blockquote: false,
+      canUndo: false,
+      canRedo: false
+    }"
+    data-init="@get('{{.BasePath}}/content')"
+    data-on:keydown__window="if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === 's') { evt.preventDefault(); @patch('{{.BasePath}}/content'); }"
+  >
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Vanilla WYSIWYG + Datastar</h1>
+          <p>
+            Zero-build-step <code>&lt;vanilla-editor&gt;</code> · Squire core · Custom Image Resize · Go + Datastar SSE
+          </p>
+        </div>
+
+        <div class="controls">
+          <div class="swatches" role="group" aria-label="Accent color">
+            <button type="button" class="swatch is-active" data-accent="oklch(0.58 0.19 258)" style="background: oklch(0.58 0.19 258)" title="Blue"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 305)" style="background: oklch(0.58 0.21 305)" title="Violet"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.58 0.17 158)" style="background: oklch(0.58 0.17 158)" title="Emerald"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.62 0.19 42)" style="background: oklch(0.62 0.19 42)" title="Amber"></button>
+            <button type="button" class="swatch" data-accent="oklch(0.58 0.21 15)" style="background: oklch(0.58 0.21 15)" title="Rose"></button>
+          </div>
+          <button type="button" class="pill-btn" id="toggle-theme">Theme: Auto</button>
+          <a class="gh-link" href="https://github.com/peterszarvas94/vanilla-wysiwyg" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        </div>
+      </header>
+
+      <div class="layout">
+        <main class="stack">
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Editor</h2>
+              <span class="status-pill">
+                <span class="status-dot" data-class:is-dirty="$dirty"></span>
+                <span data-text="$dirty ? 'Unsaved changes (Ctrl+S)' : $savedAt">Loading...</span>
+              </span>
+            </div>
+
+            <vanilla-editor
+              id="editor"
+              name="content"
+              upload-url="{{.BasePath}}/api/upload"
+              placeholder="Write something, paste an image, or drop a photo here..."
+              data-effect="if ($serverRev && $serverRev !== $loadedRev) { $loadedRev = $serverRev; el.setHTML($serverHtml, { silent: true }); }"
+              data-on:editorupdate="
+                $editorHtml = evt.detail.html;
+                $words = evt.detail.words;
+                $images = evt.detail.images;
+                $bold = evt.detail.active.bold;
+                $italic = evt.detail.active.italic;
+                $underline = evt.detail.active.underline;
+                $strike = evt.detail.active.strike;
+                $code = evt.detail.active.code;
+                $link = evt.detail.active.link;
+                $paragraph = evt.detail.active.paragraph;
+                $heading1 = evt.detail.active.h1;
+                $heading2 = evt.detail.active.h2;
+                $heading3 = evt.detail.active.h3;
+                $bulletList = evt.detail.active.bulletList;
+                $orderedList = evt.detail.active.orderedList;
+                $blockquote = evt.detail.active.blockquote;
+                $canUndo = evt.detail.canUndo;
+                $canRedo = evt.detail.canRedo;
+                $dirty = ($editorHtml !== $rawPreview);
+              "
+            ></vanilla-editor>
+
+            <div class="action-bar">
+              <span class="hint" style="margin: 0">
+                Session-scoped on server · Drag/paste images · Tap/click image to resize
+              </span>
+              <div class="controls">
+                <button
+                  type="button"
+                  class="pill-btn"
+                  data-on:click="@post('{{.BasePath}}/reset')"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  class="pill-btn pill-btn--primary"
+                  data-on:click="@patch('{{.BasePath}}/content')"
+                >
+                  Save via Datastar SSE
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Stored Content (rendered via SSE)</h2>
+            </div>
+            {{block "rendered-preview" .}}
+            <div id="rendered-preview" class="preview-box ve-prose">
+              {{.RenderedPreview}}
+            </div>
+            {{end}}
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Stored Content (raw HTML)</h2>
+              <button
+                type="button"
+                class="pill-btn"
+                data-on:click="navigator.clipboard.writeText(formatHTML($rawPreview))"
+              >
+                Copy HTML
+              </button>
+            </div>
+            <pre
+              id="db-preview"
+              class="code-box"
+              data-text="formatHTML($rawPreview) || '<!-- empty -->'"
+            ></pre>
+          </section>
+        </main>
+
+        <aside class="stack">
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Datastar External Controls</h2>
+            </div>
+            <p class="hint">
+              Drive <code>&lt;vanilla-editor&gt;</code> directly from external Datastar buttons &amp; reactive signals:
+            </p>
+            <div class="ds-remote-bar">
+              <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('bold')" data-class:is-active="$bold">Bold</button>
+              <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('italic')" data-class:is-active="$italic">Italic</button>
+              <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('h2')" data-class:is-active="$heading2">H2</button>
+              <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('bulletList')" data-class:is-active="$bulletList">List</button>
+              <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('blockquote')" data-class:is-active="$blockquote">Quote</button>
+              <button type="button" class="pill-btn" data-on:mousedown="evt.preventDefault()" data-on:click="editor.exec('find')">Find</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Live Datastar Signals</h2>
+            </div>
+            <ul class="signal-list">
+              <li><span class="signal-key">$dirty</span><span class="signal-val" data-class:is-true="$dirty" data-text="$dirty">false</span></li>
+              <li><span class="signal-key">$words</span><span class="signal-val" data-text="$words">0</span></li>
+              <li><span class="signal-key">$images</span><span class="signal-val" data-text="$images">0</span></li>
+              <li><span class="signal-key">$bold</span><span class="signal-val" data-class:is-true="$bold" data-text="$bold">false</span></li>
+              <li><span class="signal-key">$italic</span><span class="signal-val" data-class:is-true="$italic" data-text="$italic">false</span></li>
+              <li><span class="signal-key">$underline</span><span class="signal-val" data-class:is-true="$underline" data-text="$underline">false</span></li>
+              <li><span class="signal-key">$strike</span><span class="signal-val" data-class:is-true="$strike" data-text="$strike">false</span></li>
+              <li><span class="signal-key">$code</span><span class="signal-val" data-class:is-true="$code" data-text="$code">false</span></li>
+              <li><span class="signal-key">$link</span><span class="signal-val" data-class:is-true="$link" data-text="$link">false</span></li>
+              <li><span class="signal-key">$paragraph</span><span class="signal-val" data-class:is-true="$paragraph" data-text="$paragraph">true</span></li>
+              <li><span class="signal-key">$heading1</span><span class="signal-val" data-class:is-true="$heading1" data-text="$heading1">false</span></li>
+              <li><span class="signal-key">$heading2</span><span class="signal-val" data-class:is-true="$heading2" data-text="$heading2">false</span></li>
+              <li><span class="signal-key">$heading3</span><span class="signal-val" data-class:is-true="$heading3" data-text="$heading3">false</span></li>
+              <li><span class="signal-key">$bulletList</span><span class="signal-val" data-class:is-true="$bulletList" data-text="$bulletList">false</span></li>
+              <li><span class="signal-key">$orderedList</span><span class="signal-val" data-class:is-true="$orderedList" data-text="$orderedList">false</span></li>
+              <li><span class="signal-key">$blockquote</span><span class="signal-val" data-class:is-true="$blockquote" data-text="$blockquote">false</span></li>
+              <li><span class="signal-key">$canUndo</span><span class="signal-val" data-class:is-true="$canUndo" data-text="$canUndo">false</span></li>
+              <li><span class="signal-key">$canRedo</span><span class="signal-val" data-class:is-true="$canRedo" data-text="$canRedo">false</span></li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </div>
+
+    <script type="module">
+      import { formatHTML } from "{{.BasePath}}/src/index.js";
+
+      window.formatHTML = formatHTML;
+      window.editor = document.getElementById("editor");
+
+      // Load Datastar after <vanilla-editor> is registered so data-effect sees el.setHTML immediately
+      await import("{{.BasePath}}/static/vendor/datastar.js");
+
+      const themeBtn = document.getElementById("toggle-theme");
+      const themes = ["auto", "light", "dark"];
+      let themeIdx = 0;
+      themeBtn.addEventListener("click", () => {
+        themeIdx = (themeIdx + 1) % themes.length;
+        const next = themes[themeIdx];
+        if (next === "auto") document.documentElement.removeAttribute("data-theme");
+        else document.documentElement.setAttribute("data-theme", next);
+        themeBtn.textContent = `Theme: ${next[0].toUpperCase() + next.slice(1)}`;
+      });
+
+      for (const btn of document.querySelectorAll(".swatch")) {
+        btn.addEventListener("click", () => {
+          for (const b of document.querySelectorAll(".swatch")) b.classList.remove("is-active");
+          btn.classList.add("is-active");
+          document.documentElement.style.setProperty("--accent", btn.dataset.accent);
+          window.editor.style.setProperty("--ve-accent", btn.dataset.accent);
+        });
+      }
+    </script>
+  </body>
+</html>
+{{end}}
