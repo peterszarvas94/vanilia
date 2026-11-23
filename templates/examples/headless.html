@@ -1,0 +1,30 @@
+<div class="row" id="my-toolbar" role="toolbar" aria-label="Formatting">
+  <button type="button" data-cmd="bold">Bold</button>
+  <button type="button" data-cmd="italic">Italic</button>
+  <button type="button" data-cmd="h2">Heading</button>
+  <button type="button" data-cmd="bulletList">List</button>
+  <button type="button" data-cmd="link">Link</button>
+  <button type="button" data-cmd="undo">Undo</button>
+</div>
+<vanilia-editor id="headless-editor" toolbar="none">
+  <template><p>The built-in toolbar is hidden. The buttons above are plain HTML that call <code>editor.exec()</code>.</p></template>
+</vanilia-editor>
+
+<script type="module">
+  const editor = document.getElementById("headless-editor");
+  const toolbar = document.getElementById("my-toolbar");
+
+  toolbar.addEventListener("mousedown", (e) => e.preventDefault()); // keep the editor selection
+  toolbar.addEventListener("click", (e) => {
+    const button = e.target.closest("[data-cmd]");
+    if (button) editor.exec(button.dataset.cmd);
+  });
+
+  editor.addEventListener("ve:update", ({ detail }) => {
+    for (const button of toolbar.querySelectorAll("[data-cmd]")) {
+      const cmd = button.dataset.cmd;
+      if (cmd in detail.active) button.setAttribute("aria-pressed", detail.active[cmd]);
+    }
+    toolbar.querySelector("[data-cmd=undo]").disabled = !detail.canUndo;
+  });
+</script>
