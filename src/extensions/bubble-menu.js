@@ -16,6 +16,7 @@ export function createBubbleMenuExtension({
   onCommand,
   onOpenLink,
   isImageSelected,
+  renderIcon = icon,
 }) {
   const anchorName = `--ve-sel-anchor-${++anchorCounter}`;
 
@@ -36,13 +37,13 @@ export function createBubbleMenuExtension({
   }
 
   menu.innerHTML = `
-    <button type="button" class="ve-btn ve-btn--sm" data-cmd="bold" title="Bold (Ctrl+B)">${icon("bold", 14)}</button>
-    <button type="button" class="ve-btn ve-btn--sm" data-cmd="italic" title="Italic (Ctrl+I)">${icon("italic", 14)}</button>
-    <button type="button" class="ve-btn ve-btn--sm" data-cmd="underline" title="Underline (Ctrl+U)">${icon("underline", 14)}</button>
-    <button type="button" class="ve-btn ve-btn--sm" data-cmd="strike" title="Strikethrough">${icon("strike", 14)}</button>
-    <button type="button" class="ve-btn ve-btn--sm" data-cmd="code" title="Code">${icon("code", 14)}</button>
+    <button type="button" class="ve-btn ve-btn--sm" data-cmd="bold" title="Bold (Ctrl+B)">${renderIcon("bold", 14)}</button>
+    <button type="button" class="ve-btn ve-btn--sm" data-cmd="italic" title="Italic (Ctrl+I)">${renderIcon("italic", 14)}</button>
+    <button type="button" class="ve-btn ve-btn--sm" data-cmd="underline" title="Underline (Ctrl+U)">${renderIcon("underline", 14)}</button>
+    <button type="button" class="ve-btn ve-btn--sm" data-cmd="strike" title="Strikethrough">${renderIcon("strike", 14)}</button>
+    <button type="button" class="ve-btn ve-btn--sm" data-cmd="code" title="Code">${renderIcon("code", 14)}</button>
     <span class="ve-sep"></span>
-    <button type="button" class="ve-btn ve-btn--sm" data-cmd="link" title="Link (Ctrl+K)">${icon("link", 14)}</button>
+    <button type="button" class="ve-btn ve-btn--sm" data-cmd="link" title="Link (Ctrl+K)">${renderIcon("link", 14)}</button>
   `;
   overlayHost.appendChild(menu);
 

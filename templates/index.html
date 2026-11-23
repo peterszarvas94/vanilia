@@ -5,6 +5,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Vanilia — Drop-In Rich Text Editor</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "squire-rte": "{{.BasePath}}/dist/squire.mjs",
+          "vanilia-editor": "{{.BasePath}}/dist/vanilia-editor.js",
+          "datastar": "{{.BasePath}}/static/vendor/datastar.js"
+        }
+      }
+    </script>
+    <link rel="modulepreload" href="{{.BasePath}}/dist/squire.mjs" />
     <link rel="stylesheet" href="{{.BasePath}}/dist/vanilia-editor.css" />
     <style>
       :root {
@@ -274,6 +284,32 @@
         line-height: 1.45;
       }
 
+      .demo-editor {
+        --ve-min-height: 140px;
+      }
+
+      .demo-editor--icons {
+        --ve-icon-size: 18px;
+        --ve-icon-stroke: 1.25;
+      }
+
+      .glyph {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.05em;
+      }
+
+      .headless-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .pill-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
       a.gh-link {
         color: var(--muted);
         text-decoration: none;
@@ -311,7 +347,9 @@
       orderedList: false,
       blockquote: false,
       canUndo: false,
-      canRedo: false
+      canRedo: false,
+      filledHistoryIcons: false,
+      hl: { bold: false, italic: false, h2: false, bulletList: false, blockquote: false, link: false, alignCenter: false, canUndo: false, canRedo: false, words: 0 }
     }"
     data-init="@get('{{.BasePath}}/content')"
     data-on:keydown__window="if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === 's') { evt.preventDefault(); @patch('{{.BasePath}}/content'); }"
@@ -429,6 +467,76 @@
               data-text="formatHTML($rawPreview) || '<!-- empty -->'"
             ></pre>
           </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Custom Icons</h2>
+              <button
+                type="button"
+                class="pill-btn"
+                data-class:is-active="$filledHistoryIcons"
+                data-on:click="$filledHistoryIcons = !$filledHistoryIcons; VaniliaEditorElement.setIcons($filledHistoryIcons ? filledHistoryIcons : { undo: null, redo: null })"
+              >
+                Global filled undo/redo icons
+              </button>
+            </div>
+            <p class="hint">
+              Per-editor <code>&lt;template data-ve-icon="bold"&gt;</code> overrides (serif glyphs + filled image icon),
+              <code>--ve-icon-stroke: 1.25</code> / <code>--ve-icon-size: 18px</code> for the remaining built-ins, and
+              <code>VaniliaEditorElement.setIcons()</code> for every editor on the page.
+            </p>
+            <vanilia-editor id="icons-editor" class="demo-editor demo-editor--icons" placeholder="Custom icons...">
+              <template data-ve-icon="bold"><span class="glyph" style="font-weight: 800">B</span></template>
+              <template data-ve-icon="italic"><span class="glyph" style="font-style: italic">I</span></template>
+              <template data-ve-icon="underline"><span class="glyph" style="text-decoration: underline">U</span></template>
+              <template data-ve-icon="strike"><span class="glyph" style="text-decoration: line-through">S</span></template>
+              <template data-ve-icon="image"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm4 6.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5 18h14l-5-7-3.5 4.5L8 13z"/></svg></template>
+              <template><p>Toolbar and bubble menu (select some text) use the overridden <strong>bold</strong>, <em>italic</em>, <u>underline</u> and <s>strike</s> icons.</p></template>
+            </vanilia-editor>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <h2 class="card-title">Headless (toolbar="none")</h2>
+              <span class="status-pill" data-text="$hl.words + ' words'"></span>
+            </div>
+            <p class="hint">
+              Built-in toolbar hidden; this toolbar is plain page markup driven by <code>editor.exec()</code> and
+              <code>evt.detail.active</code> → Datastar signals. Bubble menu, image handles, link popover and Find still work.
+            </p>
+            <div class="headless-toolbar" role="toolbar" aria-label="Custom formatting toolbar" data-on:mousedown="evt.target.closest('button') && evt.preventDefault()">
+              <button type="button" class="pill-btn" data-on:click="headless.exec('bold')" data-class:is-active="$hl.bold"><strong>Bold</strong></button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('italic')" data-class:is-active="$hl.italic"><em>Italic</em></button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('h2')" data-class:is-active="$hl.h2">Heading</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('bulletList')" data-class:is-active="$hl.bulletList">List</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('blockquote')" data-class:is-active="$hl.blockquote">Quote</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('alignCenter')" data-class:is-active="$hl.alignCenter">Center</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('link')" data-class:is-active="$hl.link">Link…</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('image')">Image…</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('undo')" data-attr:disabled="!$hl.canUndo">Undo</button>
+              <button type="button" class="pill-btn" data-on:click="headless.exec('redo')" data-attr:disabled="!$hl.canRedo">Redo</button>
+            </div>
+            <vanilia-editor
+              id="headless-editor"
+              class="demo-editor"
+              toolbar="none"
+              placeholder="Headless editor..."
+              data-on:editorupdate="
+                $hl.bold = evt.detail.active.bold;
+                $hl.italic = evt.detail.active.italic;
+                $hl.h2 = evt.detail.active.h2;
+                $hl.bulletList = evt.detail.active.bulletList;
+                $hl.blockquote = evt.detail.active.blockquote;
+                $hl.link = evt.detail.active.link;
+                $hl.alignCenter = evt.detail.active.alignCenter;
+                $hl.canUndo = evt.detail.canUndo;
+                $hl.canRedo = evt.detail.canRedo;
+                $hl.words = evt.detail.words;
+              "
+            >
+              <template><h2>Bring your own toolbar</h2><p>Render buttons with your own icon set (Templ + Templucid, Heroicons, ...) and call <code>editor.exec('bold')</code>.</p></template>
+            </vanilia-editor>
+          </section>
         </main>
 
         <aside class="stack">
@@ -479,13 +587,20 @@
     </div>
 
     <script type="module">
-      import { formatHTML } from "{{.BasePath}}/dist/vanilia-editor.js";
+      import { formatHTML, VaniliaEditorElement } from "vanilia-editor";
 
       window.formatHTML = formatHTML;
       window.editor = document.getElementById("editor");
+      window.headless = document.getElementById("headless-editor");
+      window.VaniliaEditorElement = VaniliaEditorElement;
+      const filledArrow = `<path d="M10 4 3 10l7 6v-4h4a4 4 0 0 1 0 8h-2v3h2a7 7 0 0 0 0-14h-4z"/>`;
+      window.filledHistoryIcons = {
+        undo: `<svg viewBox="0 0 24 24" fill="currentColor">${filledArrow}</svg>`,
+        redo: `<svg viewBox="0 0 24 24" fill="currentColor"><g transform="matrix(-1 0 0 1 24 0)">${filledArrow}</g></svg>`,
+      };
 
       // Load Datastar after <vanilia-editor> is registered so data-effect sees el.setHTML immediately
-      await import("{{.BasePath}}/static/vendor/datastar.js");
+      await import("datastar");
 
       const themeBtn = document.getElementById("toggle-theme");
       const themes = ["auto", "light", "dark"];

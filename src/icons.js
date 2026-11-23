@@ -32,7 +32,43 @@ const SVG_PATHS = {
   text: `<path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/>`,
 };
 
-export function icon(name, size = 16) {
+/** Names of all built-in icons (each can be overridden). */
+export const ICON_NAMES = Object.freeze(Object.keys(SVG_PATHS));
+
+const globalIcons = new Map();
+const iconListeners = new Set();
+
+/**
+ * Override built-in icons for every <vanilia-editor> on the page.
+ * Values are trusted markup strings (inline SVG, icon-font <i>, <img>, ...).
+ * Pass `null` / `undefined` for a name to restore its built-in icon.
+ *
+ *   setIcons({ bold: '<svg viewBox="0 0 256 256">...</svg>' });
+ */
+export function setIcons(map = {}) {
+  for (const [name, markup] of Object.entries(map)) {
+    if (markup == null || markup === "") globalIcons.delete(name);
+    else globalIcons.set(name, String(markup));
+  }
+  for (const listener of iconListeners) listener();
+}
+
+/** Subscribe to global icon changes; returns an unsubscribe function. */
+export function onIconsChange(listener) {
+  iconListeners.add(listener);
+  return () => iconListeners.delete(listener);
+}
+
+/**
+ * Render an icon as markup. Lookup order: per-editor `overrides` (Map),
+ * global `setIcons()` registry, built-in Lucide-compatible SVG.
+ * Every icon carries `data-icon` / `data-size` so editors can re-render it in place.
+ */
+export function icon(name, size = 16, overrides) {
+  const custom = overrides?.get(name) ?? globalIcons.get(name);
+  if (custom != null) {
+    return `<span class="ve-icon ve-icon--custom" data-icon="${name}" data-size="${size}" aria-hidden="true">${custom}</span>`;
+  }
   const path = SVG_PATHS[name] || "";
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+  return `<svg class="ve-icon" data-icon="${name}" data-size="${size}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 }

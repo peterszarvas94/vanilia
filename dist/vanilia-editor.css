@@ -40,6 +40,10 @@
     --ve-highlight-bg: oklch(0.88 0.16 95 / 0.55);
     --ve-highlight-active-bg: oklch(0.75 0.2 55 / 0.8);
     --ve-highlight-active-text: #111111;
+
+    --ve-icon-size: 16px;
+    --ve-icon-size-sm: 14px;
+    --ve-icon-stroke: 2;
   }
 
   vanilia-editor {
@@ -97,6 +101,10 @@
     border-block-end: 1px solid var(--ve-border);
     border-start-start-radius: calc(var(--ve-radius) - 1px);
     border-start-end-radius: calc(var(--ve-radius) - 1px);
+
+    &[hidden] {
+      display: none;
+    }
   }
 
   .ve-btn-group {
@@ -132,9 +140,29 @@
     cursor: pointer;
     transition: background-color 110ms ease, color 110ms ease, border-color 110ms ease;
 
-    & svg {
+    & .ve-icon {
       display: block;
       flex-shrink: 0;
+      inline-size: var(--ve-icon-size);
+      block-size: var(--ve-icon-size);
+    }
+
+    & svg.ve-icon {
+      stroke-width: var(--ve-icon-stroke);
+    }
+
+    & .ve-icon--custom {
+      display: grid;
+      place-items: center;
+      font-size: var(--ve-icon-size);
+      line-height: 1;
+
+      & > svg,
+      & > img {
+        display: block;
+        inline-size: 100%;
+        block-size: 100%;
+      }
     }
 
     &:hover:not(:disabled) {
@@ -157,11 +185,24 @@
       cursor: not-allowed;
     }
 
+    &[hidden] {
+      display: none;
+    }
+
     &.ve-btn--sm {
       min-width: 26px;
       height: 26px;
       padding: 0 6px;
       font-size: 12px;
+
+      & .ve-icon {
+        inline-size: var(--ve-icon-size-sm);
+        block-size: var(--ve-icon-size-sm);
+      }
+
+      & .ve-icon--custom {
+        font-size: var(--ve-icon-size-sm);
+      }
     }
 
     &.ve-btn--text {
@@ -290,6 +331,12 @@
     background: var(--ve-surface-bg);
     max-height: var(--ve-max-height);
     overflow-y: auto;
+  }
+
+  /* toolbar="none": the stage becomes the top edge of the rounded frame */
+  .ve-root:has(> .ve-toolbar[hidden]) .ve-stage {
+    border-start-start-radius: calc(var(--ve-radius) - 1px);
+    border-start-end-radius: calc(var(--ve-radius) - 1px);
   }
 
   .ve-surface {

@@ -38,6 +38,7 @@ export function createImageResizeExtension({
   onSelectChange,
   getUploadHandler,
   onStatus,
+  renderIcon = icon,
 }) {
   // Disable Squire's built-in DOM-polluting image resizer cleanly
   if (squire._imageResizer && typeof squire._imageResizer.destroy === "function") {
@@ -89,8 +90,8 @@ export function createImageResizeExtension({
       toolbar.innerHTML = `
         <form class="ve-img-alt-form">
           <input type="text" class="ve-input ve-input--sm" name="alt" placeholder="Describe this image..." value="${escapeAttr(selectedImg.getAttribute("alt") || "")}" />
-          <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary" title="Save alt text">${icon("check", 14)}</button>
-          <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="Cancel">${icon("x", 14)}</button>
+          <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary" title="Save alt text">${renderIcon("check", 14)}</button>
+          <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="Cancel">${renderIcon("x", 14)}</button>
         </form>
       `;
       const form = toolbar.querySelector("form");
@@ -129,13 +130,13 @@ export function createImageResizeExtension({
       </div>
       <span class="ve-sep"></span>
       <div class="ve-btn-group" role="group" aria-label="Image alignment">
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "left" ? "is-active" : ""}" data-align="left" title="Align left">${icon("alignLeft", 14)}</button>
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "center" ? "is-active" : ""}" data-align="center" title="Align center">${icon("alignCenter", 14)}</button>
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "right" ? "is-active" : ""}" data-align="right" title="Align right">${icon("alignRight", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "left" ? "is-active" : ""}" data-align="left" title="Align left">${renderIcon("alignLeft", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "center" ? "is-active" : ""}" data-align="center" title="Align center">${renderIcon("alignCenter", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "right" ? "is-active" : ""}" data-align="right" title="Align right">${renderIcon("alignRight", 14)}</button>
       </div>
       <span class="ve-sep"></span>
       <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${selectedImg.getAttribute("alt") ? "is-active" : ""}" data-action="edit-alt" title="Edit alt text">Alt</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--danger" data-action="delete" title="Delete image">${icon("trash", 14)}</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--danger" data-action="delete" title="Delete image">${renderIcon("trash", 14)}</button>
     `;
   }
 

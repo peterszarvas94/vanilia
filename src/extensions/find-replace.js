@@ -9,7 +9,7 @@ import { icon } from "../icons.js";
 const SUPPORTS_HIGHLIGHTS =
   typeof CSS !== "undefined" && "highlights" in CSS && typeof Highlight !== "undefined";
 
-export function createFindReplaceExtension({ surface, barSlot, squire, onChange }) {
+export function createFindReplaceExtension({ surface, barSlot, squire, onChange, renderIcon = icon }) {
   const bar = document.createElement("div");
   bar.className = "ve-find-bar";
   bar.hidden = true;
@@ -22,7 +22,7 @@ export function createFindReplaceExtension({ surface, barSlot, squire, onChange 
       <input type="text" class="ve-input ve-input--sm" data-replace-input placeholder="Replace with..." aria-label="Replace text" />
       <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace">Replace</button>
       <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace-all">All</button>
-      <button type="button" class="ve-btn ve-btn--sm" data-action="close" title="Close (Esc)">${icon("x", 14)}</button>
+      <button type="button" class="ve-btn ve-btn--sm" data-action="close" title="Close (Esc)">${renderIcon("x", 14)}</button>
     </div>
   `;
   barSlot.appendChild(bar);
