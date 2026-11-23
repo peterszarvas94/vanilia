@@ -3,13 +3,14 @@
 ## Git
 
 - Default branch is `master` (renamed from `main` on 2026-11-23). Branch from `origin/master` and target PRs at it.
-- GitHub (`origin`, `peterszarvas94/vanilla-wysiwyg`) is the only remote. One worktree and one PR per task.
+- GitHub (`origin`, `peterszarvas94/vanilia`, renamed from `vanilla-wysiwyg` on 2026-11-23) is the primary; push and open PRs there only. One worktree and one PR per task.
+- Forgejo (`git.erdohat.com/peterszarvas/vanilia`) is a read-only mirror, synced from GitHub every minute by the homelab `github-forgejo-sync` timer. Never push to it.
 
 ## Deployment
 
 - Live site: https://vanilia.peterszarvas.hu (the old `wysiwyg.peterszarvas.hu` domain is retired).
-- Coolify app `Vanilia` (`iompqyo5c6n63lljt8rwjrm4`) on the hub Coolify, Dockerfile build, public GitHub source, branch `master`.
-- Pushes to `master` deploy automatically: a GitHub push webhook calls Coolify's `/webhooks/source/github/events/manual`, signed with the app's GitHub webhook secret. Check the site after merging. To redeploy by hand: `coolify deploy uuid iompqyo5c6n63lljt8rwjrm4`.
+- Coolify app `Vanilia` (`iompqyo5c6n63lljt8rwjrm4`) in the `Vanilia` project on the hub Coolify, Dockerfile build, native **Forgejo** source (`peterszarvas/vanilia`), branch `master`.
+- Pushes to `master` deploy automatically: the mirror pushes to Forgejo within a minute, and Forgejo's signed push hook triggers Coolify. Check the site after merging. To redeploy by hand: `coolify deploy uuid iompqyo5c6n63lljt8rwjrm4`.
 - Hosted install snippets (README, `templates/home.html`, `templates/docs.html`) point at `https://vanilia.peterszarvas.hu/dist/…`. Update them together if the domain changes.
 
 ## Build
