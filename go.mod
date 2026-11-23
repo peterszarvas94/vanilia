@@ -1,4 +1,4 @@
-module vanilla-wysiwyg
+module vanilia
 
 go 1.25.0
 

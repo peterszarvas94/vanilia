@@ -335,7 +335,7 @@ editor?.exec("bold"); // "bolt" would be a type error`}}
           The editor sanitizes pasted HTML in the browser, but anything a client sends can be forged, so sanitize again
           on the server before storing or rendering it. Allow only what the editor produces. For Go, this is the
           <a href="https://github.com/microcosm-cc/bluemonday" target="_blank" rel="noopener noreferrer">bluemonday</a>
-          policy this site uses (<a href="https://github.com/peterszarvas94/vanilla-wysiwyg/blob/main/cmd/server/utils.go" target="_blank" rel="noopener noreferrer">full source</a>):
+          policy this site uses (<a href="https://github.com/peterszarvas94/vanilia/blob/master/cmd/server/utils.go" target="_blank" rel="noopener noreferrer">full source</a>):
         </p>
 {{template "code" (print `p := bluemonday.NewPolicy()
 p.AllowStandardURLs()

@@ -1,8 +1,8 @@
 # Docker & Coolify Deployment
 
 ```sh
-docker build -t vanilla-wysiwyg .
-docker run --rm -p 127.0.0.1:3000:3000 vanilla-wysiwyg
+docker build -t vanilia .
+docker run --rm -p 127.0.0.1:3000:3000 vanilia
 ```
 
 - No Node in the image: the container compiles only the Go + Datastar SSE server and copies the committed `dist/` build plus `static/`, `assets/` and `templates/`.
