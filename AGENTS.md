@@ -9,7 +9,7 @@
 
 - Live site: https://vanilia.peterszarvas.hu (the old `wysiwyg.peterszarvas.hu` domain is retired).
 - Coolify app `Vanilia` (`iompqyo5c6n63lljt8rwjrm4`) on the hub Coolify, Dockerfile build, public GitHub source, branch `master`.
-- There is no deploy webhook: merging does not deploy. After a merge run `coolify deploy uuid iompqyo5c6n63lljt8rwjrm4` and check the site.
+- Pushes to `master` deploy automatically: a GitHub push webhook calls Coolify's `/webhooks/source/github/events/manual`, signed with the app's GitHub webhook secret. Check the site after merging. To redeploy by hand: `coolify deploy uuid iompqyo5c6n63lljt8rwjrm4`.
 - Hosted install snippets (README, `templates/home.html`, `templates/docs.html`) point at `https://vanilia.peterszarvas.hu/dist/…`. Update them together if the domain changes.
 
 ## Build
