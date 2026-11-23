@@ -15,10 +15,13 @@
         </div>
         <div class="hero-install">
 {{template "code" `<script type="importmap">
-  { "imports": { "squire-rte": "https://vanilia.peterszarvas.hu/dist/squire.mjs" } }
+  { "imports": {
+    "squire-rte": "https://vanilia.peterszarvas.hu/dist/squire.mjs",
+    "vanilia-editor": "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"
+  } }
 </script>
 <link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
-<script type="module" src="https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"></script>
+<script type="module">import "vanilia-editor";</script>
 
 <vanilia-editor name="content"></vanilia-editor>`}}
         </div>
