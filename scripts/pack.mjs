@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Zero-dependency packer that combines the modular ES sources + vendored Squire
- * into two drop-in distribution files:
- *   - dist/vanilia-editor.js  (single self-contained ES module)
+ * Zero-dependency packer that combines the modular ES sources into drop-in
+ * distribution files:
+ *   - dist/vanilia-editor.js  (single ES module; imports Squire via the bare specifier "squire-rte")
+ *   - dist/squire.mjs         (pinned vendored Squire ESM build, map "squire-rte" to it in an import map)
  *   - dist/vanilia-editor.css (single self-contained stylesheet with --ve-* CSS variables)
  *
  * Usage:
@@ -18,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIST_DIR = path.join(ROOT, "dist");
 
 const MODULES = [
-  { file: "src/icons.js", exports: ["icon"] },
+  { file: "src/icons.js", exports: ["icon", "setIcons", "onIconsChange", "ICON_NAMES"] },
   {
     file: "src/sanitizer.js",
     exports: ["isSafeUrl", "sanitizeToDOMFragment", "normalizeExportHTML", "formatHTML"],
@@ -54,25 +55,12 @@ function readUTF8(relPath) {
 }
 
 function packSquire() {
-  const raw = readUTF8("static/vendor/squire.mjs")
+  // Ship the pinned vendor build verbatim (minus its dangling source map reference)
+  return readUTF8("static/vendor/squire.mjs")
     .replace(/\r\n/g, "\n")
     .replace(/\n?\/\/# sourceMappingURL=.*$/m, "")
-    .trim();
-
-  const match = raw.match(/export\s*\{\s*([A-Za-z_$][\w$]*)\s+as\s+default\s*\};?\s*$/);
-  if (!match) {
-    throw new Error("Could not locate default export in static/vendor/squire.mjs");
-  }
-  const defaultIdent = match[1];
-  const body = raw.slice(0, match.index).trimEnd();
-
-  return [
-    "// --- static/vendor/squire.mjs (MIT License, Fastmail) ---",
-    'const Squire = typeof document !== "undefined" ? (() => {',
-    body,
-    `return ${defaultIdent};`,
-    "})() : null;",
-  ].join("\n");
+    .trimEnd()
+    .concat("\n");
 }
 
 function packModule({ file, exports: exportNames }) {
@@ -102,14 +90,21 @@ function buildJS() {
   const header = [
     "/**",
     " * Vanilia (<vanilia-editor>) — single-file drop-in ES module.",
-    " * Generated from src/ + static/vendor/squire.mjs via `node scripts/pack.mjs`.",
-    " * Includes Fastmail Squire (MIT License, see static/vendor/SQUIRE-LICENSE.txt).",
+    " * Generated from src/ via `node scripts/pack.mjs`.",
+    " *",
+    " * Squire is an external dependency imported via the bare specifier \"squire-rte\":",
+    " *   - no-build pages: map it in an import map, e.g. { \"imports\": { \"squire-rte\": \"/dist/squire.mjs\" } }",
+    " *   - bundlers (Vite, esbuild, ...): resolved from the squire-rte npm package",
     " */",
+    'import Squire from \"squire-rte\";',
   ].join("\n");
 
   const footer = [
     "export {",
     "  VaniliaEditorElement,",
+    "  icon,",
+    "  setIcons,",
+    "  ICON_NAMES,",
     "  sanitizeToDOMFragment,",
     "  normalizeExportHTML,",
     "  formatHTML,",
@@ -121,7 +116,7 @@ function buildJS() {
     "",
   ].join("\n");
 
-  return [header, packSquire(), ...MODULES.map(packModule), footer].join("\n\n");
+  return [header, ...MODULES.map(packModule), footer].join("\n\n");
 }
 
 function buildCSS() {
@@ -141,6 +136,8 @@ function buildCSS() {
 const outputs = [
   { path: path.join(DIST_DIR, "vanilia-editor.js"), content: buildJS() },
   { path: path.join(DIST_DIR, "vanilia-editor.css"), content: buildCSS() },
+  { path: path.join(DIST_DIR, "squire.mjs"), content: packSquire() },
+  { path: path.join(DIST_DIR, "SQUIRE-LICENSE.txt"), content: readUTF8("static/vendor/SQUIRE-LICENSE.txt") },
 ];
 
 const checkOnly = process.argv.includes("--check");

@@ -4,6 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Vanilia — Modern Web & CSS APIs</title>
+    <script type="importmap">
+      { "imports": { "squire-rte": "/dist/squire.mjs", "vanilia-editor": "/dist/vanilia-editor.js" } }
+    </script>
     <link rel="stylesheet" href="/dist/vanilia-editor.css" />
     <style>
       :root {
@@ -291,7 +294,7 @@
     </div>
 
     <script type="module">
-      import "/dist/vanilia-editor.js";
+      import "vanilia-editor";
 
       const editor = document.getElementById("editor");
       const output = document.getElementById("html-output");
