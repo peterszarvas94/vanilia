@@ -24,13 +24,42 @@ var voidTags = map[string]bool{
 // Tokenizing keeps quoted > characters and script/style text intact.
 func formatHTMLSnippet(source string) string {
 	originals := map[string]string{}
+	blocks := map[string]string{}
+	marker := "VANILIA_SNIPPET_BLOCK"
+	for strings.Contains(source, marker) {
+		marker += "_"
+	}
 	var normalized strings.Builder
 	tokens := html.NewTokenizer(strings.NewReader(source))
 	for kind := tokens.Next(); kind != html.ErrorToken; kind = tokens.Next() {
 		raw := string(tokens.Raw())
 		if kind == html.StartTagToken {
-			name, _ := tokens.TagName()
-			if voidTags[string(name)] {
+			token := tokens.Token()
+			if snippetLiteral(token) {
+				var block strings.Builder
+				block.WriteString(raw)
+				depth := 1
+				for depth > 0 {
+					next := tokens.Next()
+					if next == html.ErrorToken {
+						return source
+					}
+					block.Write(tokens.Raw())
+					name, _ := tokens.TagName()
+					if string(name) == token.Data {
+						if next == html.StartTagToken {
+							depth++
+						} else if next == html.EndTagToken {
+							depth--
+						}
+					}
+				}
+				placeholder := "<div>" + marker + strings.Repeat("_", len(blocks)+1) + "</div>"
+				blocks[placeholder] = block.String()
+				normalized.WriteString(placeholder)
+				continue
+			}
+			if voidTags[token.Data] {
 				closed := strings.TrimSuffix(raw, ">") + "/>"
 				originals[closed] = raw
 				raw = closed
@@ -39,7 +68,11 @@ func formatHTMLSnippet(source string) string {
 		normalized.WriteString(raw)
 	}
 	var result strings.Builder
-	tokens = html.NewTokenizer(strings.NewReader(gohtml.Format(normalized.String())))
+	formatted := gohtml.Format(normalized.String())
+	for placeholder, block := range blocks {
+		formatted = strings.ReplaceAll(formatted, placeholder, block)
+	}
+	tokens = html.NewTokenizer(strings.NewReader(formatted))
 	for kind := tokens.Next(); kind != html.ErrorToken; kind = tokens.Next() {
 		raw := string(tokens.Raw())
 		if original, ok := originals[raw]; kind == html.SelfClosingTagToken && ok {
@@ -50,19 +83,26 @@ func formatHTMLSnippet(source string) string {
 	return strings.TrimSpace(result.String())
 }
 
+func snippetLiteral(token html.Token) bool {
+	switch token.Data {
+	case "pre", "textarea", "script", "style":
+		return true
+	case "template":
+		for _, attr := range token.Attr {
+			if attr.Key == "data-ve-shortcuts" || attr.Key == "data-ve-labels" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func init() {
 	// Configure once before serving requests; gohtml's settings are global.
 	gohtml.Condense = true
 	gohtml.InlineTagMaxLength = int(^uint(0) >> 1)
 	for _, tag := range strings.Fields("abbr b bdi bdo br cite del dfn i img input kbd label mark q s samp small sub sup time u var wbr") {
 		gohtml.InlineTags[tag] = true
-	}
-	gohtml.IsPreformatted = func(token html.Token) bool {
-		switch token.Data {
-		case "pre", "textarea", "script", "style":
-			return true
-		}
-		return false
 	}
 }
 

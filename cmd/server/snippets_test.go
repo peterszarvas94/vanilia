@@ -57,3 +57,16 @@ func TestFormatSnippetLanguages(t *testing.T) {
 		t.Errorf("JavaScript literal changed: %q", got)
 	}
 }
+
+func TestFormatSnippetLiteralBlocksHaveSeparateLines(t *testing.T) {
+	const source = "<vanilia-editor><template data-ve-shortcuts>\n    {\n      \"find\": []\n    }\n  </template></vanilia-editor><pre id=\"output\"></pre><script>\n  const text = `a\n  b`;\n</script>"
+	got := formatSnippet(source)
+	for _, want := range []string{
+		"\n  <template data-ve-shortcuts>\n    {\n      \"find\": []\n    }\n  </template>\n",
+		"</vanilia-editor>\n<pre id=\"output\"></pre>\n<script>\n  const text = `a\n  b`;\n</script>",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %q in:\n%s", want, got)
+		}
+	}
+}
