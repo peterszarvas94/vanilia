@@ -20,7 +20,7 @@ const editor = document.querySelector("vanilia-editor");`}}
       <tr><td><code>setHTML(html, { silent? })</code></td><td>Replace the content. <code>silent: true</code> skips the <code>input</code> event.</td></tr>
       <tr><td><code>insertHTML(html)</code></td><td>Insert HTML at the cursor, replacing the selection. Sanitized like pasted content.</td></tr>
       <tr><td><code>insertText(text)</code></td><td>Insert plain text at the cursor, replacing the selection.</td></tr>
-      <tr><td><code>insertImage(url, alt?)</code></td><td>Insert an image at the cursor. Returns the <code><code>insertImage(url, alt?): HTMLImageElement | null</code></td><td>Insert an image at the cursor. Returns <code>null</code> for unsafe URLs.lt;img<code>insertImage(url, alt?): HTMLImageElement | null</code></td><td>Insert an image at the cursor. Returns <code>null</code> for unsafe URLs.gt;</code>, or <code>null</code> for an unsafe URL.</td></tr>
+      <tr><td><code>insertImage(url, alt?)</code></td><td>Insert an image at the cursor. Returns the <code>&lt;img&gt;</code>, or <code>null</code> for an unsafe URL.</td></tr>
     </tbody>
   </table>
 </div>
