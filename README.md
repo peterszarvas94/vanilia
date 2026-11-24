@@ -118,6 +118,10 @@ The built-in icons are inlined Lucide-compatible SVGs (no icon library needed). 
    ></vanilia-editor>
    ```
 
+## Credits
+
+The logo and favicon use the [vanilla flower](https://game-icons.net/1x1/lorc/vanilla-flower.html) icon by [Lorc](https://lorcblog.blogspot.com) from [game-icons.net](https://game-icons.net), licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (placed on a rounded square). Squire is MIT-licensed by Neil Jenkins and Fastmail.
+
 ## Local Development
 
 The Go server also hosts the project website: home (`/`), docs (`/docs`), examples (`/examples`, including Datastar, htmx and Alpine.js integrations) and the Go + Datastar demo (`/demo`). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Each example in `templates/examples/` is rendered live and shown as source from the same file; register new ones in `cmd/server/pages.go`. Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
