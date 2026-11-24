@@ -36,6 +36,8 @@ export {
 } from "./toolbar.js";
 export {
   setShortcuts,
+  deleteShortcuts,
+  restoreDefaultShortcuts,
   formatShortcut,
   DEFAULT_SHORTCUTS,
   type Shortcut,

@@ -4,8 +4,7 @@
       "strike": "Mod+Shift+S",
       "paragraph": "Mod+Alt+0",
       "h2": "Mod+Alt+2",
-      "h3": "Mod+Alt+3",
-      "find": false
+      "h3": "Mod+Alt+3"
     }
   </template>
   <template>
@@ -20,8 +19,12 @@
   await customElements.whenDefined("vanilia-editor");
   const editor = document.getElementById("shortcuts-editor");
 
-  // From JavaScript: false removes a shortcut, null restores the default
-  editor.setShortcuts({ underline: false });
+  // Remove shortcuts by command name
+  editor.deleteShortcuts("underline", "find");
+
+  // Restore one command, or call without names to restore all local overrides
+  // editor.restoreDefaultShortcuts("underline");
+  // editor.restoreDefaultShortcuts();
 
   // getShortcuts() lists what is in effect, formatted for this platform
   document.getElementById("shortcuts-output").textContent = Object.entries(editor.getShortcuts())

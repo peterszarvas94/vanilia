@@ -13,10 +13,10 @@
 export type Shortcut = string;
 
 /**
- * Shortcut overrides by command or custom button name: one combination, several, or
- * `false` / `""` / `[]` to remove them. `null` restores the default.
+ * Shortcut overrides by command or custom button name: one combination or several.
+ * An empty array declares no shortcuts in a data-ve-shortcuts template.
  */
-export type ShortcutMap = Record<string, Shortcut | readonly Shortcut[] | false | null | undefined>;
+export type ShortcutMap = Record<string, Shortcut | readonly Shortcut[]>;
 
 /** The built-in shortcuts. */
 export const DEFAULT_SHORTCUTS: Readonly<Record<string, readonly Shortcut[]>> = Object.freeze({
@@ -40,22 +40,44 @@ export const DEFAULT_SHORTCUTS: Readonly<Record<string, readonly Shortcut[]>> = 
 const globalShortcuts = new Map<string, Shortcut[]>();
 const shortcutListeners = new Set<() => void>();
 
-/** Write shortcut overrides into `target`; `null` deletes an entry, `false` stores "none". */
+/** Write shortcut combinations into `target`. */
 export function mergeShortcuts(target: Map<string, Shortcut[]>, map: ShortcutMap): void {
+  const entries: [string, Shortcut[]][] = [];
   for (const [name, value] of Object.entries(map)) {
-    if (value == null) target.delete(name);
-    else if (value === false || value === "") target.set(name, []);
-    else target.set(name, (typeof value === "string" ? [value] : [...value]).filter(Boolean));
+    if (
+      typeof value !== "string" &&
+      (!Array.isArray(value) || !value.every((key) => typeof key === "string"))
+    ) {
+      throw new TypeError(
+        "Use deleteShortcuts() or restoreDefaultShortcuts() to remove or reset shortcuts.",
+      );
+    }
+    entries.push([name, (typeof value === "string" ? [value] : [...value]).filter(Boolean)]);
   }
+  for (const [name, keys] of entries) target.set(name, keys);
 }
 
 /**
  * Override shortcuts for every <vanilia-editor> on the page (mounted editors update).
  *
- *   setShortcuts({ bold: "Mod+Shift+B", find: false, h2: "Mod+Alt+2" });
+ *   setShortcuts({ bold: "Mod+Shift+B", h2: "Mod+Alt+2" });
  */
 export function setShortcuts(map: ShortcutMap = {}): void {
   mergeShortcuts(globalShortcuts, map);
+  for (const listener of shortcutListeners) listener();
+}
+
+/** Remove named shortcuts for every editor on the page. */
+export function deleteShortcuts(...commands: string[]): void {
+  for (const name of commands) globalShortcuts.set(name, []);
+  for (const listener of shortcutListeners) listener();
+}
+
+/** Restore named global overrides, or all overrides when called without names. */
+export function restoreDefaultShortcuts(...commands: string[]): void {
+  if (commands.length) {
+    for (const name of commands) globalShortcuts.delete(name);
+  } else globalShortcuts.clear();
   for (const listener of shortcutListeners) listener();
 }
 
