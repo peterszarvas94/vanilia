@@ -99,12 +99,6 @@ func snippetLiteral(token html.Token) bool {
 	switch token.Data {
 	case "pre", "textarea", "script", "style":
 		return true
-	case "template":
-		for _, attr := range token.Attr {
-			if attr.Key == "data-ve-shortcuts" || attr.Key == "data-ve-labels" {
-				return true
-			}
-		}
 	}
 	return false
 }

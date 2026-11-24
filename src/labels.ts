@@ -1,7 +1,7 @@
 /**
  * User-facing text: button labels, popovers, find & replace, status messages.
  * Override any of them globally with `setLabels()` or per editor with
- * `editor.setLabels()` / `<template data-ve-labels>{...}</template>`.
+ * `editor.setLabels()`.
  */
 
 /** Values interpolated into a label (`{count}`, `{name}`, ...). */

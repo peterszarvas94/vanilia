@@ -6,20 +6,14 @@
   <code>&lt;i&gt;</code>, an <code>&lt;img&gt;</code>, or a server-rendered component).
 </p>
 
-<h2 id="html">In HTML</h2>
-{{template "code" `<vanilia-editor>
-  <template data-ve-icon="bold"><svg viewBox="0 0 256 256">...</svg></template>
-  <template data-ve-icon="italic"><i class="ph ph-text-italic"></i></template>
-</vanilia-editor>`}}
-
-<h2 id="javascript">From JavaScript</h2>
+<h2 id="javascript">JavaScript setup</h2>
 {{template "code" `import { setIcons, ICON_NAMES } from "vanilia-editor";
 
 // every editor on the page (mounted editors update too)
 setIcons({ undo: "<svg>...</svg>", redo: "<svg>...</svg>" });
 
-// one editor; null restores the default
-editor.setIcons({ italic: null });
+// one editor
+editor.setIcons({ italic: '<i class="ph ph-text-italic"></i>' });
 
 // a new name, for a custom button's icon: "sparkles"
 setIcons({ sparkles: "<svg>...</svg>" });`}}

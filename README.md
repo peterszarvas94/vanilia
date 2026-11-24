@@ -13,7 +13,7 @@ A drop-in, framework-agnostic `<vanilia-editor>` Web Component powered by a pinn
   - Floating native `popover="manual"` toolbar with `25%` / `50%` / `75%` / `100%` presets, Left / Center / Right alignment, inline Alt-text editor, and Delete.
   - Full Undo/Redo integration, drag-and-drop image upload, clipboard image paste, and file picker (`POST /api/upload`).
 - **Configurable Toolbar & Custom Buttons**: `toolbar` / `bubble-menu` layouts, `addButton()` / `defineButton()` with icons, shortcuts and active state.
-- **Labels, Icons & Themes**: translate every label (`setLabels`, `<template data-ve-labels>`), replace any icon, and theme with `--ve-*` tokens, `theme="dark"` or typed `setTheme()`.
+- **Labels, Icons & Themes**: translate every label (`setLabels`), replace any icon, and theme with `--ve-*` tokens, `theme="dark"` or typed `setTheme()`.
 - **Floating Selection Bubble Toolbar** ([`src/extensions/bubble-menu.ts`](./src/extensions/bubble-menu.ts)): Native Popover API + CSS Anchor Positioning.
 - **Non-Destructive Find & Replace** ([`src/extensions/find-replace.ts`](./src/extensions/find-replace.ts)): Native CSS Custom Highlight API (`CSS.highlights`).
 - **Defense-in-Depth Sanitization**: Client-side allowlist `<template>` sanitizer ([`src/sanitizer.ts`](./src/sanitizer.ts)) + server-side `bluemonday` allowlist sanitizer ([`cmd/server/utils.go`](./cmd/server/utils.go)).
@@ -131,13 +131,9 @@ Tokens: `--ve-accent`, `--ve-accent-contrast`, `--ve-accent-soft`, `--ve-accent-
 
 ### Icons
 
-The built-in icons are inlined Lucide-compatible SVGs. Resize them with `--ve-icon-size` / `--ve-icon-size-sm` / `--ve-icon-stroke`, or replace any of them with your own markup:
+Configure icons, labels and shortcuts through their JavaScript methods. Child `<template>` elements are only for initial document content.
 
-```html
-<vanilia-editor>
-  <template data-ve-icon="bold"><svg viewBox="0 0 256 256">…</svg></template>
-</vanilia-editor>
-```
+The built-in icons are inlined Lucide-compatible SVGs. Resize them with `--ve-icon-size` / `--ve-icon-size-sm` / `--ve-icon-stroke`, or replace any of them with your own markup:
 
 ```js
 import { setIcons } from "vanilia-editor";
@@ -147,15 +143,7 @@ editor.setIcons({ italic: '<i class="ph ph-text-italic"></i>' }); // one editor
 
 ### Labels and translation
 
-Every text the editor shows (tooltips, popovers, find & replace, word count, status and validation messages) is a named label. Override them per editor in HTML or JavaScript, or for the whole page:
-
-```html
-<vanilia-editor>
-  <template data-ve-labels
-    >{ "bold": "Fett", "placeholder": "Schreib los...", "wordCount": "{count} Wörter" }</template
-  >
-</vanilia-editor>
-```
+Every text the editor shows (tooltips, popovers, find & replace, word count, status and validation messages) is a named label. Override them in JavaScript, per editor or for the whole page:
 
 ```js
 import { setLabels } from "vanilia-editor";
@@ -165,7 +153,7 @@ editor.setLabels({ wordCount: ({ count }) => `${count} ${count === 1 ? "Wort" : 
 
 ### Keyboard shortcuts
 
-Every shortcut maps keys to a command or custom button, and all of them can be changed, added or removed: per editor with `<template data-ve-shortcuts>` or `editor.setShortcuts()`, for the whole page with `setShortcuts()`, or all at once with `shortcuts="none"`. Tooltips follow along.
+Every shortcut maps keys to a command or custom button, and all of them can be changed, added or removed: per editor with `editor.setShortcuts()`, for the whole page with `setShortcuts()`, or all at once with `shortcuts="none"`. Tooltips follow along.
 
 ```js
 import { setShortcuts, deleteShortcuts, restoreDefaultShortcuts } from "vanilia-editor";

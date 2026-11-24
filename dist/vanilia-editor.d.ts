@@ -253,7 +253,7 @@ interface ActiveState {
 /**
  * User-facing text: button labels, popovers, find & replace, status messages.
  * Override any of them globally with `setLabels()` or per editor with
- * `editor.setLabels()` / `<template data-ve-labels>{...}</template>`.
+ * `editor.setLabels()`.
  */
 /** Values interpolated into a label (`{count}`, `{name}`, ...). */
 type LabelVars = Record<string, string | number>;
@@ -422,9 +422,8 @@ export declare function defineButton(button: ToolbarButton): void;
 export declare function undefineButton(name: string): void;
 /**
  * Keyboard shortcuts: command name to key combinations. Override or remove any of
- * them globally with `setShortcuts()`, per editor with `editor.setShortcuts()` or
- * `<template data-ve-shortcuts>{...}</template>`, or turn them all off with
- * `shortcuts="none"`.
+ * them globally with `setShortcuts()` or per editor with `editor.setShortcuts()`.
+ * Use `shortcuts="none"` to turn them all off.
  *
  * Syntax: modifiers and a key joined with `+`, e.g. `"Mod+Shift+X"`. `Mod` is ⌘ on
  * macOS and Ctrl elsewhere; `Ctrl`, `Meta`, `Alt` and `Shift` are also accepted. The
@@ -434,7 +433,7 @@ export declare function undefineButton(name: string): void;
 type Shortcut = string;
 /**
  * Shortcut overrides by command or custom button name: one combination or several.
- * An empty array declares no shortcuts in a data-ve-shortcuts template.
+ * Use deleteShortcuts() and restoreDefaultShortcuts() to remove or reset commands.
  */
 type ShortcutMap = Record<string, Shortcut | readonly Shortcut[]>;
 /** The built-in shortcuts. */

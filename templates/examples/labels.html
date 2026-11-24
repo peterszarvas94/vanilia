@@ -1,28 +1,4 @@
 <vanilia-editor id="labels-editor" toolbar="bold italic underline | h2 bulletList | link image | undo redo find">
-  <template data-ve-labels>
-    {
-      "bold": "Fett",
-      "italic": "Kursiv",
-      "underline": "Unterstrichen",
-      "h2": "Überschrift",
-      "bulletList": "Aufzählung",
-      "link": "Link einfügen",
-      "image": "Bild einfügen",
-      "undo": "Rückgängig",
-      "redo": "Wiederholen",
-      "find": "Suchen und ersetzen",
-      "placeholder": "Schreib etwas...",
-      "linkUrl": "Adresse",
-      "cancel": "Abbrechen",
-      "apply": "Übernehmen",
-      "removeLink": "Entfernen",
-      "findPlaceholder": "Im Dokument suchen...",
-      "replacePlaceholder": "Ersetzen durch...",
-      "replace": "Ersetzen",
-      "replaceAll": "Alle",
-      "matchCount": "{current} von {total}"
-    }
-  </template>
   <template><p>Alle Beschriftungen dieses Editors sind deutsch. Fahr über die Schaltflächen oder drück Strg+F.</p></template>
 </vanilia-editor>
 
@@ -32,6 +8,26 @@
 
   // Functions handle plurals: "1 Wort", "2 Wörter"
   editor.setLabels({
+    bold: "Fett",
+    italic: "Kursiv",
+    underline: "Unterstrichen",
+    h2: "Überschrift",
+    bulletList: "Aufzählung",
+    link: "Link einfügen",
+    image: "Bild einfügen",
+    undo: "Rückgängig",
+    redo: "Wiederholen",
+    find: "Suchen und ersetzen",
+    placeholder: "Schreib etwas...",
+    linkUrl: "Adresse",
+    cancel: "Abbrechen",
+    apply: "Übernehmen",
+    removeLink: "Entfernen",
+    findPlaceholder: "Im Dokument suchen...",
+    replacePlaceholder: "Ersetzen durch...",
+    replace: "Ersetzen",
+    replaceAll: "Alle",
+    matchCount: "{current} von {total}",
     wordCount: ({ count }) => `${count} ${count === 1 ? "Wort" : "Wörter"}`,
     imageCount: ({ count }) => `${count} ${count === 1 ? "Bild" : "Bilder"}`,
   });

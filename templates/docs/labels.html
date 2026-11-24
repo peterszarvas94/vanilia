@@ -5,15 +5,7 @@
   keep the English default.
 </p>
 
-<h2 id="html">In HTML</h2>
-<p>A <code>&lt;template data-ve-labels&gt;</code> child holds overrides as JSON:</p>
-{{template "code" `<vanilia-editor>
-  <template data-ve-labels>
-    { "bold": "Fett", "italic": "Kursiv", "placeholder": "Schreib los...", "wordCount": "{count} Wörter" }
-  </template>
-</vanilia-editor>`}}
-
-<h2 id="javascript">From JavaScript</h2>
+<h2 id="javascript">JavaScript setup</h2>
 {{template "code" `import { setLabels } from "vanilia-editor";
 
 // every editor on the page (mounted editors update too)

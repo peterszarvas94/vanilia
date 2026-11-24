@@ -40,10 +40,10 @@ var exampleIndex = []example{
 	{Group: "Examples", Slug: "form", Title: "Inside a form", Description: "The editor is form-associated: <code>name</code>, <code>required</code>, <code>FormData</code> and <code>reset</code> work like a native field."},
 	{Group: "Examples", Slug: "api", Title: "JavaScript API", Description: "Read and write content, run commands and listen to state updates."},
 	{Group: "Examples", Slug: "theme", Title: "Custom theme", Description: "Restyle everything with <code>--ve-*</code> CSS custom properties, pin light or dark with <code>theme</code>, and set tokens from JavaScript with <code>setTheme()</code>."},
-	{Group: "Examples", Slug: "icons", Title: "Custom icons", Description: "Swap individual icons per editor with <code>&lt;template data-ve-icon&gt;</code>, and tune the built-in ones with CSS."},
+	{Group: "Examples", Slug: "icons", Title: "Custom icons", Description: "Swap individual icons per editor with <code>setIcons()</code>, and tune the built-in ones with CSS."},
 	{Group: "Examples", Slug: "toolbar", Title: "Toolbar layout", Description: "Pick the toolbar and selection-menu buttons with <code>toolbar</code> and <code>bubble-menu</code>, and add your own with <code>addButton()</code>."},
-	{Group: "Examples", Slug: "labels", Title: "Translated labels", Description: "Translate every label with <code>&lt;template data-ve-labels&gt;</code>, and handle plurals with <code>setLabels()</code>."},
-	{Group: "Examples", Slug: "shortcuts", Title: "Keyboard shortcuts", Description: "Remap, add and remove shortcuts with <code>&lt;template data-ve-shortcuts&gt;</code> and <code>setShortcuts()</code>, and list them with <code>getShortcuts()</code>."},
+	{Group: "Examples", Slug: "labels", Title: "Translated labels", Description: "Translate every label with <code>setLabels()</code>, and handle plurals with <code>setLabels()</code>."},
+	{Group: "Examples", Slug: "shortcuts", Title: "Keyboard shortcuts", Description: "Remap shortcuts with <code>setShortcuts()</code>, remove them with <code>deleteShortcuts()</code>, and list them with <code>getShortcuts()</code>."},
 	{Group: "Examples", Slug: "headless", Title: "Your own toolbar", Description: "Hide the built-in toolbar with <code>toolbar=\"none\"</code> and drive the editor from your own buttons."},
 	{Group: "Examples", Slug: "uploads", Title: "Image uploads", Description: "Upload pasted, dropped and picked images to your server. Without <code>upload-url</code> images are inlined as <code>data:</code> URLs."},
 }
