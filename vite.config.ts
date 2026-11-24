@@ -17,11 +17,11 @@ export default defineConfig({
     ],
   },
   lint: {
-    ignorePatterns: ["dist/**", "static/vendor/**", "static/react-demo.js"],
+    ignorePatterns: ["dist/**", "static/vendor/**"],
     options: { typeAware: true, typeCheck: true },
   },
   fmt: {
     // templates/ are Go templates, not plain HTML
-    ignorePatterns: ["dist/**", "static/vendor/**", "static/react-demo.js", "templates/**"],
+    ignorePatterns: ["dist/**", "static/vendor/**", "templates/**"],
   },
 });

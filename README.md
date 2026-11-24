@@ -17,7 +17,7 @@ A drop-in, framework-agnostic `<vanilia-editor>` Web Component powered by a pinn
 - **Floating Selection Bubble Toolbar** ([`src/extensions/bubble-menu.ts`](./src/extensions/bubble-menu.ts)): Native Popover API + CSS Anchor Positioning.
 - **Non-Destructive Find & Replace** ([`src/extensions/find-replace.ts`](./src/extensions/find-replace.ts)): Native CSS Custom Highlight API (`CSS.highlights`).
 - **Defense-in-Depth Sanitization**: Client-side allowlist `<template>` sanitizer ([`src/sanitizer.ts`](./src/sanitizer.ts)) + server-side `bluemonday` allowlist sanitizer ([`cmd/server/utils.go`](./cmd/server/utils.go)).
-- **Go Demo Server** ([`cmd/server/`](./cmd/server/)): Hosts the docs, generic examples and interactive stack demos (script tag, Datastar SSE, htmx, Alpine.js, React 19), plus server-side HTML sanitization and bounded in-memory image uploads (`POST /api/upload`, `GET /uploads/:id`).
+- **Go Demo Server** ([`cmd/server/`](./cmd/server/)): Hosts the docs, generic examples and interactive stack demos (script tag, Datastar SSE, htmx, Alpine.js), plus server-side HTML sanitization and bounded in-memory image uploads (`POST /api/upload`, `GET /uploads/:id`).
 
 ## Install from npm
 
@@ -193,7 +193,7 @@ The logo and favicon use the [vanilla flower](https://game-icons.net/1x1/lorc/va
 
 ## Local Development
 
-The Go server also hosts the project website: home (`/`), docs (`/docs`), generic code-only examples (`/examples`) and interactive stack demos (`/demos`: script tag, Datastar, htmx, Alpine.js and React 19 — each live alongside its code and Go server handler). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Snippets live in `templates/examples/` and are registered in `cmd/server/pages.go` (`exampleIndex` for generic examples, `demoIndex` for interactive demos). Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
+The Go server also hosts the project website: home (`/`), docs (`/docs`), generic code-only examples (`/examples`) and interactive stack demos (`/demos`: script tag, Datastar, htmx and Alpine.js — each live alongside its code and Go server handler). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Snippets live in `templates/examples/` and are registered in `cmd/server/pages.go` (`exampleIndex` for generic examples, `demoIndex` for interactive demos). Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
 
 Start the Go + Datastar server:
 
@@ -212,7 +212,5 @@ npm run check   # vp check
 npm test        # vp test
 go test ./...
 ```
-
-React demo assets are pinned in `package.json` and committed in `static/vendor/`. After updating React, run `npm run build:react-demo` to rebuild the shared runtime, renderer and compiled TSX demo (`demos/react.tsx`). The Code tab reads the original TSX source.
 
 See [`DOCKER.md`](./DOCKER.md) for container deployment and [`PLAN.md`](./PLAN.md) for the prior-art architecture research.

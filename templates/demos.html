@@ -30,12 +30,7 @@
             <section role="tabpanel" id="code" aria-labelledby="{{.Slug}}-code-tab" hidden="until-found">
               <div class="demo-panel">
                 <h2>Integration code</h2>
-                {{if .SourceFile}}<p class="hint">{{.SourceFile}} · the TSX source compiled for this demo</p>{{end}}
                 {{template "code" .Source}}
-                {{if .Setup}}
-                <h2>Page setup</h2>
-                {{template "code" .Setup}}
-                {{end}}
                 {{if .Server}}
                 <h2 id="server">Server</h2>
                 <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>

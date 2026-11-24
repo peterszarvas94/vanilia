@@ -39,16 +39,10 @@
     "build": "vp pack",
     "check": "vp check",
     "fix": "vp check --fix",
-    "test": "vp test run",
-    "build:react-demo": "esbuild scripts/vendor/react.js scripts/vendor/react-dom-client.js --bundle --splitting --format=esm --platform=browser --define:process.env.NODE_ENV='\"production\"' --minify --legal-comments=linked --chunk-names=shared-[hash] --outdir=static/vendor/react && cp node_modules/react/LICENSE static/vendor/react/LICENSE.txt && esbuild demos/react.tsx --bundle --format=esm --platform=browser --external:react --external:react-dom/client --external:vanilia-editor --outfile=static/react-demo.js"
+    "test": "vp test run"
   },
   "devDependencies": {
     "@types/node": "26.6.6",
-    "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0",
-    "esbuild": "0.28.2",
-    "react": "19.3.1",
-    "react-dom": "19.3.1",
     "squire-rte": "2.4.11",
     "typescript": "7.0.2",
     "vite-plus": "1.5.0"
