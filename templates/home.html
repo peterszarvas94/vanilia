@@ -22,18 +22,9 @@
         </div>
       </section>
 
-      <vanilia-editor class="home-editor" placeholder="Try it: write something, paste an image...">
+      <vanilia-editor class="home-editor" upload-url="{{.BasePath}}/api/upload" placeholder="Try it: write something, paste an image...">
         <template>
-          <h2>Try it right here</h2>
-          <p>
-            This is the real editor. Select some text to get the <strong>floating menu</strong>, press
-            <code>Ctrl+K</code> for a link or <code>Ctrl+F</code> to find &amp; replace, and paste or drop an image, then
-            click it to <em>resize and align</em> it.
-          </p>
-          <ul>
-            <li>Undo / redo, headings, lists, quotes, code</li>
-            <li>Clean, semantic HTML output</li>
-          </ul>
+          {{fingerprintHTML .DemoContent}}
         </template>
       </vanilia-editor>
 

@@ -1,0 +1,56 @@
+<h1>Field Notes: Designing with Vanilia</h1>
+<p>
+  Edit this document live: try <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <s>strikethrough</s>,
+  <strong><em>combined emphasis</em></strong>, <code>inline code</code>, subscripts like H<sub>2</sub>O, superscripts
+  like 10<sup>3</sup>, and links such as
+  <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Fastmail Squire</a>.
+  Select any phrase to open the floating menu, or press <code>Ctrl+F</code> / <code>⌘F</code> for find &amp; replace.
+</p>
+<h2>Images, resizing &amp; alignment</h2>
+<p>
+  Click either image below to drag its 6 resize handles, jump to <code>25%</code> / <code>50%</code> / <code>75%</code>
+  / <code>100%</code>, change alignment, edit alt text, or paste and drop your own image to upload it.
+</p>
+<p><img src="/assets/sample-mountain.svg" alt="Alpine mountain range at dawn" data-align="center" style="width: 75%; height: auto; display: block; margin-left: auto; margin-right: auto;"></p>
+<p style="text-align: center"><em>Centered hero image (75%) with a centered caption underneath.</em></p>
+<h3>Nested lists &amp; outlines</h3>
+<ul>
+  <li>
+    <strong>Inline &amp; block styles</strong> that round-trip cleanly through both client and server sanitizers:
+    <ul>
+      <li>Press <code>Tab</code> / <code>Shift+Tab</code> to indent or outdent nested items</li>
+      <li>
+        Mix unordered and ordered levels freely:
+        <ol>
+          <li>Ordered step inside a nested bullet</li>
+          <li>Second step with <code>code</code> and <u>underline</u></li>
+        </ol>
+      </li>
+    </ul>
+  </li>
+  <li><strong>Form-associated</strong>: <code>name</code>, <code>required</code>, <code>FormData</code> and <code>reset</code> work natively</li>
+  <li><strong>Zero build step</strong>: one script and one stylesheet, themed with <code>--ve-*</code> tokens</li>
+</ul>
+<ol>
+  <li>
+    Drop, paste, or pick an image to upload it to <code>/api/upload</code>:
+    <ul>
+      <li>Drag any corner or edge handle for aspect-locked resizing</li>
+      <li>Align left, center, or right — every change integrates with Undo / Redo</li>
+    </ul>
+  </li>
+  <li>Trigger the stack action below to inspect the sanitized HTML output</li>
+</ol>
+<h2>Quotes, code &amp; second image</h2>
+<blockquote>
+  <p>Good rich text editors stay out of your way: plain semantic HTML in, clean sanitized HTML out.</p>
+  <blockquote>
+    <p>Even <strong>nested blockquotes</strong> with <em>emphasis</em> and <a href="/docs/sanitize">server-side sanitization</a> remain crisp and editable.</p>
+  </blockquote>
+</blockquote>
+<pre><code>&lt;vanilia-editor name="body" upload-url="/api/upload"&gt;
+  &lt;template&gt;&lt;p&gt;Drop-in rich text.&lt;/p&gt;&lt;/template&gt;
+&lt;/vanilia-editor&gt;</code></pre>
+<p><img src="/assets/sample-coast.svg" alt="Coastal lighthouse at sunset" data-align="right" style="width: 50%; height: auto; display: block; margin-left: auto; margin-right: 0px;"></p>
+<hr>
+<p style="text-align: right"><em>— Right-aligned sign-off · ready to edit, save, or reset.</em></p>

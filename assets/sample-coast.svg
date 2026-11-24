@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540">
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#312e81"/>
+      <stop offset="48%" stop-color="#be185d"/>
+      <stop offset="100%" stop-color="#fdba74"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0.5" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fef08a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="360" fill="url(#dusk)"/>
+  <circle cx="290" cy="315" r="78" fill="#fde68a" opacity="0.9"/>
+  <circle cx="290" cy="315" r="118" fill="#fde68a" opacity="0.22"/>
+  <rect y="360" width="960" height="180" fill="url(#sea)"/>
+  <rect x="190" y="374" width="200" height="8" rx="4" fill="#fdba74" opacity="0.55"/>
+  <rect x="225" y="396" width="130" height="6" rx="3" fill="#fde68a" opacity="0.4"/>
+  <rect x="255" y="416" width="70" height="5" rx="2.5" fill="#fde68a" opacity="0.28"/>
+  <polygon points="560,360 720,275 960,315 960,360" fill="#1e1b4b"/>
+  <polygon points="736,158 758,158 766,292 728,292" fill="#f8fafc"/>
+  <rect x="731" y="196" width="32" height="22" fill="#e11d48"/>
+  <rect x="729" y="242" width="36" height="22" fill="#e11d48"/>
+  <rect x="735" y="140" width="24" height="18" fill="#fef08a"/>
+  <polygon points="731,140 747,122 763,140" fill="#0f172a"/>
+  <polygon points="735,149 410,96 410,192" fill="url(#beam)"/>
+  <text x="40" y="492" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="24" font-weight="600">Try 25% / 50% / 75% / 100% presets or align left, center, right</text>
+</svg>

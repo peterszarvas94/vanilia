@@ -60,7 +60,7 @@ a {
   color: var(--accent);
 }
 
-code {
+:not(pre) > code {
   font: 0.88em / 1.4 var(--mono);
   padding: 0.12em 0.35em;
   border-radius: 5px;

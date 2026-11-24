@@ -1,6 +1,10 @@
-<div x-data="{ html: '<p>Hello from <strong>Alpine</strong>. Type here or use the buttons.</p>', words: 0 }">
-  <vanilia-editor x-model="html" @editorupdate="words = $event.detail.words"></vanilia-editor>
+<div x-data="{ html: $el.querySelector('template').innerHTML.trim(), words: 0 }">
+  <template x-ref="seed">
+    <!-- demo-content -->
+  </template>
+  <vanilia-editor upload-url="/api/upload" x-model="html" @editorupdate="words = $event.detail.words"></vanilia-editor>
   <div class="row">
+    <button type="button" @click="html = $refs.seed.innerHTML.trim()">Reset</button>
     <button type="button" @click="html = '<h2>Replaced</h2><p>Set from Alpine state.</p>'">Replace content</button>
     <button type="button" @click="html = ''">Clear</button>
     <span class="hint" x-text="words + (words === 1 ? ' word' : ' words')"></span>
