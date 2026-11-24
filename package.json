@@ -1,13 +1,30 @@
 {
   "name": "vanilia-editor",
   "version": "0.1.0",
-  "private": true,
   "description": "Drop-in rich text editor web component built on Squire",
+  "keywords": [
+    "custom-element",
+    "form-associated",
+    "rich-text-editor",
+    "squire",
+    "web-component",
+    "wysiwyg"
+  ],
+  "homepage": "https://vanilia.peterszarvas.hu",
+  "bugs": "https://github.com/peterszarvas94/vanilia/issues",
   "license": "MIT",
+  "author": "Peter Szarvas",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterszarvas94/vanilia.git"
+  },
   "files": [
     "dist"
   ],
   "type": "module",
+  "sideEffects": true,
+  "module": "./dist/vanilia-editor.js",
+  "types": "./dist/vanilia-editor.d.ts",
   "exports": {
     ".": {
       "types": "./dist/vanilia-editor.d.ts",
