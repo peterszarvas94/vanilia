@@ -33,16 +33,6 @@
   changed here.
 </p>
 
-<h2 id="html">In HTML</h2>
-<p>A <code>&lt;template data-ve-shortcuts&gt;</code> child holds overrides as JSON, by command or button name:</p>
-{{template "code" `<vanilia-editor>
-  <template data-ve-shortcuts>
-    { "strike": "Mod+Shift+S", "h2": "Mod+Alt+2", "redo": ["Mod+Shift+Z", "Mod+Y"], "find": [] }
-  </template>
-</vanilia-editor>`}}
-<p><code>shortcuts="none"</code> turns off every shortcut of an editor, built-in and custom:</p>
-{{template "code" `<vanilia-editor shortcuts="none"></vanilia-editor>`}}
-
 <h2 id="javascript">From JavaScript</h2>
 {{template "code" `import { setShortcuts, deleteShortcuts, restoreDefaultShortcuts } from "vanilia-editor";
 
@@ -64,7 +54,6 @@ editor.getShortcuts(); // { bold: ["Mod+B"], italic: ["Mod+I"], ... }`}}
   <code>restoreDefaultShortcuts(...commands)</code> to restore them. Calling restore without names resets all
   overrides at that scope. A per-editor restore falls back to the global settings, then the custom button's
   shortcut or built-in defaults; a global restore resets the global settings only.
-  In declarative JSON, an empty array (<code>"find": []</code>) means the command has no shortcuts.
 </p>
 <p>
   Lookup order: the editor's overrides, then <code>setShortcuts()</code>, then a custom button's own
@@ -72,6 +61,8 @@ editor.getShortcuts(); // { bold: ["Mod+B"], italic: ["Mod+I"], ... }`}}
   (<code>h1</code>, <code>paragraph</code>, <code>alignCenter</code>, <code>clearFormatting</code>, <code>indent</code>,
   ...).
 </p>
+
+<p><code>shortcuts="none"</code> turns off all shortcuts for an editor.</p>
 
 <h2 id="syntax">Syntax</h2>
 <p>

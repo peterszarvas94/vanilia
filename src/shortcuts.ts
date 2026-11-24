@@ -1,8 +1,7 @@
 /**
  * Keyboard shortcuts: command name to key combinations. Override or remove any of
- * them globally with `setShortcuts()`, per editor with `editor.setShortcuts()` or
- * `<template data-ve-shortcuts>{...}</template>`, or turn them all off with
- * `shortcuts="none"`.
+ * them globally with `setShortcuts()` or per editor with `editor.setShortcuts()`.
+ * Use `shortcuts="none"` to turn them all off.
  *
  * Syntax: modifiers and a key joined with `+`, e.g. `"Mod+Shift+X"`. `Mod` is ⌘ on
  * macOS and Ctrl elsewhere; `Ctrl`, `Meta`, `Alt` and `Shift` are also accepted. The
@@ -14,7 +13,7 @@ export type Shortcut = string;
 
 /**
  * Shortcut overrides by command or custom button name: one combination or several.
- * An empty array declares no shortcuts in a data-ve-shortcuts template.
+ * Use deleteShortcuts() and restoreDefaultShortcuts() to remove or reset commands.
  */
 export type ShortcutMap = Record<string, Shortcut | readonly Shortcut[]>;
 

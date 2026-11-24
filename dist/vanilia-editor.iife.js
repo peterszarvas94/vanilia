@@ -5553,27 +5553,6 @@ var Vanilia = (function(exports) {
 				}
 				return;
 			}
-			for (const tpl of this.querySelectorAll(":scope > template[data-ve-icon]")) {
-				const name = tpl.dataset.veIcon;
-				if (name) this.#iconOverrides.set(name, tpl.innerHTML.trim());
-				tpl.remove();
-			}
-			for (const tpl of this.querySelectorAll(":scope > template[data-ve-labels]")) {
-				try {
-					mergeLabels(this.#labelOverrides, JSON.parse(tpl.content.textContent || "{}"));
-				} catch (err) {
-					console.error("[vanilia-editor] invalid JSON in <template data-ve-labels>", err);
-				}
-				tpl.remove();
-			}
-			for (const tpl of this.querySelectorAll(":scope > template[data-ve-shortcuts]")) {
-				try {
-					mergeShortcuts(this.#shortcutOverrides, JSON.parse(tpl.content.textContent || "{}"));
-				} catch (err) {
-					console.error("[vanilia-editor] invalid JSON in <template data-ve-shortcuts>", err);
-				}
-				tpl.remove();
-			}
 			if (this.#pendingValue !== null) {
 				this.#initialHTML = this.#pendingValue;
 				this.#pendingValue = null;

@@ -59,10 +59,10 @@ func TestFormatSnippetLanguages(t *testing.T) {
 }
 
 func TestFormatSnippetLiteralBlocksHaveSeparateLines(t *testing.T) {
-	const source = "<vanilia-editor><template data-ve-shortcuts>\n    {\n      \"find\": []\n    }\n  </template></vanilia-editor><pre id=\"output\"></pre><script>\n  const text = `a\n  b`;\n</script>"
+	const source = "<vanilia-editor><script type=\"application/json\">\n    {\n      \"find\": []\n    }\n  </script></vanilia-editor><pre id=\"output\"></pre><script>\n  const text = `a\n  b`;\n</script>"
 	got := formatSnippet(source)
 	for _, want := range []string{
-		"\n  <template data-ve-shortcuts>\n    {\n      \"find\": []\n    }\n  </template>\n",
+		"\n  <script type=\"application/json\">\n    {\n      \"find\": []\n    }\n  </script>\n",
 		"</vanilia-editor>\n<pre id=\"output\"></pre>\n<script>\n  const text = `a\n  b`;\n</script>",
 	} {
 		if !strings.Contains(got, want) {

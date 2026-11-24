@@ -8,14 +8,19 @@
   }
 </style>
 
-<vanilia-editor class="serif-icons">
-  <!-- Replace individual icons with any markup: SVG, icon fonts, Templ components... -->
-  <template data-ve-icon="bold"><span class="glyph" style="font-weight: 800">B</span></template>
-  <template data-ve-icon="italic"><span class="glyph" style="font-style: italic">I</span></template>
-  <template data-ve-icon="underline"><span class="glyph" style="text-decoration: underline">U</span></template>
-  <template data-ve-icon="strike"><span class="glyph" style="text-decoration: line-through">S</span></template>
-  <template data-ve-icon="image">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm4 6.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5 18h14l-5-7-3.5 4.5L8 13z"/></svg>
-  </template>
+<vanilia-editor id="icons-editor" class="serif-icons">
   <template><p>The toolbar and the selection menu use the custom <strong>B</strong>, <em>I</em>, <u>U</u> and <s>S</s> icons.</p></template>
 </vanilia-editor>
+
+<script type="module">
+  await customElements.whenDefined("vanilia-editor");
+  const editor = document.getElementById("icons-editor");
+
+  editor.setIcons({
+    bold: `<span class="glyph" style="font-weight: 800">B</span>`,
+    italic: `<span class="glyph" style="font-style: italic">I</span>`,
+    underline: `<span class="glyph" style="text-decoration: underline">U</span>`,
+    strike: `<span class="glyph" style="text-decoration: line-through">S</span>`,
+    image: `<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm4 6.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5 18h14l-5-7-3.5 4.5L8 13z"/></svg>`,
+  });
+</script>

@@ -330,42 +330,6 @@ export class VaniliaEditorElement extends BaseHTMLElement {
       return;
     }
 
-    // Declarative per-editor icon overrides: <template data-ve-icon="bold">...</template>
-    for (const tpl of this.querySelectorAll<HTMLTemplateElement>(
-      ":scope > template[data-ve-icon]",
-    )) {
-      const name = tpl.dataset.veIcon;
-      if (name) this.#iconOverrides.set(name, tpl.innerHTML.trim());
-      tpl.remove();
-    }
-
-    // Declarative per-editor labels: <template data-ve-labels>{"bold": "Gras"}</template>
-    for (const tpl of this.querySelectorAll<HTMLTemplateElement>(
-      ":scope > template[data-ve-labels]",
-    )) {
-      try {
-        mergeLabels(this.#labelOverrides, JSON.parse(tpl.content.textContent || "{}") as LabelMap);
-      } catch (err) {
-        console.error("[vanilia-editor] invalid JSON in <template data-ve-labels>", err);
-      }
-      tpl.remove();
-    }
-
-    // Declarative per-editor shortcuts: <template data-ve-shortcuts>{"bold": "Mod+Shift+B"}</template>
-    for (const tpl of this.querySelectorAll<HTMLTemplateElement>(
-      ":scope > template[data-ve-shortcuts]",
-    )) {
-      try {
-        mergeShortcuts(
-          this.#shortcutOverrides,
-          JSON.parse(tpl.content.textContent || "{}") as ShortcutMap,
-        );
-      } catch (err) {
-        console.error("[vanilia-editor] invalid JSON in <template data-ve-shortcuts>", err);
-      }
-      tpl.remove();
-    }
-
     // Capture any declarative initial content before building the UI
     if (this.#pendingValue !== null) {
       this.#initialHTML = this.#pendingValue;

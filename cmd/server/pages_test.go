@@ -15,7 +15,7 @@ func TestPagesRender(t *testing.T) {
 	pages := map[string]string{
 		"/":                   "A rich text editor",
 		"/docs/install":       `<h2 id="script-tag">Script tag</h2>`,
-		"/docs/labels":        `data-ve-labels`,
+		"/docs/labels":        `setLabels()`,
 		"/docs/exports":       `defineButton(button)`,
 		"/examples/basic":     `id="basic"`,
 		"/examples/toolbar":   `<h2 id="code">Code</h2>`,
@@ -26,7 +26,7 @@ func TestPagesRender(t *testing.T) {
 		"/demos/datastar":     `data-panel="code"`,
 		"/demos/htmx":         `import "htmx.org";`,
 		"/demos/alpine":       `import "alpine";`,
-		"/docs/shortcuts":     `data-ve-shortcuts`,
+		"/docs/shortcuts":     `setShortcuts(map)`,
 		"/docs/squire":        `class="badge badge--squire"`,
 		"/docs/sanitize":      `bluemonday.NewPolicy()`,
 		"/docs/browsers":      `aria-current="page">Browser support`,
