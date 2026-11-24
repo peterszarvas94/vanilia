@@ -1,9 +1,11 @@
 {{define "doc/squire"}}
-<h1>Squire &amp; Vanilia</h1>
 <p>
   Vanilia is a wrapper around <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a>
   2.4.11, the rich text engine Fastmail built for its mail editor. Squire does the editing itself; Vanilia turns it
-  into a drop-in element and adds everything around it. Throughout the docs, badges show where a behavior comes from:
+  into a drop-in element and adds everything around it. Every docs page shows feature-origin badges below its title.
+  The <a href="{{.BasePath}}/docs/commands#list">Commands</a>,
+  <a href="{{.BasePath}}/docs/shortcuts#defaults">Keyboard shortcuts</a> and
+  <a href="{{.BasePath}}/docs/api">Properties &amp; methods</a> pages also label individual behaviors.
 </p>
 <div class="table-wrap">
   <table>
@@ -16,8 +18,8 @@
 </div>
 <p>
   The public API is Vanilia's either way: you call <code>editor.exec("bold")</code>, not Squire's
-  <code>bold()</code>. The badge tells you whose code does the work. Pages without badges (attributes, events,
-  forms, toolbar, icons, labels, styling, uploads) document Vanilia features only.
+  <code>bold()</code>. The badge tells you whose code does the work. A page with only the Vanilia badge describes
+  the custom element's API or surrounding UI rather than the underlying editing engine.
 </p>
 
 <h2 id="squire">From Squire</h2>

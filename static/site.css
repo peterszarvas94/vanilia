@@ -963,6 +963,11 @@ kbd {
   }
 }
 
+.badge--squire,
+.badge--vanilia {
+  font-size: 12px;
+}
+
 .badge--squire {
   color: light-dark(oklch(0.45 0.11 70), oklch(0.85 0.11 80));
   background: light-dark(oklch(0.95 0.05 85), oklch(0.32 0.06 70));
@@ -970,7 +975,7 @@ kbd {
 }
 
 .badge--vanilia {
-  color: var(--accent);
+  color: light-dark(#1d4ed8, #93c5fd);
   background: var(--accent-soft);
   border-color: oklch(from var(--accent) l c h / 0.3);
 }
@@ -1049,5 +1054,20 @@ site-tabs {
   }
   & vanilia-editor {
     --ve-max-height: min(60dvh, 34rem);
+  }
+}
+
+.feature-origin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 24px;
+  color: var(--muted);
+  font-size: 13px;
+
+  & .badge {
+    padding: 3px 10px;
+    font-size: 13px;
   }
 }
