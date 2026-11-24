@@ -109,4 +109,4 @@ func assetCacheControl(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // assetFuncs are the template functions for asset links.
-var assetFuncs = template.FuncMap{"asset": asset, "fingerprintHTML": fingerprintHTML}
+var assetFuncs = template.FuncMap{"asset": asset, "fingerprintHTML": fingerprintHTML, "formatSnippet": formatSnippet}
