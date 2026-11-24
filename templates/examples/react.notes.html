@@ -9,8 +9,8 @@
     React controls only the <code>value</code> property. The editor skips identical writes to preserve the caret.
   </li>
   <li>
-    This demo uses <code>createElement</code> so the displayed code runs directly, without JSX compilation.
-    In a bundled React app, use the same props on <code>&lt;vanilia-editor /&gt;</code>.
+    The demo is written in <code>demos/react.tsx</code>, compiled at build time and shown verbatim in the Code tab.
+    Its JSX declaration types the editor value and native events without <code>any</code>.
     Import the editor on the client before mounting the component.
   </li>
   <li>

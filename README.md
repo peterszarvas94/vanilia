@@ -213,6 +213,6 @@ npm test        # vp test
 go test ./...
 ```
 
-React demo assets are pinned in `package.json` and committed in `static/vendor/`. After updating React, run `npm run build:react-demo` to rebuild the shared runtime and renderer.
+React demo assets are pinned in `package.json` and committed in `static/vendor/`. After updating React, run `npm run build:react-demo` to rebuild the shared runtime, renderer and compiled TSX demo (`demos/react.tsx`). The Code tab reads the original TSX source.
 
 See [`DOCKER.md`](./DOCKER.md) for container deployment and [`PLAN.md`](./PLAN.md) for the prior-art architecture research.
