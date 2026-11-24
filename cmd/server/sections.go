@@ -131,7 +131,7 @@ func examplesHandler(basePath string) echo.HandlerFunc {
 		data := pageData{BasePath: basePath, Active: "examples", Title: current.Title + " · Examples", Section: "Examples", Heading: current.Title, Example: current}
 		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/examples", entries, current.Slug)
 		data.Nav = append(data.Nav, navGroup{
-			Name:  "Demos",
+			Name:  "Integration",
 			Items: []navItem{{Href: basePath + "/demos", Title: "Interactive demos", External: true}},
 		})
 		return renderTemplate(c, "examples", data)
