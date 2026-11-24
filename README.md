@@ -183,7 +183,7 @@ The logo and favicon use the [vanilla flower](https://game-icons.net/1x1/lorc/va
 
 ## Local Development
 
-The Go server also hosts the project website: home (`/`), docs (`/docs`), examples (`/examples`, including Datastar, htmx and Alpine.js integrations) and the Go + Datastar demo (`/demo`). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Each example in `templates/examples/` is rendered live and shown as source from the same file; register new ones in `cmd/server/pages.go`. Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
+The Go server also hosts the project website: home (`/`), docs (`/docs`), examples (`/examples`, code only) and interactive demos (`/demos`, per feature and per stack: script tag, Datastar, htmx, Alpine.js, plus the Go + Datastar playground at `/demos/playground`). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Each example in `templates/examples/` is shown as code on `/examples/<slug>` and run live on `/demos/<slug>`, from the same file; register new ones in `cmd/server/pages.go`. Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
 
 Start the Go + Datastar server:
 

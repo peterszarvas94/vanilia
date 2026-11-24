@@ -1,15 +1,11 @@
 // Vanilia website behaviour, as Datastar plugins. Markup wires them up:
 //   @theme(name)          apply and remember the color theme
-//   @formatHTML(html)     pretty-print editor HTML
 //   @copy(el)             copy the code block next to a button
 //   data-highlight        syntax-highlight a <code> element
 //   data-hash-redirect    send an old one-page #anchor link to its own page
 
-// The editor first: Datastar must see <vanilia-editor> already defined
-import { formatHTML } from "vanilia-editor";
+// No editor import here: pages load it themselves, as a module or a classic script
 import { action, attribute } from "datastar";
-
-action({ name: "formatHTML", apply: (_ctx, html) => formatHTML(html) });
 
 action({
   name: "theme",
