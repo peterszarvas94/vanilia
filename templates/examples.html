@@ -9,9 +9,6 @@
         <section class="example" id="{{.Slug}}">
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
-          <div class="page-actions">
-            <a class="btn btn--primary" href="{{$.BasePath}}/demos">Demos <span aria-hidden="true">→</span></a>
-          </div>
           <h2 id="code">Code</h2>
           {{template "code" .Source}}
           {{if .Notes}}
