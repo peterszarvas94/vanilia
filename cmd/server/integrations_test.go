@@ -22,40 +22,43 @@ func TestExamplesPageIntegrations(t *testing.T) {
 		return rec.Body.String()
 	}
 
-	// Example pages: code, server code and notes, with a link to the demo, but no live markup or stack modules
-	for slug, wants := range map[string][]string{
-		"datastar": {"func saveDatastarPost", `href="/demos/playground"`},
-		"htmx":     {"func saveHtmxPost", `href="../docs/sanitize"`},
-		"alpine":   {`x-model`},
-	} {
+	// Generic example pages: code only + Demos link, no live markup or stack modules
+	for _, slug := range []string{"basic", "form", "toolbar"} {
 		body := get("/examples/" + slug)
-		wants = append(wants, "<h2>Stacks</h2>", `href="/demos/`+slug+`">Interactive demo`)
-		for _, want := range wants {
+		for _, want := range []string{"<h2>Examples</h2>", "<h2>Demos</h2>", `href="/demos">Demos`, `<h2 id="code">Code</h2>`} {
 			if !strings.Contains(body, want) {
 				t.Errorf("GET /examples/%s is missing %q", slug, want)
 			}
 		}
-		for _, unwanted := range []string{`import "htmx.org";`, `import "alpine";`, `class="example-preview"`} {
+		for _, unwanted := range []string{`import "htmx.org";`, `import "alpine";`, `class="example-preview"`, `<h2>Stacks</h2>`} {
 			if strings.Contains(body, unwanted) {
 				t.Errorf("GET /examples/%s should not contain %q", slug, unwanted)
 			}
 		}
 	}
 
-	// Demo pages: the live markup and only their own stack's module
-	for slug, module := range map[string]string{"htmx": "htmx.org", "alpine": "alpine"} {
+	// Demo pages: live markup, relevant framework code, server handler & notes, and only their own stack's module
+	for slug, wants := range map[string][]string{
+		"script-tag": {`window.Vanilia`, `<h2 id="notes">Notes</h2>`},
+		"datastar":   {`data-bind:body`, "func saveDatastarPost", `href="/demos/playground"`, `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
+		"htmx":       {`hx-post`, `import "htmx.org";`, "func saveHtmxPost", `href="../docs/sanitize"`, `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
+		"alpine":     {`x-model`, `import "alpine";`, `<h2 id="notes">Notes</h2>`},
+	} {
 		body := get("/demos/" + slug)
-		if !strings.Contains(body, `import "`+module+`";`) || !strings.Contains(body, `class="example-preview"`) {
-			t.Errorf("GET /demos/%s is missing its module or live markup", slug)
+		wants = append(wants, `class="example-preview"`, `<h2 id="code">Code</h2>`, `<h2>Stacks</h2>`)
+		for _, want := range wants {
+			if !strings.Contains(body, want) {
+				t.Errorf("GET /demos/%s is missing %q", slug, want)
+			}
 		}
 	}
 	if body := get("/demos/script-tag"); strings.Contains(body, `import "vanilia-editor";`) {
 		t.Errorf("the script tag demo must not import the editor module")
 	}
 
-	for _, ex := range examples {
-		if strings.Contains(ex.Server, "endregion") {
-			t.Errorf("%s: server region not extracted cleanly", ex.Slug)
+	for _, d := range demos {
+		if strings.Contains(d.Server, "endregion") {
+			t.Errorf("%s: server region not extracted cleanly", d.Slug)
 		}
 	}
 }

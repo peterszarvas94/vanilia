@@ -975,16 +975,12 @@ kbd {
   border-color: oklch(from var(--accent) l c h / 0.3);
 }
 
-/* Buttons between an example and its demo */
+/* Buttons between examples and demos */
 .page-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 4px 0 8px;
-
-  .demo & {
-    margin-top: 20px;
-  }
+  margin: 4px 0 18px;
 }
 
 /* Demos get more room for the live editor */

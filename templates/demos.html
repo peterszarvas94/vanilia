@@ -10,13 +10,30 @@
           <p class="demo-stack"><span class="badge badge--stack">{{.Stack}}</span></p>
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
+          {{if eq .Slug "datastar"}}
+          <div class="page-actions">
+            <a class="btn" href="{{$.BasePath}}/demos/playground">Go + Datastar playground <span aria-hidden="true">→</span></a>
+          </div>
+          {{end}}
           <div class="example-preview">
             {{fingerprintHTML .HTML}}
           </div>
-          <div class="page-actions">
-            <a class="btn" href="{{$.BasePath}}/examples/{{.Slug}}">View code <span aria-hidden="true">→</span></a>
-            {{if eq .Slug "datastar"}}<a class="btn" href="{{$.BasePath}}/demos/playground">Go + Datastar playground <span aria-hidden="true">→</span></a>{{end}}
-          </div>
+          <h2 id="code">Code</h2>
+          {{template "code" .Source}}
+          {{if .Server}}
+          <h2 id="server">Server</h2>
+          <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
+          {{template "code" .Server}}
+          {{end}}
+          {{if .Notes}}
+          <h2 id="notes">Notes</h2>
+          {{.Notes}}
+          {{end}}
+          <p class="hint">
+            {{if .Classic}}This is a complete setup: the code loads the editor itself.{{else}}The demo above runs
+            exactly this code, with the <a href="{{$.BasePath}}/docs/install">setup from the docs</a>.{{end}}
+            See <a href="{{$.BasePath}}/examples">generic examples</a> for framework-free snippets.
+          </p>
         </section>
         {{end}}
         {{template "pager" .}}

@@ -51,12 +51,13 @@ func TestAssetFingerprints(t *testing.T) {
 		t.Errorf("dist lost its CORS header: %q", got)
 	}
 
-	// A live demo loads the fingerprinted files; its example shows the plain code
+	// A live demo loads the fingerprinted files while its displayed code keeps plain paths
 	iife := "/dist/vanilia-editor.iife.js"
-	if demo := get("/demos/script-tag").Body.String(); !strings.Contains(demo, `src="`+iife+"?v="+assetHash(iife)+`"`) {
+	demo := get("/demos/script-tag").Body.String()
+	if !strings.Contains(demo, `src="`+iife+"?v="+assetHash(iife)+`"`) {
 		t.Errorf("script tag demo does not load the fingerprinted script")
 	}
-	if code := get("/examples/script-tag").Body.String(); strings.Contains(code, iife+"?v=") {
-		t.Errorf("example code shows a fingerprint")
+	if !strings.Contains(demo, `src=&#34;`+iife+`&#34;`) {
+		t.Errorf("script tag demo code block does not show the plain script path")
 	}
 }

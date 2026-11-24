@@ -10,24 +10,17 @@
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
           <div class="page-actions">
-            <a class="btn btn--primary" href="{{$.BasePath}}/demos/{{.Slug}}">Interactive demo <span aria-hidden="true">→</span></a>
-            {{if eq .Slug "datastar"}}<a class="btn" href="{{$.BasePath}}/demos/playground">Go + Datastar playground <span aria-hidden="true">→</span></a>{{end}}
+            <a class="btn btn--primary" href="{{$.BasePath}}/demos">Demos <span aria-hidden="true">→</span></a>
           </div>
           <h2 id="code">Code</h2>
           {{template "code" .Source}}
-          {{if .Server}}
-          <h2 id="server">Server</h2>
-          <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
-          {{template "code" .Server}}
-          {{end}}
           {{if .Notes}}
           <h2 id="notes">Notes</h2>
           {{.Notes}}
           {{end}}
           <p class="hint">
-            {{if .Classic}}This is a complete setup: the code loads the editor itself.{{else}}The code assumes the
-            <a href="{{$.BasePath}}/docs/install">setup from the docs</a> (stylesheet and script).{{end}}
-            The <a href="{{$.BasePath}}/demos/{{.Slug}}">interactive demo</a> runs exactly this code.
+            The code assumes the <a href="{{$.BasePath}}/docs/install">setup from the docs</a> (stylesheet and script).
+            Try the editor live in the <a href="{{$.BasePath}}/demos">interactive demos</a>.
           </p>
         </section>
         {{end}}

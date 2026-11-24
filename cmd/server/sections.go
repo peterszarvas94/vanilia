@@ -109,20 +109,31 @@ func docsHandler(basePath string) echo.HandlerFunc {
 
 func examplesHandler(basePath string) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		slug := c.Param("slug")
 		entries := make([]navEntry, len(examples))
 		var current *example
 		for i := range examples {
 			ex := &examples[i]
 			entries[i] = navEntry{ex.Group, ex.Slug, ex.Title}
-			if ex.Slug == c.Param("slug") {
+			if ex.Slug == slug {
 				current = ex
 			}
 		}
 		if current == nil {
+			// Framework demos moved from /examples/<slug> to /demos/<slug>
+			for i := range demos {
+				if demos[i].Slug == slug {
+					return c.Redirect(http.StatusFound, basePath+"/demos/"+slug)
+				}
+			}
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
 		data := pageData{BasePath: basePath, Active: "examples", Title: current.Title + " · Examples", Section: "Examples", Heading: current.Title, Example: current}
 		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/examples", entries, current.Slug)
+		data.Nav = append(data.Nav, navGroup{
+			Name:  "Demos",
+			Items: []navItem{{Href: basePath + "/demos", Title: "Interactive demos", External: true}},
+		})
 		return renderTemplate(c, "examples", data)
 	}
 }
@@ -130,30 +141,25 @@ func examplesHandler(basePath string) echo.HandlerFunc {
 // playgroundSlug is the Go + Datastar playground, a demo with its own page template.
 const playgroundSlug = "playground"
 
-// demoEntries lists the demos in sidebar order: stacks first, then features.
+// demoEntries lists the interactive stack demos in sidebar order.
 // The playground follows the Datastar demo.
 func demoEntries() []navEntry {
-	var stacks, features []navEntry
-	for _, ex := range examples {
-		e := navEntry{ex.Group, ex.Slug, ex.Title}
-		if ex.Group == "Stacks" {
-			stacks = append(stacks, e)
-			if ex.Slug == "datastar" {
-				stacks = append(stacks, navEntry{"Stacks", playgroundSlug, "Go + Datastar playground"})
-			}
-		} else {
-			features = append(features, e)
+	entries := make([]navEntry, 0, len(demos)+1)
+	for _, d := range demos {
+		entries = append(entries, navEntry{d.Group, d.Slug, d.Title})
+		if d.Slug == "datastar" {
+			entries = append(entries, navEntry{d.Group, playgroundSlug, "Go + Datastar playground"})
 		}
 	}
-	return append(stacks, features...)
+	return entries
 }
 
 func demosHandler(basePath string) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var current *example
-		for i := range examples {
-			if examples[i].Slug == c.Param("slug") {
-				current = &examples[i]
+		for i := range demos {
+			if demos[i].Slug == c.Param("slug") {
+				current = &demos[i]
 			}
 		}
 		if current == nil {
@@ -161,6 +167,10 @@ func demosHandler(basePath string) echo.HandlerFunc {
 		}
 		data := pageData{BasePath: basePath, Active: "demos", Title: current.Title + " · Demos", Section: "Demos", Heading: current.Title, Example: current, Modules: current.Modules, ClassicEditor: current.Classic}
 		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/demos", demoEntries(), current.Slug)
+		data.Nav = append(data.Nav, navGroup{
+			Name:  "Examples",
+			Items: []navItem{{Href: basePath + "/examples", Title: "Generic examples", External: true}},
+		})
 		return renderTemplate(c, "demos", data)
 	}
 }
