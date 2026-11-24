@@ -8,6 +8,8 @@ require (
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/starfederation/datastar-go v1.1.0
+	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
+	golang.org/x/net v0.48.0
 )
 
 require (
@@ -22,7 +24,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
