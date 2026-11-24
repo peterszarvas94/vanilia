@@ -17,6 +17,17 @@ A drop-in, framework-agnostic `<vanilia-editor>` Web Component powered by a pinn
 - **Defense-in-Depth Sanitization**: Client-side allowlist `<template>` sanitizer ([`src/sanitizer.ts`](./src/sanitizer.ts)) + server-side `bluemonday` allowlist sanitizer ([`cmd/server/utils.go`](./cmd/server/utils.go)).
 - **Go + Datastar SSE Backend** ([`cmd/server/`](./cmd/server/)): Per-session persistence (`GET /content`, `PATCH /content`, `POST /reset`), live Datastar signals & SSE-rendered preview, and bounded in-memory image uploads (`POST /api/upload`, `GET /uploads/:id`).
 
+## Install from npm
+
+```sh
+npm install vanilia-editor
+```
+
+```js
+import "vanilia-editor"; // registers <vanilia-editor>
+import "vanilia-editor/vanilia-editor.css";
+```
+
 ## Drop-In Integration (ESM + import map)
 
 One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~44 kB gzipped, readable, Squire built in, no imports), [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped) and optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts). Copy them into your project or link the hosted deployment (CORS-enabled). Map the module once in your base layout:
