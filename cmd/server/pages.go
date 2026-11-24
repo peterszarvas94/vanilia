@@ -53,6 +53,7 @@ var demoIndex = []example{
 	{Group: "Stacks", Slug: "datastar", Title: "Datastar", Stack: "Datastar + Go", Description: "Bind the editor to a signal and save it over SSE."},
 	{Group: "Stacks", Slug: "htmx", Title: "htmx", Stack: "htmx + Go", Modules: []string{"htmx.org"}, Description: "Post the editor like any form field and swap in the server's HTML."},
 	{Group: "Stacks", Slug: "alpine", Title: "Alpine.js", Stack: "Alpine.js", Modules: []string{"alpine"}, Description: "Bind the content both ways with <code>x-model</code> and react to editor events."},
+	{Group: "Stacks", Slug: "react", Title: "React", Stack: "React 19", Description: "Control the editor with React state and native custom-element events."},
 }
 
 const demoContentMarker = "<!-- demo-content -->"
@@ -96,9 +97,10 @@ func mustLoadExamples(dir string) {
 }
 
 type pageData struct {
-	BasePath string
-	Active   string
-	Title    string
+	IncludesSquire bool
+	BasePath       string
+	Active         string
+	Title          string
 	// Docs and examples pages: sidebar, current page and pager
 	Section string
 	Heading string
