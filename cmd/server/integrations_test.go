@@ -25,7 +25,7 @@ func TestExamplesPageIntegrations(t *testing.T) {
 	// Generic example pages: code only, no live markup or stack modules
 	for _, slug := range []string{"basic", "form", "toolbar"} {
 		body := get("/examples/" + slug)
-		for _, want := range []string{"<h2>Examples</h2>", "<h2>Demos</h2>", `<h2 id="code">Code</h2>`} {
+		for _, want := range []string{"<h2>Examples</h2>", "<h2>Integration</h2>", `<h2 id="code">Code</h2>`} {
 			if !strings.Contains(body, want) {
 				t.Errorf("GET /examples/%s is missing %q", slug, want)
 			}
