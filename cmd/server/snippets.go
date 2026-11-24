@@ -4,12 +4,24 @@ import (
 	"bytes"
 	"encoding/json"
 	"go/format"
+	"io"
+	"net/http"
 	"regexp"
 	"strings"
 
+	"github.com/labstack/echo/v4"
 	"github.com/yosssi/gohtml"
 	"golang.org/x/net/html"
 )
+
+// Formatting is read-only. Return text, never executable markup, to the inspector.
+func formatHTMLPost(c echo.Context) error {
+	raw, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, formatHTMLSnippet(string(raw)))
+}
 
 var goSnippet = regexp.MustCompile(`(?m)^(package |func |type [A-Za-z_][A-Za-z_0-9]* (struct|interface))`)
 

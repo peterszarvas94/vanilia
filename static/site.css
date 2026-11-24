@@ -318,7 +318,6 @@ p {
     margin: 0;
     padding: 14px 16px;
     overflow-x: auto;
-    tab-size: 2;
     border-radius: 12px;
     border: 1px solid var(--card-border);
     background: var(--subtle-bg);
@@ -997,4 +996,66 @@ kbd {
   color: var(--muted);
   background: var(--subtle-bg);
   border-color: var(--card-border);
+}
+
+/* Reusable tabs: visual state follows the accessible selection state. */
+site-tabs {
+  display: block;
+  min-inline-size: 0;
+
+  & > .tab-list {
+    display: flex;
+    overflow-x: auto;
+    border-block-end: 1px solid var(--card-border);
+    margin-block: 22px 18px;
+  }
+
+  & [role="tab"] {
+    position: relative;
+    flex: none;
+    padding: 12px 18px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font:
+      600 14px / 1.4 system-ui,
+      sans-serif;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -4px;
+    }
+    &[aria-selected="true"] {
+      color: var(--accent);
+      &::after {
+        content: "";
+        position: absolute;
+        inset: auto 12px 0;
+        border-block-end: 3px solid currentColor;
+      }
+    }
+  }
+
+  & > [role="tabpanel"] {
+    min-inline-size: 0;
+  }
+}
+
+.demo-panel {
+  & > :first-child {
+    margin-block-start: 0;
+  }
+  & h2 {
+    font-size: 18px;
+  }
+  & .code-block pre {
+    max-block-size: 42rem;
+  }
+  & vanilia-editor {
+    --ve-max-height: min(60dvh, 34rem);
+  }
 }

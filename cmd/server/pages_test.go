@@ -23,7 +23,7 @@ func TestPagesRender(t *testing.T) {
 		"/examples/shortcuts": `id=&#34;shortcuts-editor&#34;`,
 		"/examples/headless":  `id=&#34;headless-editor&#34;`,
 		"/demos/script-tag":   `<script src="/dist/vanilia-editor.iife.js?v=`,
-		"/demos/datastar":     `<h2 id="code">Code</h2>`,
+		"/demos/datastar":     `data-panel="code"`,
 		"/demos/htmx":         `import "htmx.org";`,
 		"/demos/alpine":       `import "alpine";`,
 		"/docs/shortcuts":     `data-ve-shortcuts`,
