@@ -179,7 +179,7 @@ The full JavaScript API (properties, methods, static members and module exports)
 
 ## Credits
 
-The logo and favicon use the [vanilla flower](https://game-icons.net/1x1/lorc/vanilla-flower.html) icon by [Lorc](https://lorcblog.blogspot.com) from [game-icons.net](https://game-icons.net), licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (placed on a rounded square). Squire is MIT-licensed by Neil Jenkins and Fastmail.
+The logo and favicon use the [Vanilla outline icon](https://www.svgrepo.com/svg/447094/vanilla) from SVG Repo, listed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/), with rounded strokes and a blue rounded-square background. The header and standalone demo reuse the favicon SVG. Squire is MIT-licensed by Neil Jenkins and Fastmail.
 
 ## Credits
 
