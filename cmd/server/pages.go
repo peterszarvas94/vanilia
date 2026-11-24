@@ -33,6 +33,9 @@ type example struct {
 	HTML    template.HTML
 	Notes   template.HTML
 	Server  string
+	// SourceFile replaces the primary snippet with the component's authored source.
+	SourceFile string
+	Setup      string
 }
 
 var exampleIndex = []example{
@@ -53,7 +56,7 @@ var demoIndex = []example{
 	{Group: "Stacks", Slug: "datastar", Title: "Datastar", Stack: "Datastar + Go", Description: "Bind the editor to a signal and save it over SSE."},
 	{Group: "Stacks", Slug: "htmx", Title: "htmx", Stack: "htmx + Go", Modules: []string{"htmx.org"}, Description: "Post the editor like any form field and swap in the server's HTML."},
 	{Group: "Stacks", Slug: "alpine", Title: "Alpine.js", Stack: "Alpine.js", Modules: []string{"alpine"}, Description: "Bind the content both ways with <code>x-model</code> and react to editor events."},
-	{Group: "Stacks", Slug: "react", Title: "React", Stack: "React 19", Description: "Control the editor with React state and native custom-element events."},
+	{Group: "Stacks", Slug: "react", Title: "React", Stack: "React 19 · TSX", SourceFile: "demos/react.tsx", Description: "A typed React component with JSX, state and native custom-element events."},
 }
 
 const demoContentMarker = "<!-- demo-content -->"
@@ -74,6 +77,14 @@ func loadSnippets(dir string, index []example) []example {
 		src := strings.TrimSpace(string(raw))
 		ex.Source = strings.ReplaceAll(src, demoContentMarker, demoContent)
 		ex.HTML = template.HTML(strings.ReplaceAll(src, demoContentMarker, demoContent)) // trusted, checked-in markup
+		if ex.SourceFile != "" {
+			component, err := os.ReadFile(filepath.Join(dir, "..", "..", ex.SourceFile))
+			if err != nil {
+				panic(fmt.Sprintf("load component source %q: %v", ex.SourceFile, err))
+			}
+			ex.Setup = ex.Source
+			ex.Source = strings.TrimSpace(string(component))
+		}
 
 		notes, err := os.ReadFile(filepath.Join(dir, ex.Slug+".notes.html"))
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
