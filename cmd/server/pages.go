@@ -55,9 +55,12 @@ var demoIndex = []example{
 	{Group: "Stacks", Slug: "alpine", Title: "Alpine.js", Stack: "Alpine.js", Modules: []string{"alpine"}, Description: "Bind the content both ways with <code>x-model</code> and react to editor events."},
 }
 
+const demoContentMarker = "<!-- demo-content -->"
+
 var (
-	examples []example
-	demos    []example
+	examples    []example
+	demos       []example
+	demoContent string
 )
 
 func loadSnippets(dir string, index []example) []example {
@@ -68,8 +71,8 @@ func loadSnippets(dir string, index []example) []example {
 			panic(fmt.Sprintf("load example %q: %v", ex.Slug, err))
 		}
 		src := strings.TrimSpace(string(raw))
-		ex.Source = src
-		ex.HTML = template.HTML(src) // trusted, checked-in markup
+		ex.Source = strings.ReplaceAll(src, demoContentMarker, demoContent)
+		ex.HTML = template.HTML(strings.ReplaceAll(src, demoContentMarker, demoContent)) // trusted, checked-in markup
 
 		notes, err := os.ReadFile(filepath.Join(dir, ex.Slug+".notes.html"))
 		if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -83,6 +86,11 @@ func loadSnippets(dir string, index []example) []example {
 }
 
 func mustLoadExamples(dir string) {
+	raw, err := os.ReadFile(filepath.Join(dir, "_demo-content.html"))
+	if err != nil {
+		panic(fmt.Sprintf("load shared demo content: %v", err))
+	}
+	demoContent = strings.TrimSpace(string(raw))
 	examples = loadSnippets(dir, exampleIndex)
 	demos = loadSnippets(dir, demoIndex)
 }
@@ -99,6 +107,8 @@ type pageData struct {
 	Next    *navItem
 	Content template.HTML
 	Example *example
+	// DemoContent is the shared rich HTML document loaded into the homepage editor
+	DemoContent template.HTML
 	// Modules are extra import-map specifiers imported by the page's entry script
 	Modules []string
 	// ClassicEditor loads the editor as a classic script instead of importing the ES module
@@ -108,9 +118,10 @@ type pageData struct {
 func pageHandler(basePath, name, title string) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		data := pageData{
-			BasePath: basePath,
-			Active:   name,
-			Title:    title,
+			BasePath:    basePath,
+			Active:      name,
+			Title:       title,
+			DemoContent: template.HTML(demoContent),
 		}
 		return renderTemplate(c, name, data)
 	}

@@ -2,11 +2,14 @@
 <script src="/dist/vanilia-editor.iife.js" defer></script>
 
 <form id="reply-form">
-  <vanilia-editor name="reply" required placeholder="Write a reply..." toolbar="bold italic | bulletList orderedList | link signature | undo redo">
-    <template><p>This page loads Vanilia with one classic <code>&lt;script&gt;</code> tag: no import map, no modules, no build step.</p></template>
+  <vanilia-editor name="reply" required upload-url="/api/upload" placeholder="Write a reply...">
+    <template>
+      <!-- demo-content -->
+    </template>
   </vanilia-editor>
   <div class="row">
     <button type="submit">Send</button>
+    <button type="reset">Reset</button>
     <button type="button" id="reply-language">Deutsch</button>
     <button type="button" id="reply-theme">Dark</button>
   </div>

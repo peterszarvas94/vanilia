@@ -1,7 +1,7 @@
 <div data-signals="{savedAt: ''}">
-  <vanilia-editor data-bind:body placeholder="Write something, then save...">
+  <vanilia-editor upload-url="/api/upload" data-bind:body placeholder="Write something, then save...">
     <template>
-      <p>Every change lands in the <code>$body</code> signal. <strong>Save</strong> posts it to Go over SSE.</p>
+      <!-- demo-content -->
     </template>
   </vanilia-editor>
   <div class="row">
