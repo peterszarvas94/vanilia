@@ -699,9 +699,10 @@ table {
   font-size: 14px;
 }
 
-/* ---- Examples ---- */
+/* ---- Examples (code) and demos (live) ---- */
 
-.example {
+.example,
+.demo {
   & > h1 {
     margin: 0 0 8px;
     font-size: 34px;
@@ -720,6 +721,11 @@ table {
 
   & > .hint {
     margin-top: 24px;
+  }
+
+  & > h2 {
+    margin: 36px 0 10px;
+    font-size: 21px;
   }
 
   /* Notes under an integration */
@@ -967,4 +973,31 @@ kbd {
   color: var(--accent);
   background: var(--accent-soft);
   border-color: oklch(from var(--accent) l c h / 0.3);
+}
+
+/* Buttons between an example and its demo */
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 8px;
+
+  .demo & {
+    margin-top: 20px;
+  }
+}
+
+/* Demos get more room for the live editor */
+.prose--wide {
+  max-width: 60rem;
+}
+
+.demo-stack {
+  margin: 0 0 6px;
+}
+
+.badge--stack {
+  color: var(--muted);
+  background: var(--subtle-bg);
+  border-color: var(--card-border);
 }

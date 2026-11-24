@@ -1,0 +1,28 @@
+{{define "demos"}}{{template "head" .}}
+  </head>
+  <body>
+    {{template "nav" .}}
+    <div class="container with-sidebar">
+      {{template "sidebar" .}}
+      <main id="main" class="prose prose--wide">
+        {{with .Example}}
+        <section class="demo" id="{{.Slug}}">
+          <p class="demo-stack"><span class="badge badge--stack">{{.Stack}}</span></p>
+          <h1>{{.Title}}</h1>
+          <p class="lede">{{.Description}}</p>
+          <div class="example-preview">
+            {{.HTML}}
+          </div>
+          <div class="page-actions">
+            <a class="btn" href="{{$.BasePath}}/examples/{{.Slug}}">View code <span aria-hidden="true">→</span></a>
+            {{if eq .Slug "datastar"}}<a class="btn" href="{{$.BasePath}}/demos/playground">Go + Datastar playground <span aria-hidden="true">→</span></a>{{end}}
+          </div>
+        </section>
+        {{end}}
+        {{template "pager" .}}
+      </main>
+    </div>
+    {{template "foot" .}}
+  </body>
+</html>
+{{end}}

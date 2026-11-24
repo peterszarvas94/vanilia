@@ -1,0 +1,15 @@
+<ul>
+  <li>
+    <code>vanilia-editor.iife.js</code> is the classic-script build. It registers <code>&lt;vanilia-editor&gt;</code>
+    and puts every <a href="../docs/exports">export</a> on <code>window.Vanilia</code>.
+  </li>
+  <li>
+    With <code>defer</code> (usually in the <code>&lt;head&gt;</code>), the script runs once the page has been parsed;
+    put code that uses the editor in a <code>DOMContentLoaded</code> listener. Without <code>defer</code> it works too,
+    but editors start only when parsing finishes, so the listener is still the place for your code.
+  </li>
+  <li>
+    Load either this file or the ES module on a page, not both: each has its own settings, so
+    <code>Vanilia.setLabels()</code> only reaches editors created by the same build.
+  </li>
+</ul>

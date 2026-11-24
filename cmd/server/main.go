@@ -63,7 +63,13 @@ func newServer(basePath string, store *contentStore, uploads *uploadStore) *echo
 	e.GET("/docs/:slug", docsHandler(basePath))
 	e.GET("/examples", redirectTo(basePath+"/examples/"+exampleIndex[0].Slug))
 	e.GET("/examples/:slug", examplesHandler(basePath))
-	e.GET("/demo", pageHandler(basePath, "demo", "Demo"))
+	e.GET("/demos", func(c echo.Context) error {
+		return c.Redirect(http.StatusFound, basePath+"/demos/"+demoEntries()[0].Slug)
+	})
+	e.GET("/demos/"+playgroundSlug, playgroundHandler(basePath))
+	e.GET("/demos/:slug", demosHandler(basePath))
+	// The playground used to live at /demo
+	e.GET("/demo", redirectTo(basePath+"/demos/"+playgroundSlug))
 
 	e.GET("/content", func(c echo.Context) error {
 		sessionID, err := ensureSessionID(c)

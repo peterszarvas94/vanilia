@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="/dist/vanilia-editor.css" />
+<script src="/dist/vanilia-editor.iife.js" defer></script>
+
+<form id="reply-form">
+  <vanilia-editor name="reply" required placeholder="Write a reply..." toolbar="bold italic | bulletList orderedList | link signature | undo redo">
+    <template><p>This page loads Vanilia with one classic <code>&lt;script&gt;</code> tag: no import map, no modules, no build step.</p></template>
+  </vanilia-editor>
+  <div class="row">
+    <button type="submit">Send</button>
+    <button type="button" id="reply-language">Deutsch</button>
+    <button type="button" id="reply-theme">Dark</button>
+  </div>
+</form>
+<pre class="output" id="reply-output"></pre>
+
+<script>
+  // With defer, the editor and window.Vanilia are ready once the page has been parsed
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("reply-form");
+    const editor = form.querySelector("vanilia-editor");
+
+    editor.addButton({
+      name: "signature",
+      label: "Add signature",
+      text: "Sign",
+      shortcut: "Mod+Alt+1",
+      run: (editor) => editor.insertHTML("<p>— Sent from Vanilia</p>"),
+    });
+
+    const german = { bold: "Fett", italic: "Kursiv", placeholder: "Antwort schreiben...", wordCount: "{count} Wörter" };
+    document.getElementById("reply-language").onclick = (event) => {
+      const on = event.target.textContent === "Deutsch";
+      // Every editor on the page; null restores a label
+      Vanilia.setLabels(on ? german : Object.fromEntries(Object.keys(german).map((k) => [k, null])));
+      event.target.textContent = on ? "English" : "Deutsch";
+    };
+
+    document.getElementById("reply-theme").onclick = (event) => {
+      editor.theme = editor.theme === "dark" ? "auto" : "dark";
+      event.target.textContent = editor.theme === "dark" ? "Auto" : "Dark";
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault(); // a real form would just POST
+      document.getElementById("reply-output").textContent = JSON.stringify(Object.fromEntries(new FormData(form)), null, 2);
+    });
+  });
+</script>

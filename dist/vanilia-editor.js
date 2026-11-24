@@ -5442,6 +5442,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	#canUndo = false;
 	#canRedo = false;
 	#mounted = false;
+	#waitingForParse = false;
 	#uploadHandler = null;
 	constructor() {
 		super();
@@ -5516,6 +5517,16 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	connectedCallback() {
 		if (this.#mounted) {
 			this.#syncFormState();
+			return;
+		}
+		if (document.readyState === "loading") {
+			if (!this.#waitingForParse) {
+				this.#waitingForParse = true;
+				document.addEventListener("DOMContentLoaded", () => {
+					this.#waitingForParse = false;
+					if (this.isConnected) this.connectedCallback();
+				}, { once: true });
+			}
 			return;
 		}
 		for (const tpl of this.querySelectorAll(":scope > template[data-ve-icon]")) {

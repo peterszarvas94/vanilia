@@ -121,14 +121,55 @@ func examplesHandler(basePath string) echo.HandlerFunc {
 		if current == nil {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
-		data := pageData{BasePath: basePath, Active: "examples", Title: current.Title + " · Examples", Section: "Examples", Heading: current.Title, Example: current, Modules: exampleModules}
+		data := pageData{BasePath: basePath, Active: "examples", Title: current.Title + " · Examples", Section: "Examples", Heading: current.Title, Example: current}
 		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/examples", entries, current.Slug)
-		for i := range data.Nav {
-			if data.Nav[i].Name == "Integrations" {
-				data.Nav[i].Items = append(data.Nav[i].Items, navItem{Href: basePath + "/demo", Title: "Go + Datastar playground", External: true})
+		return renderTemplate(c, "examples", data)
+	}
+}
+
+// playgroundSlug is the Go + Datastar playground, a demo with its own page template.
+const playgroundSlug = "playground"
+
+// demoEntries lists the demos in sidebar order: stacks first, then features.
+// The playground follows the Datastar demo.
+func demoEntries() []navEntry {
+	var stacks, features []navEntry
+	for _, ex := range examples {
+		e := navEntry{ex.Group, ex.Slug, ex.Title}
+		if ex.Group == "Stacks" {
+			stacks = append(stacks, e)
+			if ex.Slug == "datastar" {
+				stacks = append(stacks, navEntry{"Stacks", playgroundSlug, "Go + Datastar playground"})
+			}
+		} else {
+			features = append(features, e)
+		}
+	}
+	return append(stacks, features...)
+}
+
+func demosHandler(basePath string) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var current *example
+		for i := range examples {
+			if examples[i].Slug == c.Param("slug") {
+				current = &examples[i]
 			}
 		}
-		return renderTemplate(c, "examples", data)
+		if current == nil {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		data := pageData{BasePath: basePath, Active: "demos", Title: current.Title + " · Demos", Section: "Demos", Heading: current.Title, Example: current, Modules: current.Modules, ClassicEditor: current.Classic}
+		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/demos", demoEntries(), current.Slug)
+		return renderTemplate(c, "demos", data)
+	}
+}
+
+// playgroundHandler serves the Go + Datastar playground, which keeps its own layout.
+func playgroundHandler(basePath string) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		data := pageData{BasePath: basePath, Active: "demos", Title: "Go + Datastar playground · Demos", Modules: []string{"playground"}}
+		return renderTemplate(c, "demo", data)
 	}
 }
 

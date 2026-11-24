@@ -200,6 +200,7 @@ export class VaniliaEditorElement extends BaseHTMLElement {
   #canUndo = false;
   #canRedo = false;
   #mounted = false;
+  #waitingForParse = false;
   #uploadHandler: UploadHandler | null = null;
 
   constructor() {
@@ -296,6 +297,24 @@ export class VaniliaEditorElement extends BaseHTMLElement {
   connectedCallback() {
     if (this.#mounted) {
       this.#syncFormState();
+      return;
+    }
+
+    // Defined by a classic script earlier in the page, the element is upgraded as soon as the
+    // parser creates it, before its children (the initial content <template>) are parsed.
+    // Start once the document has been parsed instead.
+    if (document.readyState === "loading") {
+      if (!this.#waitingForParse) {
+        this.#waitingForParse = true;
+        document.addEventListener(
+          "DOMContentLoaded",
+          () => {
+            this.#waitingForParse = false;
+            if (this.isConnected) this.connectedCallback();
+          },
+          { once: true },
+        );
+      }
       return;
     }
 

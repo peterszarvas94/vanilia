@@ -13,20 +13,24 @@ func TestPagesRender(t *testing.T) {
 	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
 
 	pages := map[string]string{
-		"/":                   "A rich text editor",
-		"/docs/install":       `<h2 id="script-tag">Script tag</h2>`,
-		"/docs/labels":        `data-ve-labels`,
-		"/docs/exports":       `defineButton(button)`,
-		"/examples/toolbar":   `id="toolbar-editor"`,
-		"/examples/labels":    `id="labels-editor"`,
-		"/examples/shortcuts": `id="shortcuts-editor"`,
-		"/docs/shortcuts":     `data-ve-shortcuts`,
-		"/docs/squire":        `class="badge badge--squire"`,
-		"/docs/sanitize":      `bluemonday.NewPolicy()`,
-		"/docs/browsers":      `aria-current="page">Browser support`,
-		"/examples/basic":     `id="basic"`,
-		"/examples/headless":  `id="headless-editor"`,
-		"/demo":               `id="rendered-preview"`,
+		"/":             "A rich text editor",
+		"/docs/install": `<h2 id="script-tag">Script tag</h2>`,
+		"/docs/labels":  `data-ve-labels`,
+		"/docs/exports": `defineButton(button)`,
+		"/demos/toolbar": `<vanilia-editor
+  id="toolbar-editor"`,
+		"/demos/labels":      `<vanilia-editor id="labels-editor"`,
+		"/demos/shortcuts":   `<vanilia-editor id="shortcuts-editor"`,
+		"/demos/script-tag":  `<script src="/dist/vanilia-editor.iife.js"></script>`,
+		"/demos/htmx":        `import "htmx.org";`,
+		"/examples/toolbar":  `href="/demos/toolbar">Interactive demo`,
+		"/docs/shortcuts":    `data-ve-shortcuts`,
+		"/docs/squire":       `class="badge badge--squire"`,
+		"/docs/sanitize":     `bluemonday.NewPolicy()`,
+		"/docs/browsers":     `aria-current="page">Browser support`,
+		"/examples/basic":    `id="basic"`,
+		"/examples/headless": `id=&#34;headless-editor&#34;`,
+		"/demos/playground":  `id="rendered-preview"`,
 	}
 	for path, want := range pages {
 		rec := httptest.NewRecorder()
@@ -46,14 +50,14 @@ func TestSectionIndexesRedirect(t *testing.T) {
 	mustLoadExamples("../../templates/examples")
 	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
 
-	for path, want := range map[string]string{"/docs": "/docs/install", "/examples": "/examples/basic"} {
+	for path, want := range map[string]string{"/docs": "/docs/install", "/examples": "/examples/basic", "/demos": "/demos/script-tag", "/demo": "/demos/playground"} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 		if rec.Code != http.StatusFound || rec.Header().Get("Location") != want {
 			t.Errorf("GET %s = %d %q, want redirect to %s", path, rec.Code, rec.Header().Get("Location"), want)
 		}
 	}
-	for _, path := range []string{"/docs/nope", "/examples/nope"} {
+	for _, path := range []string{"/docs/nope", "/examples/nope", "/demos/nope"} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 		if rec.Code != http.StatusNotFound {
