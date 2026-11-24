@@ -168,8 +168,14 @@ editor.setLabels({ wordCount: ({ count }) => `${count} ${count === 1 ? "Wort" : 
 Every shortcut maps keys to a command or custom button, and all of them can be changed, added or removed: per editor with `<template data-ve-shortcuts>` or `editor.setShortcuts()`, for the whole page with `setShortcuts()`, or all at once with `shortcuts="none"`. Tooltips follow along.
 
 ```js
-import { setShortcuts } from "vanilia-editor";
-setShortcuts({ strike: "Mod+Shift+S", h2: "Mod+Alt+2", find: false }); // false removes, null restores
+import { setShortcuts, deleteShortcuts, restoreDefaultShortcuts } from "vanilia-editor";
+setShortcuts({ strike: "Mod+Shift+S", h2: "Mod+Alt+2" });
+deleteShortcuts("find");
+restoreDefaultShortcuts("find");
+
+editor.deleteShortcuts("underline");
+editor.restoreDefaultShortcuts("underline");
+editor.restoreDefaultShortcuts(); // restore all local overrides
 editor.getShortcuts(); // { bold: ["Mod+B"], ... }
 ```
 

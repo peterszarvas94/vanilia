@@ -38,38 +38,35 @@
 <p>A <code>&lt;template data-ve-shortcuts&gt;</code> child holds overrides as JSON, by command or button name:</p>
 {{template "code" `<vanilia-editor>
   <template data-ve-shortcuts>
-    { "strike": "Mod+Shift+S", "h2": "Mod+Alt+2", "redo": ["Mod+Shift+Z", "Mod+Y"], "find": false }
+    { "strike": "Mod+Shift+S", "h2": "Mod+Alt+2", "redo": ["Mod+Shift+Z", "Mod+Y"], "find": [] }
   </template>
 </vanilia-editor>`}}
 <p><code>shortcuts="none"</code> turns off every shortcut of an editor, built-in and custom:</p>
 {{template "code" `<vanilia-editor shortcuts="none"></vanilia-editor>`}}
 
 <h2 id="javascript">From JavaScript</h2>
-{{template "code" `import { setShortcuts } from "vanilia-editor";
+{{template "code" `import { setShortcuts, deleteShortcuts, restoreDefaultShortcuts } from "vanilia-editor";
 
 // every editor on the page (mounted editors update too)
-setShortcuts({ bold: "Mod+Shift+B", find: false });
+setShortcuts({ bold: "Mod+Shift+B" });
+deleteShortcuts("find");
+restoreDefaultShortcuts("bold");
 
 // one editor
-editor.setShortcuts({
-  h2: "Mod+Alt+2",       // add one to a command that has none
-  underline: false,      // remove
-  bold: null,            // back to the default (or to the global setting)
-  signature: "Mod+Alt+1", // a custom button
-});
+editor.setShortcuts({ h2: "Mod+Alt+2", signature: "Mod+Alt+1" });
+editor.deleteShortcuts("underline", "strike");
+editor.restoreDefaultShortcuts("underline");
+editor.restoreDefaultShortcuts(); // restore all local overrides
 
-editor.getShortcuts(); // { bold: ["Mod+B"], h2: ["Mod+Alt+2"], ... }`}}
-<div class="table-wrap">
-  <table>
-    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
-    <tbody>
-      <tr><td><code>"Mod+Shift+B"</code></td><td>Replace the command's shortcuts with this one.</td></tr>
-      <tr><td><code>["Mod+Shift+Z", "Mod+Y"]</code></td><td>Several shortcuts for one command.</td></tr>
-      <tr><td><code>false</code>, <code>""</code> or <code>[]</code></td><td>Remove the command's shortcuts.</td></tr>
-      <tr><td><code>null</code></td><td>Drop the override, back to the next level.</td></tr>
-    </tbody>
-  </table>
-</div>
+editor.getShortcuts(); // { bold: ["Mod+B"], italic: ["Mod+I"], ... }`}}
+<p>
+  <code>setShortcuts(map)</code> assigns a key combination or an array of combinations.
+  Use <code>deleteShortcuts(...commands)</code> to remove shortcuts by command name and
+  <code>restoreDefaultShortcuts(...commands)</code> to restore them. Calling restore without names resets all
+  overrides at that scope. A per-editor restore falls back to the global settings, then the custom button's
+  shortcut or built-in defaults; a global restore resets the global settings only.
+  In declarative JSON, an empty array (<code>"find": []</code>) means the command has no shortcuts.
+</p>
 <p>
   Lookup order: the editor's overrides, then <code>setShortcuts()</code>, then a custom button's own
   <code>shortcut</code>, then the defaults. Any command can get a shortcut, including ones without a toolbar button
@@ -94,7 +91,7 @@ editor.getShortcuts(); // { bold: ["Mod+B"], h2: ["Mod+Alt+2"], ... }`}}
 <p>
   Keys the browser would use to edit the content itself (<kbd>Ctrl</kbd>+<kbd>B</kbd>, <kbd>I</kbd>,
   <kbd>U</kbd>, <kbd>Z</kbd>, <kbd>Y</kbd>) are swallowed, so the browser doesn't apply its own formatting and the
-  undo history stays intact. Every other removed shortcut goes back to the browser: with <code>find: false</code>,
+  undo history stays intact. Every other removed shortcut goes back to the browser: after <code>editor.deleteShortcuts("find")</code>,
   <kbd>Ctrl</kbd>+<kbd>F</kbd> opens the browser's find. The keydown event still bubbles out of the editor, so
   your page can handle a freed combination itself.
 </p>

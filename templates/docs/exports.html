@@ -15,7 +15,9 @@
       <tr><td><code>undefineButton(name)</code></td><td>Remove a button registered with <code>defineButton()</code>.</td></tr>
       <tr><td><code>setIcons(map)</code></td><td>Override icons; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/icons">Icons</a>.</td></tr>
       <tr><td><code>setLabels(map)</code></td><td>Override labels; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/labels">Labels &amp; translation</a>.</td></tr>
-      <tr><td><code>setShortcuts(map)</code></td><td>Change, add or remove keyboard shortcuts; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
+      <tr><td><code>setShortcuts(map)</code></td><td>Assign keyboard shortcuts for every editor.</td></tr>
+      <tr><td><code>deleteShortcuts(...commands)</code></td><td>Remove named shortcuts for every editor.</td></tr>
+      <tr><td><code>restoreDefaultShortcuts(...commands)</code></td><td>Restore named global shortcuts, or all global overrides without names. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
       <tr><td><code>setTheme(tokens)</code></td><td>Set <code>--ve-*</code> tokens on <code>:root</code>; <code>null</code> removes one. See <a href="{{.BasePath}}/docs/styling#javascript">Styling</a>.</td></tr>
       <tr><td><code>icon(name, size?, overrides?)</code></td><td>The markup of an icon, as the editor renders it.</td></tr>
       <tr><td><code>createTranslator(overrides?)</code></td><td>A label lookup, <code>(name, vars?) =&gt; string</code>: overrides, then <code>setLabels()</code>, then English.</td></tr>

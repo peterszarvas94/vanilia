@@ -51,7 +51,9 @@ const editor = document.querySelector("vanilia-editor");`}}
       <tr><td><code>bubbleMenu</code></td><td>The selection menu layout, same values. Reflects <code>bubble-menu</code>.</td></tr>
       <tr><td><code>addButton(button)</code></td><td>Add a <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a> to this editor. An existing name is replaced.</td></tr>
       <tr><td><code>removeButton(name)</code></td><td>Remove a button added with <code>addButton()</code>.</td></tr>
-      <tr><td><code>setShortcuts(map)</code></td><td>Change, add or remove keyboard shortcuts for this editor: <code>{ bold: "Mod+Shift+B", find: false }</code>; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
+      <tr><td><code>setShortcuts(map)</code></td><td>Assign shortcuts for this editor: <code>{ bold: "Mod+Shift+B" }</code>.</td></tr>
+      <tr><td><code>deleteShortcuts(...commands)</code></td><td>Remove named shortcuts: <code>editor.deleteShortcuts("underline", "find")</code>.</td></tr>
+      <tr><td><code>restoreDefaultShortcuts(...commands)</code></td><td>Restore inherited shortcuts for named commands, or all local overrides without names. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
       <tr><td><code>getShortcuts()</code></td><td>The shortcuts in effect, by command or button name: <code>{ bold: ["Mod+B"], ... }</code>.</td></tr>
     </tbody>
   </table>
@@ -91,7 +93,7 @@ const editor = document.querySelector("vanilia-editor");`}}
       <tr><td><code>setLabels(map)</code>, <code>labelNames</code></td><td><code>setLabels</code>, <code>LABEL_NAMES</code></td></tr>
       <tr><td><code>defineButton(button)</code><br><code>undefineButton(name)</code><br><code>buttonNames</code></td><td><code>defineButton</code><br><code>undefineButton</code><br><code>BUTTON_NAMES</code></td></tr>
       <tr><td><code>setTheme(tokens)</code>, <code>themeTokens</code></td><td><code>setTheme</code>, <code>THEME_TOKENS</code></td></tr>
-      <tr><td><code>setShortcuts(map)</code></td><td><code>setShortcuts</code></td></tr>
+      <tr><td><code>setShortcuts(map)</code><br><code>deleteShortcuts(...commands)</code><br><code>restoreDefaultShortcuts(...commands)</code></td><td><code>setShortcuts</code><br><code>deleteShortcuts</code><br><code>restoreDefaultShortcuts</code></td></tr>
     </tbody>
   </table>
 </div>
