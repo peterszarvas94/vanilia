@@ -3,29 +3,12 @@
   <body>
     {{template "nav" .}}
     <div class="container with-sidebar">
-      {{template "sidebar-toggle" "Examples"}}
-      <nav class="sidebar" id="sidebar" popover data-scroll-spy
-        data-on:click="evt.target.closest('a') && el.matches(':popover-open') && el.hidePopover()"
-        aria-label="Examples">
-        {{range .ExampleGroups}}
-        <h2>{{.Name}}</h2>
-        <ul>
-          {{range .Examples}}<li><a href="#{{.Slug}}">{{.Title}}</a></li>
-          {{end}}{{if eq .Name "Integrations"}}<li><a href="{{$.BasePath}}/demo">Go + Datastar playground ↗</a></li>
-          {{end}}
-        </ul>
-        {{end}}
-      </nav>
+      {{template "sidebar" .}}
       <main id="main" class="prose">
-        <h1>Examples</h1>
-        <p class="lede">
-          Every example is live, and the code under it is exactly the markup that runs. They all assume the
-          <a href="{{.BasePath}}/docs#install">setup from the docs</a> (import map, stylesheet and module).
-        </p>
-        {{range .ExampleGroups}}{{range .Examples}}
+        {{with .Example}}
         <section class="example" id="{{.Slug}}">
-          <h2>{{.Title}}</h2>
-          <p>{{.Description}}</p>
+          <h1>{{.Title}}</h1>
+          <p class="lede">{{.Description}}</p>
           <div class="example-preview">
             {{.HTML}}
           </div>
@@ -35,8 +18,13 @@
           {{template "code" .Server}}
           {{end}}
           {{.Notes}}
+          <p class="hint">
+            The example is live, and the code above is exactly the markup that runs. It assumes the
+            <a href="{{$.BasePath}}/docs/install">setup from the docs</a> (import map, stylesheet and module).
+          </p>
         </section>
-        {{end}}{{end}}
+        {{end}}
+        {{template "pager" .}}
       </main>
     </div>
     {{template "foot" .}}

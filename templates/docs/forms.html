@@ -1,0 +1,14 @@
+{{define "doc/forms"}}
+<h1>Forms</h1>
+<p>
+  The element is a form-associated custom element. It submits its HTML under its <code>name</code>, supports
+  <code>required</code> and <code>disabled</code> (also from a parent <code>&lt;fieldset disabled&gt;</code>), and
+  restores its initial content on form reset.
+</p>
+{{template "code" `<form method="post" action="/posts">
+  <input name="title" />
+  <vanilia-editor name="body" required></vanilia-editor>
+  <button>Publish</button>
+</form>`}}
+<p>See the <a href="{{.BasePath}}/examples/form">form example</a>.</p>
+{{end}}

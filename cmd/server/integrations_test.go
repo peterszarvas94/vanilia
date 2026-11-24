@@ -9,21 +9,23 @@ import (
 )
 
 func TestExamplesPageIntegrations(t *testing.T) {
-	mustLoadTemplates("../../templates/*.html")
+	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
 	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
 
-	rec := httptest.NewRecorder()
-	e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/examples", nil))
-	body := rec.Body.String()
-	for _, want := range []string{
-		"<h2>Integrations</h2>",
-		`id="datastar"`, `id="htmx"`, `id="alpine"`,
-		"func saveDatastarPost", "func saveHtmxPost",
-		`import "htmx.org";`, `import "alpine";`,
+	for slug, wants := range map[string][]string{
+		"datastar": {`id="datastar"`, "func saveDatastarPost"},
+		"htmx":     {`id="htmx"`, "func saveHtmxPost", `href="../docs/sanitize"`},
+		"alpine":   {`id="alpine"`},
 	} {
-		if !strings.Contains(body, want) {
-			t.Errorf("GET /examples is missing %q", want)
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/examples/"+slug, nil))
+		body := rec.Body.String()
+		wants = append(wants, "<h2>Integrations</h2>", `import "htmx.org";`, `import "alpine";`)
+		for _, want := range wants {
+			if !strings.Contains(body, want) {
+				t.Errorf("GET /examples/%s is missing %q", slug, want)
+			}
 		}
 	}
 
@@ -35,7 +37,7 @@ func TestExamplesPageIntegrations(t *testing.T) {
 }
 
 func TestIntegrationSaveHandlersSanitize(t *testing.T) {
-	mustLoadTemplates("../../templates/*.html")
+	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
 	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
 	dirty := `<p>Hi <script>alert(1)</script><a href="javascript:x">link</a></p>`

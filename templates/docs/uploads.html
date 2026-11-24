@@ -1,0 +1,20 @@
+{{define "doc/uploads"}}
+<h1>Image uploads</h1>
+<p>
+  Without any setup, pasted, dropped and picked images are inlined as <code>data:</code> URLs. To store them on
+  your server, either set <code>upload-url</code> or assign an upload function:
+</p>
+{{template "code" `<!-- raw file POSTed with its Content-Type; respond with { "url": "/uploads/abc.png" } -->
+<vanilia-editor upload-url="/api/upload"></vanilia-editor>
+
+<script type="module">
+  // or handle it yourself
+  editor.onImageUpload = async (file) => {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch("/my/upload", { method: "POST", body });
+    return (await res.json()).url;
+  };
+</script>`}}
+<p>Click an inserted image to resize it with the handles, pick a preset width, align it, edit its alt text or delete it.</p>
+{{end}}

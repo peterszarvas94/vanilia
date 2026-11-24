@@ -3,12 +3,11 @@
 //   @formatHTML(html)     pretty-print editor HTML
 //   @copy(el)             copy the code block next to a button
 //   data-highlight        syntax-highlight a <code> element
-//   data-scroll-spy       mark the sidebar link of the section in view and
-//                         expose its title as $_section
+//   data-hash-redirect    send an old one-page #anchor link to its own page
 
 // The editor first: Datastar must see <vanilia-editor> already defined
 import { formatHTML } from "vanilia-editor";
-import { action, attribute, mergePatch } from "datastar";
+import { action, attribute } from "datastar";
 
 action({ name: "formatHTML", apply: (_ctx, html) => formatHTML(html) });
 
@@ -50,30 +49,15 @@ attribute({
 });
 
 attribute({
-  name: "scroll-spy",
+  name: "hash-redirect",
   requirement: { key: "denied", value: "denied" },
   apply({ el }) {
-    const links = [...el.querySelectorAll("a[href^='#']")];
-    const targets = links.map((a) => document.getElementById(a.getAttribute("href").slice(1)));
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      // The current section is the last one whose top has scrolled under the header
-      const offset =
-        parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) + 8 || 80;
-      const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
-      let current = 0;
-      targets.forEach((t, i) => {
-        if (t && t.getBoundingClientRect().top <= offset) current = i;
-      });
-      if (atBottom) current = targets.length - 1;
-      links.forEach((a, i) => a.classList.toggle("is-current", i === current));
-      mergePatch({ _section: links[current].textContent });
-    };
-    const onScroll = () => (frame ||= requestAnimationFrame(update));
-    addEventListener("scroll", onScroll, { passive: true });
-    update();
-    return () => removeEventListener("scroll", onScroll);
+    // Old single-page links like /docs#sanitize land on the first page with
+    // the fragment kept; forward them to the page that is now /docs/sanitize.
+    const slug = decodeURIComponent(location.hash.slice(1));
+    if (!slug || document.getElementById(slug)) return;
+    const link = [...el.querySelectorAll("a")].find((a) => a.pathname.endsWith("/" + slug));
+    if (link && !link.ariaCurrent) location.replace(link.href);
   },
 });
 

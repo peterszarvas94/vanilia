@@ -512,7 +512,7 @@ p {
       background: var(--subtle-bg);
     }
 
-    &.is-current {
+    &[aria-current="page"] {
       color: var(--accent);
       background: var(--accent-soft);
       font-weight: 600;
@@ -702,19 +702,24 @@ table {
 /* ---- Examples ---- */
 
 .example {
-  margin-top: 44px;
-
-  &:first-of-type {
-    margin-top: 28px;
+  & > h1 {
+    margin: 0 0 8px;
+    font-size: 34px;
   }
 
-  & > h2 {
-    margin: 0 0 4px;
+  & > .lede {
+    margin: 0 0 20px;
+    font-size: 17px;
+    color: var(--muted);
   }
 
   & > p {
-    margin: 0 0 12px;
+    margin: 14px 0 12px;
     color: var(--muted);
+  }
+
+  & > .hint {
+    margin-top: 24px;
   }
 
   /* Notes under an integration */
@@ -855,4 +860,52 @@ table {
   display: grid;
   place-items: center;
   height: 100%;
+}
+
+/* ---- Docs & examples: previous / next ---- */
+
+.pager {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--card-border);
+
+  & a {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+
+  & span {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  & .pager-next {
+    grid-column: 2;
+    text-align: right;
+  }
+}
+
+@media (max-width: 520px) {
+  .pager {
+    grid-template-columns: minmax(0, 1fr);
+
+    & .pager-next {
+      grid-column: auto;
+    }
+  }
 }
