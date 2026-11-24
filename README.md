@@ -30,9 +30,29 @@ import "vanilia-editor"; // registers <vanilia-editor>
 import "vanilia-editor/vanilia-editor.css";
 ```
 
-## Drop-In Integration (ESM + import map)
+## Script tag
 
-One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~52 kB gzipped, readable, Squire built in, no imports), [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped) and optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts). Copy them into your project or link the hosted deployment (CORS-enabled). Map the module once in your base layout:
+No import map, no module, no build step: one stylesheet and one classic script, [`dist/vanilia-editor.iife.js`](./dist/vanilia-editor.iife.js) (~53 kB gzipped, readable, Squire built in). It registers `<vanilia-editor>` and puts the API on `window.Vanilia`. Link the hosted deployment (CORS-enabled), a CDN (jsDelivr or unpkg, from 0.2.0), or copy the files into your project:
+
+```html
+<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
+<script src="https://vanilia.peterszarvas.hu/dist/vanilia-editor.iife.js" defer></script>
+
+<form method="POST" action="/save">
+  <vanilia-editor name="content" placeholder="Start writing..."></vanilia-editor>
+  <button type="submit">Save</button>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    Vanilia.setLabels({ placeholder: "Write a reply..." });
+  });
+</script>
+```
+
+## ES module with an import map
+
+The same editor as one ES module: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~52 kB gzipped, no imports of its own) with optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts), next to [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped). Map the module once in your base layout:
 
 ```html
 <script type="importmap">
@@ -46,20 +66,18 @@ One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./di
 <script type="module">
   import "vanilia-editor";
 </script>
-
-<form method="POST" action="/save">
-  <vanilia-editor name="content" placeholder="Start writing..."></vanilia-editor>
-  <button type="submit">Save</button>
-</form>
 ```
 
 With a bundler (Vite, esbuild, ...) no import map is needed: import the copied `vanilia-editor.js` and `vanilia-editor.css` directly.
+
+## Using the editor
 
 - **Forms:** `<vanilia-editor>` is form-associated (`ElementInternals`), so `name`, `required`, `disabled`, `FormData`, and `form.reset()` work natively.
 - **Events & API:** emits `input`, `change`, `editorupdate` and `ve:update`; `.value`, `.getHTML()`, `.setHTML(html)`, `.getText()`, `.insertHTML(html)`, `.insertText(text)`, `.exec(cmd)`, `.addButton(button)`, `.setLabels(map)`, `.setTheme(tokens)` and more ([full API](https://vanilia.peterszarvas.hu/docs/api)).
 - **Images:** works out of the box with no backend (falls back to inline `data:` URLs). For server uploads, set `upload-url="/api/upload"` (raw binary `POST` returning `{ "url": "..." }`) or assign `editor.onImageUpload = async (file) => url`.
 - **Rendered output:** add `class="ve-prose"` to any container rendering saved HTML to match the editor's typography and image alignment.
-- **Regenerate `dist/` after editing `src/`:** `npm run build` and commit `dist/` (the Docker image has no Node).
+
+## Configuration
 
 ### Toolbar
 
@@ -179,7 +197,7 @@ The editor is TypeScript in `src/`, built with [Vite+](https://viteplus.dev) (`v
 
 ```bash
 npm install
-npm run build   # vp pack: dist/vanilia-editor.{js,d.ts,css}
+npm run build   # vp pack: dist/vanilia-editor.{js,iife.js,d.ts,css}
 npm run check   # vp check
 npm test        # vp test
 go test ./...

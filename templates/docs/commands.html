@@ -5,6 +5,7 @@
   works in <code>exec()</code> also works in a <code>toolbar</code> layout, except <code>makeLink</code>, <code>removeLink</code>,
   <code>subscript</code>, <code>superscript</code>, <code>indent</code> and <code>outdent</code>, which have no button.
 </p>
+<h2 id="list">Command list</h2>
 <p>The badge shows whose code does the work: {{template "squire" .BasePath}} or {{template "vanilia" .BasePath}} (see <a href="{{.BasePath}}/docs/squire">Squire &amp; Vanilia</a>).</p>
 <div class="table-wrap">
   <table>
@@ -31,6 +32,7 @@
     </tbody>
   </table>
 </div>
+<h2 id="running">Running commands</h2>
 {{template "code" `editor.exec("h2");
 editor.exec("makeLink", "https://example.com");
 editor.exec("signature"); // a custom button`}}

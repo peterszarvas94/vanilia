@@ -3,6 +3,9 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   pack: {
     entry: { "vanilia-editor": "src/index.ts" },
+    // ES module for import maps and bundlers, plus a classic script that exposes window.Vanilia
+    format: { esm: {}, iife: { dts: false } },
+    globalName: "Vanilia",
     platform: "browser",
     // Bundle Squire's unminified build so the output stays readable
     alias: { "squire-rte": "squire-rte/dist/squire-raw.mjs" },

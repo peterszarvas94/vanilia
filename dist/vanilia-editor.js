@@ -1,5 +1,5 @@
 /*! Vanilia | includes Squire, MIT License, Copyright (c) 2011-2023 Neil Jenkins */
-// ../t3-da708bec/node_modules/squire-rte/dist/squire-raw.mjs
+// node_modules/squire-rte/dist/squire-raw.mjs
 var SHOW_ELEMENT = 1;
 var SHOW_TEXT = 4;
 var SHOW_ELEMENT_OR_TEXT = 5;

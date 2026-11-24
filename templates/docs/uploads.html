@@ -1,20 +1,34 @@
 {{define "doc/uploads"}}
 <h1>Image uploads</h1>
-<p>
-  Without any setup, pasted, dropped and picked images are inlined as <code>data:</code> URLs. To store them on
-  your server, either set <code>upload-url</code> or assign an upload function:
-</p>
-{{template "code" `<!-- raw file POSTed with its Content-Type; respond with { "url": "/uploads/abc.png" } -->
-<vanilia-editor upload-url="/api/upload"></vanilia-editor>
+<p>Images come in three ways: pasted, dropped onto the editor, or picked with the image button.</p>
 
-<script type="module">
-  // or handle it yourself
-  editor.onImageUpload = async (file) => {
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch("/my/upload", { method: "POST", body });
-    return (await res.json()).url;
-  };
-</script>`}}
+<h2 id="default">Without a server</h2>
+<p>
+  With no setup, images are inlined as <code>data:</code> URLs in the HTML. That's fine for demos and small images;
+  for anything else, store them on your server.
+</p>
+
+<h2 id="upload-url">Upload URL</h2>
+<p>
+  Set <code>upload-url</code>. Each image is POSTed as the raw file with its <code>Content-Type</code>; respond with
+  the image's URL as JSON:
+</p>
+{{template "code" `<vanilia-editor upload-url="/api/upload"></vanilia-editor>
+
+<!-- POST /api/upload, body: the file -->
+<!-- response: { "url": "/uploads/abc.png" } -->`}}
+
+<h2 id="upload-function">Upload function</h2>
+<p>For anything else (form data, signed URLs, a storage SDK), assign an async function that returns the URL:</p>
+{{template "code" `editor.onImageUpload = async (file) => {
+  const body = new FormData();
+  body.append("file", file);
+  const res = await fetch("/my/upload", { method: "POST", body });
+  return (await res.json()).url;
+};`}}
+<p>It takes precedence over <code>upload-url</code>. While it runs, the footer shows the <code>uploading</code> label; if it throws, the error message.</p>
+
+<h2 id="editing">Editing images</h2>
 <p>Click an inserted image to resize it with the handles, pick a preset width, align it, edit its alt text or delete it.</p>
+<p>See the <a href="{{.BasePath}}/examples/uploads">image uploads example</a>.</p>
 {{end}}

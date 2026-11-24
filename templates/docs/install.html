@@ -1,27 +1,60 @@
 {{define "doc/install"}}
 <h1>Installation</h1>
-<p>Vanilia ships as one ES module and one stylesheet:</p>
+<p>
+  Vanilia is a stylesheet plus one script, with <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a>
+  built in. Pick how you load it: a plain <code>&lt;script&gt;</code> tag, an ES module with an import map, or npm.
+  They're the same editor.
+</p>
+
+<h2 id="files">Files</h2>
 <div class="table-wrap">
   <table>
     <thead><tr><th>File</th><th>Size (gzip)</th><th>What</th></tr></thead>
     <tbody>
-      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.js"><code>vanilia-editor.js</code></a></td><td>~52 kB</td><td>The element and its extensions, with a pinned <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a> 2.4.11 (MIT) built in. Readable, not minified.</td></tr>
-      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a></td><td></td><td>TypeScript types (optional)</td></tr>
-      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.css"><code>vanilia-editor.css</code></a></td><td>~4 kB</td><td>All styles, in cascade layers</td></tr>
+      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.css"><code>vanilia-editor.css</code></a></td><td>~4 kB</td><td>All styles, in cascade layers. Always needed.</td></tr>
+      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.iife.js"><code>vanilia-editor.iife.js</code></a></td><td>~53 kB</td><td>Classic script for a plain <code>&lt;script&gt;</code> tag. Registers the element and exposes the API as <code>window.Vanilia</code>.</td></tr>
+      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.js"><code>vanilia-editor.js</code></a></td><td>~52 kB</td><td>ES module, for import maps and bundlers.</td></tr>
+      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a></td><td></td><td>TypeScript types for the ES module (optional).</td></tr>
     </tbody>
   </table>
 </div>
+<p>Both scripts are readable, not minified, and include a pinned Squire 2.4.11 (MIT). Load one of them, not both.</p>
 
-<h3>Option A: npm</h3>
-{{template "code" `npm install vanilia-editor`}}
-{{template "code" `import "vanilia-editor";                     // registers <vanilia-editor>
-import "vanilia-editor/vanilia-editor.css";
+<h2 id="script-tag">Script tag</h2>
+<p>The simplest setup: no import map, no module script, no build step. Put this in your page's <code>&lt;head&gt;</code>:</p>
+{{template "code" `<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
+<script src="https://vanilia.peterszarvas.hu/dist/vanilia-editor.iife.js" defer></script>`}}
+<p>and use the element anywhere in the body:</p>
+{{template "code" `<vanilia-editor name="content"></vanilia-editor>`}}
 
-const editor = document.querySelector("vanilia-editor"); // typed: VaniliaEditorElement | null`}}
-<p>The package has no dependencies (Squire is bundled) and ships its types.</p>
+<h3 id="script-api">Using the API</h3>
+<p>
+  The module's <a href="{{.BasePath}}/docs/exports">exports</a> are on <code>window.Vanilia</code>. Elements work as
+  soon as the script has run; with <code>defer</code>, wait for <code>DOMContentLoaded</code> (or
+  <code>customElements.whenDefined</code>) before calling their methods:
+</p>
+{{template "code" `<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    Vanilia.setLabels({ placeholder: "Write a reply..." });
 
-<h3>Option B: link the hosted files</h3>
-<p>The files on this site are served with CORS headers, so you can link them directly:</p>
+    const editor = document.querySelector("vanilia-editor");
+    editor.addEventListener("input", () => console.log(editor.value));
+  });
+</script>`}}
+
+<h3 id="cdn">From a CDN</h3>
+<p>From version 0.2.0 the npm package is also on the public CDNs. Pin a version in production:</p>
+{{template "code" `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilia-editor@0.2/dist/vanilia-editor.css" />
+<script src="https://cdn.jsdelivr.net/npm/vanilia-editor@0.2/dist/vanilia-editor.iife.js" defer></script>
+
+<!-- or unpkg -->
+<script src="https://unpkg.com/vanilia-editor@0.2/dist/vanilia-editor.iife.js" defer></script>`}}
+
+<h2 id="import-map">ES module with an import map</h2>
+<p>
+  If your pages already use modules, map the bare <code>"vanilia-editor"</code> name once in your base layout, then
+  import it from any module script:
+</p>
 {{template "code" `<script type="importmap">
   {
     "imports": {
@@ -30,18 +63,39 @@ const editor = document.querySelector("vanilia-editor"); // typed: VaniliaEditor
   }
 </script>
 <link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
-<script type="module">import "vanilia-editor";</script>`}}
-
-<h3>Option C: copy them into your project</h3>
-<p>Download the files into your static folder (for example <code>/static/vendor/</code>) and use the same snippet with local paths:</p>
-{{template "code" `curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.js
-curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.css
-curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.d.ts  # optional, for types`}}
+<script type="module">
+  import { setLabels } from "vanilia-editor";
+</script>`}}
 <div class="callout">
   The import map has to come before any module script that imports Vanilia. Put it once in your base layout.
 </div>
+<p>
+  Without an import map, a module script can import the file by URL instead:
+  <code>import "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js"</code>, or
+  <code>&lt;script type="module" src="..."&gt;</code>.
+</p>
 
-<h3>Copied files with a bundler</h3>
+<h2 id="self-host">Self-hosting the files</h2>
+<p>
+  The files on this site are served with CORS headers, so you can link them directly. To serve them yourself,
+  download them into your static folder (for example <code>/static/vendor/</code>) and use the snippets above with
+  local paths:
+</p>
+{{template "code" `curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.css
+curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.iife.js   # for a script tag
+curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.js        # for modules
+curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.d.ts      # optional, types for the module`}}
+
+<h2 id="npm">npm and bundlers</h2>
+<h3 id="npm-install">From npm</h3>
+{{template "code" `npm install vanilia-editor`}}
+{{template "code" `import "vanilia-editor";                     // registers <vanilia-editor>
+import "vanilia-editor/vanilia-editor.css";
+
+const editor = document.querySelector("vanilia-editor"); // typed: VaniliaEditorElement | null`}}
+<p>The package has no dependencies (Squire is bundled) and ships its types.</p>
+
+<h3 id="bundler-copied">Copied files with a bundler</h3>
 <p>
   The module has no imports of its own, so a bundler needs nothing extra: import the copied files, and keep
   <code>vanilia-editor.d.ts</code> next to the module for types.

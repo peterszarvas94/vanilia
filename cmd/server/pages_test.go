@@ -14,7 +14,7 @@ func TestPagesRender(t *testing.T) {
 
 	pages := map[string]string{
 		"/":                   "A rich text editor",
-		"/docs/install":       `Option A: npm`,
+		"/docs/install":       `<h2 id="script-tag">Script tag</h2>`,
 		"/docs/labels":        `data-ve-labels`,
 		"/docs/exports":       `defineButton(button)`,
 		"/examples/toolbar":   `id="toolbar-editor"`,

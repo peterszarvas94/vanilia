@@ -1,5 +1,8 @@
 {{define "doc/events"}}
 <h1>Events</h1>
+<p>All events bubble, so you can listen on the editor or on any ancestor (a form, the document).</p>
+
+<h2 id="list">Event list</h2>
 <div class="table-wrap">
   <table>
     <thead><tr><th>Event</th><th>When</th></tr></thead>
@@ -10,6 +13,8 @@
     </tbody>
   </table>
 </div>
+
+<h2 id="detail">Event detail</h2>
 <p><code>ve:update</code> carries the full editor state in <code>event.detail</code>:</p>
 {{template "code" `{
   html: "<p>Hello</p>",
@@ -20,4 +25,23 @@
   canUndo: true,
   canRedo: false
 }`}}
+<p>
+  <code>active</code> has one entry per format: <code>bold</code>, <code>italic</code>, <code>underline</code>,
+  <code>strike</code>, <code>code</code>, <code>subscript</code>, <code>superscript</code>, <code>link</code>,
+  <code>bulletList</code>, <code>orderedList</code>, <code>blockquote</code>, <code>paragraph</code>,
+  <code>h1</code>–<code>h3</code> and <code>alignLeft</code>/<code>alignCenter</code>/<code>alignRight</code>.
+</p>
+
+<h2 id="listening">Listening</h2>
+{{template "code" `editor.addEventListener("input", () => save(editor.value));
+
+editor.addEventListener("ve:update", ({ detail }) => {
+  counter.textContent = detail.words + " words";
+});`}}
+<p>In attribute-based frameworks, use the <code>editorupdate</code> name:</p>
+{{template "code" `<!-- Datastar -->
+<vanilia-editor data-on:editorupdate="$words = evt.detail.words"></vanilia-editor>
+
+<!-- Alpine.js -->
+<vanilia-editor @editorupdate="words = $event.detail.words"></vanilia-editor>`}}
 {{end}}

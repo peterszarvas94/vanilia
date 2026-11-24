@@ -1,8 +1,14 @@
 {{define "doc/typescript"}}
 <h1>TypeScript</h1>
+<p>Vanilia is written in TypeScript and ships its types. How you point TypeScript at them depends on how you load it.</p>
+
+<h2 id="setup">Setup</h2>
+<h3 id="npm">From npm</h3>
+<p>Installed from npm, the package is typed with no setup.</p>
+
+<h3 id="copied">Hosted or copied files</h3>
 <p>
-  Installed from npm, the package is typed with no setup. With the hosted or copied files, keep
-  <a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a> beside
+  Keep <a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a> beside
   <code>vanilia-editor.js</code> and a relative import is typed. When you import the bare
   <code>"vanilia-editor"</code> through an import map, tell TypeScript where the types are, because it doesn't
   read import maps:
@@ -13,6 +19,19 @@
     "paths": { "vanilia-editor": ["./static/vendor/vanilia-editor.d.ts"] }
   }
 }`}}
+
+<h3 id="script-tag">Script tag</h3>
+<p>
+  The <a href="{{.BasePath}}/docs/install#script-tag">script tag build</a> puts the same API on
+  <code>window.Vanilia</code>. To type it, declare the global from the module's types:
+</p>
+{{template "code" `// globals.d.ts
+declare global {
+  const Vanilia: typeof import("./static/vendor/vanilia-editor.js");
+}
+export {};`}}
+
+<h2 id="typed-usage">Typed element and events</h2>
 <p>
   Importing the module also types the element and its events, so there is nothing to cast. Label, icon, theme
   token and built-in button names autocomplete and are checked:
@@ -35,9 +54,12 @@ const signature: ToolbarButton = {
 };
 editor?.addButton(signature);
 editor?.exec("signature"); // exec takes commands and custom button names`}}
+
+<h2 id="types">Exported types</h2>
 <p>
-  Exported types include <code>VaniliaEditorDetail</code>, <code>EditorCommand</code>, <code>ToolbarButton</code>,
-  <code>ToolbarItem</code>, <code>LabelName</code>, <code>IconName</code>, <code>ThemeToken</code> and
-  <code>UploadHandler</code>. The full list is under <a href="{{.BasePath}}/docs/exports#types">Module exports</a>.
+  The main ones are <code>VaniliaEditorDetail</code>, <code>EditorCommand</code>, <code>ToolbarButton</code>,
+  <code>ToolbarItem</code>, <code>LabelName</code>, <code>IconName</code>, <code>ThemeToken</code>,
+  <code>ShortcutMap</code> and <code>UploadHandler</code>. The full list is under
+  <a href="{{.BasePath}}/docs/exports#types">Module exports</a>.
 </p>
 {{end}}

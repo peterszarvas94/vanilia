@@ -25,12 +25,15 @@
   "sideEffects": true,
   "module": "./dist/vanilia-editor.js",
   "types": "./dist/vanilia-editor.d.ts",
+  "unpkg": "./dist/vanilia-editor.iife.js",
+  "jsdelivr": "./dist/vanilia-editor.iife.js",
   "exports": {
     ".": {
       "types": "./dist/vanilia-editor.d.ts",
       "default": "./dist/vanilia-editor.js"
     },
-    "./vanilia-editor.css": "./dist/vanilia-editor.css"
+    "./vanilia-editor.css": "./dist/vanilia-editor.css",
+    "./vanilia-editor.iife.js": "./dist/vanilia-editor.iife.js"
   },
   "scripts": {
     "build": "vp pack",

@@ -1,14 +1,36 @@
 {{define "doc/forms"}}
 <h1>Forms</h1>
 <p>
-  The element is a form-associated custom element. It submits its HTML under its <code>name</code>, supports
-  <code>required</code> and <code>disabled</code> (also from a parent <code>&lt;fieldset disabled&gt;</code>), and
-  restores its initial content on form reset.
+  <code>&lt;vanilia-editor&gt;</code> is a form-associated custom element, so it behaves like a native field: no
+  hidden input, no JavaScript to copy the value over.
+</p>
+
+<h2 id="submitting">Submitting</h2>
+<p>
+  It submits its HTML under its <code>name</code>, in regular form posts, <code>FormData</code> and libraries that
+  serialize forms (htmx, Datastar):
 </p>
 {{template "code" `<form method="post" action="/posts">
   <input name="title" />
   <vanilia-editor name="body" required></vanilia-editor>
   <button>Publish</button>
 </form>`}}
+<p>An empty editor submits an empty string, not <code>&lt;p&gt;&lt;br&gt;&lt;/p&gt;</code>.</p>
+
+<h2 id="validation">Validation</h2>
+<p>
+  With <code>required</code>, an editor with no text and no image fails validation and blocks submission, with
+  the browser's usual message. The standard members work too:
+</p>
+{{template "code" `editor.checkValidity();     // false while empty and required
+editor.reportValidity();    // shows the message
+editor.validity.valueMissing;
+editor.validationMessage;   // the "valueMissing" label, translatable`}}
+
+<h2 id="disabled-reset">Disabled and reset</h2>
+<p>
+  <code>disabled</code>, on the editor or a parent <code>&lt;fieldset&gt;</code>, makes it read-only and leaves it
+  out of the submission. <code>form.reset()</code> restores the initial content.
+</p>
 <p>See the <a href="{{.BasePath}}/examples/form">form example</a>.</p>
 {{end}}
