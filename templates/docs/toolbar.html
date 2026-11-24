@@ -1,9 +1,113 @@
 {{define "doc/toolbar"}}
-<h1>Custom toolbar</h1>
+<h1>Toolbar</h1>
 <p>
-  <code>toolbar="none"</code> hides the built-in toolbar. Your own buttons call <code>editor.exec()</code> and
-  read the active state from <code>ve:update</code>. The selection menu, image handles, link and image popovers
-  and find &amp; replace keep working.
+  Pick and order the built-in buttons, add your own, configure the menu that appears over selected text, or hide
+  the toolbar and build your own.
+</p>
+
+<h2 id="layout">Layout</h2>
+<p>
+  The <code>toolbar</code> attribute lists button names in order, with <code>|</code> between groups. Without it,
+  the editor shows every built-in button.
+</p>
+{{template "code" `<vanilia-editor toolbar="bold italic link | h2 h3 | bulletList orderedList | undo redo"></vanilia-editor>`}}
+<p>Built-in buttons, by default group:</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Group</th><th>Buttons</th></tr></thead>
+    <tbody>
+      <tr><td>Inline</td><td><code>bold</code> <code>italic</code> <code>underline</code> <code>strike</code> <code>code</code></td></tr>
+      <tr><td>Blocks</td><td><code>paragraph</code> <code>h1</code> <code>h2</code> <code>h3</code></td></tr>
+      <tr><td>Lists</td><td><code>bulletList</code> <code>orderedList</code> <code>blockquote</code> <code>hr</code></td></tr>
+      <tr><td>Alignment</td><td><code>alignLeft</code> <code>alignCenter</code> <code>alignRight</code></td></tr>
+      <tr><td>Insert</td><td><code>link</code> <code>image</code> <code>clearFormatting</code></td></tr>
+      <tr><td>History</td><td><code>undo</code> <code>redo</code> <code>find</code></td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  The <code>toolbar</code> property takes the same layout as a string or an array, and reads back the items in
+  use. <code>null</code> restores the default:
+</p>
+{{template "code" `editor.toolbar = ["bold", "italic", "|", "link"];
+editor.toolbar;          // ["bold", "italic", "|", "link"]
+editor.toolbar = "none"; // hide the toolbar
+editor.toolbar = null;   // back to the default
+
+import { DEFAULT_TOOLBAR } from "vanilia-editor";
+editor.toolbar = [...DEFAULT_TOOLBAR, "|", "signature"]; // default plus a custom button`}}
+<p>A name with no button yet is skipped, and shows up once a custom button with that name is added, so a layout can list buttons you add later. Keyboard shortcuts work whether or not their button is shown.</p>
+
+<h2 id="bubble-menu">Selection menu</h2>
+<p>
+  Selecting text opens a small menu with bold, italic, underline, strike, code and link. Change it with
+  <code>bubble-menu</code> (or the <code>bubbleMenu</code> property), using the same syntax. It can hold any
+  button, custom ones included. <code>"none"</code> turns it off.
+</p>
+{{template "code" `<vanilia-editor bubble-menu="bold italic | link sup"></vanilia-editor>
+<vanilia-editor bubble-menu="none"></vanilia-editor>`}}
+
+<h2 id="custom-buttons">Custom buttons</h2>
+<p>
+  A custom button has a name, a label and a <code>run()</code> function. Add it to one editor with
+  <code>addButton()</code>, or to every editor on the page with <code>defineButton()</code>:
+</p>
+{{template "code" `const editor = document.querySelector("vanilia-editor");
+
+editor.addButton({
+  name: "signature",
+  label: "Insert signature",
+  icon: '<svg viewBox="0 0 24 24">...</svg>', // or the name of an icon
+  text: "Sign",                               // optional visible text
+  shortcut: "Mod+Shift+S",                    // Mod is ⌘ on macOS, Ctrl elsewhere
+  run: (editor) => editor.insertHTML("<p>— Peter</p>"),
+});
+
+editor.removeButton("signature");`}}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Field</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Required. Letters, digits, <code>_</code> and <code>-</code>; can't be a built-in name. Use it in layouts and with <code>editor.exec(name)</code>.</td></tr>
+      <tr><td><code>label</code></td><td>Required. Tooltip and accessible name.</td></tr>
+      <tr><td><code>run(editor)</code></td><td>Required. Runs on click, on the shortcut and on <code>exec(name)</code>.</td></tr>
+      <tr><td><code>icon</code></td><td>A built-in icon name, a name registered with <code>setIcons()</code>, or trusted markup (anything containing <code>&lt;</code>).</td></tr>
+      <tr><td><code>text</code></td><td>Visible text, after the icon or on its own.</td></tr>
+      <tr><td><code>shortcut</code></td><td>Default keyboard shortcut, like <code>"Mod+Shift+S"</code> or <code>"Mod+Alt+1"</code>, or an array of them. Shown in the tooltip; <code>setShortcuts()</code> can change or remove it by the button's name. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
+      <tr><td><code>isActive(editor)</code></td><td>Pressed state, re-checked whenever the selection or content changes.</td></tr>
+      <tr><td><code>isEnabled(editor)</code></td><td>Return <code>false</code> to disable the button. Re-checked like <code>isActive</code>.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  Where a custom button shows up: with the default toolbar, in a group at the end; with a <code>toolbar</code>
+  or <code>bubble-menu</code> layout, wherever its name appears. Inside <code>run()</code> you have the whole
+  <a href="{{.BasePath}}/docs/api">element API</a> (<code>insertHTML</code>, <code>insertText</code>,
+  <code>getSelectedText</code>, <code>exec</code>, ...) and, for formatting the API doesn't cover, the underlying
+  <code>editor.squire</code>. A button for the <code>superscript</code> command, which has no built-in button:
+</p>
+{{template "code" `import { defineButton } from "vanilia-editor";
+
+defineButton({
+  name: "sup",
+  label: "Superscript",
+  icon: "superscript", // a name registered with setIcons(), see below
+  shortcut: "Mod+.",
+  isActive: (editor) => editor.isActive("superscript"),
+  run: (editor) => editor.exec("superscript"),
+});`}}
+<p>
+  For icons by name, register the markup once with <code>setIcons({ superscript: "&lt;svg&gt;...&lt;/svg&gt;" })</code>.
+  Formatting and inserted markup only keep the tags the editor knows (headings, lists, <code>b</code>, <code>i</code>,
+  <code>u</code>, <code>s</code>, <code>code</code>, <code>sub</code>, <code>sup</code>, links, images, ...); anything else is
+  stripped.
+</p>
+
+<h2 id="your-own">Your own toolbar</h2>
+<p>
+  <code>toolbar="none"</code> hides the built-in toolbar. Your buttons call <code>editor.exec()</code> and read
+  the active state from <code>ve:update</code>. The selection menu, image handles, link and image popovers and
+  find &amp; replace keep working.
 </p>
 {{template "code" `<div id="toolbar">
   <button type="button" data-cmd="bold">Bold</button>
@@ -33,4 +137,8 @@ data-class:is-active="$bold">Bold</button>
 
 <vanilia-editor id="editor" toolbar="none"
   data-on:editorupdate="$bold = evt.detail.active.bold"></vanilia-editor>`}}
+<p>
+  See the <a href="{{.BasePath}}/examples/toolbar">toolbar layout example</a> and the
+  <a href="{{.BasePath}}/examples/headless">your own toolbar example</a>.
+</p>
 {{end}}

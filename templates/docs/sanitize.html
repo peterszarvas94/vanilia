@@ -1,8 +1,14 @@
 {{define "doc/sanitize"}}
 <h1>Sanitizing on the server</h1>
+<h2 id="why">Why sanitize twice</h2>
 <p>
   The editor sanitizes pasted HTML in the browser, but anything a client sends can be forged, so sanitize again
-  on the server before storing or rendering it. Allow only what the editor produces. For Go, this is the
+  on the server before storing or rendering it. Allow only what the editor produces.
+</p>
+
+<h2 id="go">Go with bluemonday</h2>
+<p>
+  For Go, this is the
   <a href="https://github.com/microcosm-cc/bluemonday" target="_blank" rel="noopener noreferrer">bluemonday</a>
   policy this site uses (<a href="https://github.com/peterszarvas94/vanilia/blob/master/cmd/server/utils.go" target="_blank" rel="noopener noreferrer">full source</a>):
 </p>
@@ -24,4 +30,13 @@ p.AllowStyles("margin-left", "margin-right").Matching(regexp.MustCompile(` "`" `
 p.AllowStyles("text-align").Matching(regexp.MustCompile(` "`" `^(left|center|right|justify)$` "`" `)).Globally()
 
 clean := p.Sanitize(r.FormValue("body"))`)}}
+
+<h2 id="other-languages">Other languages</h2>
+<p>
+  Port the same allowlist to your sanitizer: the elements above, <code>href</code>/<code>title</code> on links,
+  <code>src</code>/<code>alt</code>/<code>title</code> on images, the <code>align-*</code> classes, and the image size and
+  alignment styles. For example <a href="https://github.com/apostrophecms/sanitize-html" target="_blank" rel="noopener noreferrer">sanitize-html</a>
+  in Node, <a href="https://github.com/messense/nh3" target="_blank" rel="noopener noreferrer">nh3</a> in Python or
+  <a href="https://github.com/rails/rails-html-sanitizer" target="_blank" rel="noopener noreferrer">rails-html-sanitizer</a> in Ruby.
+</p>
 {{end}}

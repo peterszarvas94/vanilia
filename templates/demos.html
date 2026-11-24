@@ -1,0 +1,40 @@
+{{define "demos"}}{{template "head" .}}
+  </head>
+  <body>
+    {{template "nav" .}}
+    <div class="container with-sidebar">
+      {{template "sidebar" .}}
+      <main id="main" class="prose prose--wide">
+        {{with .Example}}
+        <section class="demo" id="{{.Slug}}">
+          <p class="demo-stack"><span class="badge badge--stack">{{.Stack}}</span></p>
+          <h1>{{.Title}}</h1>
+          <p class="lede">{{.Description}}</p>
+          <div class="example-preview">
+            {{fingerprintHTML .HTML}}
+          </div>
+          <h2 id="code">Code</h2>
+          {{template "code" .Source}}
+          {{if .Server}}
+          <h2 id="server">Server</h2>
+          <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
+          {{template "code" .Server}}
+          {{end}}
+          {{if .Notes}}
+          <h2 id="notes">Notes</h2>
+          {{.Notes}}
+          {{end}}
+          <p class="hint">
+            {{if .Classic}}This is a complete setup: the code loads the editor itself.{{else}}The demo above runs
+            exactly this code, with the <a href="{{$.BasePath}}/docs/install">setup from the docs</a>.{{end}}
+            See <a href="{{$.BasePath}}/examples">generic examples</a> for framework-free snippets.
+          </p>
+        </section>
+        {{end}}
+        {{template "pager" .}}
+      </main>
+    </div>
+    {{template "foot" .}}
+  </body>
+</html>
+{{end}}

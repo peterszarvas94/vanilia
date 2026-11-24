@@ -4,28 +4,41 @@
   The built-in icons are inlined, Lucide-style SVGs, so there's no icon library to load. Resize them or change
   their stroke width with <code>--ve-icon-size</code>, <code>--ve-icon-size-sm</code> and
   <code>--ve-icon-stroke</code>, or replace any of them with your own markup (inline SVG, an icon-font
-  <code>&lt;i&gt;</code>, an <code>&lt;img&gt;</code>, or a server-rendered component):
+  <code>&lt;i&gt;</code>, an <code>&lt;img&gt;</code>, or a server-rendered component).
 </p>
-{{template "code" `<!-- one editor -->
-<vanilia-editor>
+
+<h2 id="html">In HTML</h2>
+{{template "code" `<vanilia-editor>
   <template data-ve-icon="bold"><svg viewBox="0 0 256 256">...</svg></template>
-</vanilia-editor>
+  <template data-ve-icon="italic"><i class="ph ph-text-italic"></i></template>
+</vanilia-editor>`}}
 
-<script type="module">
-  import { VaniliaEditorElement } from "vanilia-editor";
+<h2 id="javascript">From JavaScript</h2>
+{{template "code" `import { setIcons, ICON_NAMES } from "vanilia-editor";
 
-  // every editor on the page (already-mounted editors update too)
-  VaniliaEditorElement.setIcons({ undo: "<svg>...</svg>" });
+// every editor on the page (mounted editors update too)
+setIcons({ undo: "<svg>...</svg>", redo: "<svg>...</svg>" });
 
-  // one editor from JavaScript; null restores the default
-  document.querySelector("vanilia-editor").setIcons({ italic: null });
-</script>`}}
+// one editor; null restores the default
+editor.setIcons({ italic: null });
+
+// a new name, for a custom button's icon: "sparkles"
+setIcons({ sparkles: "<svg>...</svg>" });`}}
+<p>Lookup order: the editor's own icons, then <code>setIcons()</code>, then the built-in SVG.</p>
+
+<h2 id="names">Icon names</h2>
 <p>
-  Icon names: <code>bold</code> <code>italic</code> <code>underline</code> <code>strike</code> <code>code</code>
+  <code>bold</code> <code>italic</code> <code>underline</code> <code>strike</code> <code>code</code>
   <code>paragraph</code> <code>h1</code> <code>h2</code> <code>h3</code> <code>bulletList</code>
   <code>orderedList</code> <code>quote</code> <code>hr</code> <code>alignLeft</code> <code>alignCenter</code>
-  <code>alignRight</code> <code>link</code> <code>image</code> <code>clear</code> <code>undo</code>
-  <code>redo</code> <code>search</code> <code>upload</code> <code>trash</code> <code>check</code> <code>x</code>.
-  See the <a href="{{.BasePath}}/examples/icons">icons example</a>.
+  <code>alignRight</code> <code>link</code> <code>unlink</code> <code>image</code> <code>clear</code>
+  <code>undo</code> <code>redo</code> <code>search</code> <code>upload</code> <code>trash</code> <code>check</code>
+  <code>x</code> <code>copy</code> <code>text</code> <code>moon</code> <code>sun</code>. The list is exported as
+  <code>ICON_NAMES</code>.
+</p>
+<p>
+  Most match their button. The exceptions: <code>blockquote</code> uses <code>quote</code>,
+  <code>clearFormatting</code> uses <code>clear</code> and <code>find</code> uses <code>search</code>. See the
+  <a href="{{.BasePath}}/examples/icons">icons example</a>.
 </p>
 {{end}}

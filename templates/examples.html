@@ -9,18 +9,18 @@
         <section class="example" id="{{.Slug}}">
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
-          <div class="example-preview">
-            {{.HTML}}
+          <div class="page-actions">
+            <a class="btn btn--primary" href="{{$.BasePath}}/demos">Demos <span aria-hidden="true">→</span></a>
           </div>
+          <h2 id="code">Code</h2>
           {{template "code" .Source}}
-          {{if .Server}}
-          <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
-          {{template "code" .Server}}
-          {{end}}
+          {{if .Notes}}
+          <h2 id="notes">Notes</h2>
           {{.Notes}}
+          {{end}}
           <p class="hint">
-            The example is live, and the code above is exactly the markup that runs. It assumes the
-            <a href="{{$.BasePath}}/docs/install">setup from the docs</a> (import map, stylesheet and module).
+            The code assumes the <a href="{{$.BasePath}}/docs/install">setup from the docs</a> (stylesheet and script).
+            Try the editor live in the <a href="{{$.BasePath}}/demos">interactive demos</a>.
           </p>
         </section>
         {{end}}

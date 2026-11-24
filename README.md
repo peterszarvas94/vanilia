@@ -12,10 +12,12 @@ A drop-in, framework-agnostic `<vanilia-editor>` Web Component powered by a pinn
   - 6 aspect-ratio drag handles (desktop & touch-scroll-locked mobile) + live pixel/percent dimension badge.
   - Floating native `popover="manual"` toolbar with `25%` / `50%` / `75%` / `100%` presets, Left / Center / Right alignment, inline Alt-text editor, and Delete.
   - Full Undo/Redo integration, drag-and-drop image upload, clipboard image paste, and file picker (`POST /api/upload`).
+- **Configurable Toolbar & Custom Buttons**: `toolbar` / `bubble-menu` layouts, `addButton()` / `defineButton()` with icons, shortcuts and active state.
+- **Labels, Icons & Themes**: translate every label (`setLabels`, `<template data-ve-labels>`), replace any icon, and theme with `--ve-*` tokens, `theme="dark"` or typed `setTheme()`.
 - **Floating Selection Bubble Toolbar** ([`src/extensions/bubble-menu.ts`](./src/extensions/bubble-menu.ts)): Native Popover API + CSS Anchor Positioning.
 - **Non-Destructive Find & Replace** ([`src/extensions/find-replace.ts`](./src/extensions/find-replace.ts)): Native CSS Custom Highlight API (`CSS.highlights`).
 - **Defense-in-Depth Sanitization**: Client-side allowlist `<template>` sanitizer ([`src/sanitizer.ts`](./src/sanitizer.ts)) + server-side `bluemonday` allowlist sanitizer ([`cmd/server/utils.go`](./cmd/server/utils.go)).
-- **Go + Datastar SSE Backend** ([`cmd/server/`](./cmd/server/)): Per-session persistence (`GET /content`, `PATCH /content`, `POST /reset`), live Datastar signals & SSE-rendered preview, and bounded in-memory image uploads (`POST /api/upload`, `GET /uploads/:id`).
+- **Go Demo Server** ([`cmd/server/`](./cmd/server/)): Hosts the docs, generic examples and interactive stack demos (script tag, Datastar SSE, htmx, Alpine.js), plus server-side HTML sanitization and bounded in-memory image uploads (`POST /api/upload`, `GET /uploads/:id`).
 
 ## Install from npm
 
@@ -28,9 +30,29 @@ import "vanilia-editor"; // registers <vanilia-editor>
 import "vanilia-editor/vanilia-editor.css";
 ```
 
-## Drop-In Integration (ESM + import map)
+## Script tag
 
-One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~44 kB gzipped, readable, Squire built in, no imports), [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped) and optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts). Copy them into your project or link the hosted deployment (CORS-enabled). Map the module once in your base layout:
+No import map, no module, no build step: one stylesheet and one classic script, [`dist/vanilia-editor.iife.js`](./dist/vanilia-editor.iife.js) (~53 kB gzipped, readable, Squire built in). It registers `<vanilia-editor>` and puts the API on `window.Vanilia`. Link the hosted deployment (CORS-enabled), a CDN (jsDelivr or unpkg, from 0.2.0), or copy the files into your project:
+
+```html
+<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
+<script src="https://vanilia.peterszarvas.hu/dist/vanilia-editor.iife.js" defer></script>
+
+<form method="POST" action="/save">
+  <vanilia-editor name="content" placeholder="Start writing..."></vanilia-editor>
+  <button type="submit">Save</button>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    Vanilia.setLabels({ placeholder: "Write a reply..." });
+  });
+</script>
+```
+
+## ES module with an import map
+
+The same editor as one ES module: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~52 kB gzipped, no imports of its own) with optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts), next to [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped). Map the module once in your base layout:
 
 ```html
 <script type="importmap">
@@ -44,79 +66,120 @@ One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./di
 <script type="module">
   import "vanilia-editor";
 </script>
-
-<form method="POST" action="/save">
-  <vanilia-editor name="content" placeholder="Start writing..."></vanilia-editor>
-  <button type="submit">Save</button>
-</form>
 ```
 
 With a bundler (Vite, esbuild, ...) no import map is needed: import the copied `vanilia-editor.js` and `vanilia-editor.css` directly.
 
+## Using the editor
+
 - **Forms:** `<vanilia-editor>` is form-associated (`ElementInternals`), so `name`, `required`, `disabled`, `FormData`, and `form.reset()` work natively.
-- **Events & API:** listens/emits `input`, `change`, `editorupdate`, and `ve:update`; supports `.value`, `.getHTML()`, `.setHTML(html)`, `.getText()`, `.exec(cmd)`.
+- **Events & API:** emits `input`, `change`, `editorupdate` and `ve:update`; `.value`, `.getHTML()`, `.setHTML(html)`, `.getText()`, `.insertHTML(html)`, `.insertText(text)`, `.exec(cmd)`, `.addButton(button)`, `.setLabels(map)`, `.setTheme(tokens)` and more ([full API](https://vanilia.peterszarvas.hu/docs/api)).
 - **Images:** works out of the box with no backend (falls back to inline `data:` URLs). For server uploads, set `upload-url="/api/upload"` (raw binary `POST` returning `{ "url": "..." }`) or assign `editor.onImageUpload = async (file) => url`.
 - **Rendered output:** add `class="ve-prose"` to any container rendering saved HTML to match the editor's typography and image alignment.
-- **Regenerate `dist/` after editing `src/`:** `npm run build` and commit `dist/` (the Docker image has no Node).
 
-### Styling with CSS Variables
+## Configuration
 
-All editor styles live inside `@layer ve-tokens, ve-base, ve-chrome, ve-surface, ve-popovers`, so any unlayered CSS in your project overrides them cleanly. Override tokens globally on `:root` or per-instance on `vanilia-editor`:
+### Toolbar
+
+Pick and order the buttons with `toolbar` (`|` separates groups), configure the selection menu with `bubble-menu`, or turn either off with `"none"`. Both are also properties that take a string or an array.
+
+```html
+<vanilia-editor
+  toolbar="bold italic link | h2 h3 | bulletList orderedList | undo redo"
+  bubble-menu="bold italic | link"
+></vanilia-editor>
+```
+
+Add your own buttons to one editor with `editor.addButton()` or to every editor with `defineButton()`. They can be used in layouts, run with `editor.exec(name)`, and bind a keyboard shortcut:
+
+```js
+import { defineButton } from "vanilia-editor";
+
+defineButton({
+  name: "signature",
+  label: "Insert signature",
+  icon: "<svg>…</svg>", // or the name of an icon
+  shortcut: "Mod+Shift+S", // ⌘ on macOS, Ctrl elsewhere
+  run: (editor) => editor.insertHTML("<p>— Peter</p>"),
+  isActive: (editor) => false, // optional pressed state
+});
+```
+
+With `toolbar="none"` you can build your own toolbar from plain buttons that call `editor.exec("bold")` and read the active state from `ve:update` / `editorupdate` (`evt.detail.active.bold`, `canUndo`, …).
+
+### Styling and themes
+
+All editor styles live inside `@layer ve-tokens, ve-base, ve-chrome, ve-surface, ve-popovers`, so any unlayered CSS in your project overrides them. Set `--ve-*` tokens globally on `:root` or per editor:
 
 ```css
-:root {
+vanilia-editor {
   --ve-accent: #e11d48; /* derives soft/ring/hover states automatically */
   --ve-radius: 8px;
-  --ve-min-height: 220px;
-  --ve-max-height: 520px; /* enables internal scrolling when set */
-  --ve-font-size: 16px;
+  --ve-max-height: 520px; /* scroll inside the editor beyond this */
 }
 ```
 
-Available tokens: `--ve-accent`, `--ve-accent-contrast`, `--ve-accent-soft`, `--ve-accent-ring`, `--ve-accent-border`, `--ve-accent-hover`, `--ve-danger`, `--ve-danger-soft`, `--ve-bg`, `--ve-surface-bg`, `--ve-chrome-bg`, `--ve-popover-bg`, `--ve-border`, `--ve-border-strong`, `--ve-text`, `--ve-text-muted`, `--ve-hover-bg`, `--ve-code-bg`, `--ve-shadow`, `--ve-radius`, `--ve-radius-sm`, `--ve-min-height`, `--ve-max-height`, `--ve-padding-x`, `--ve-padding-y`, `--ve-font-size`, `--ve-line-height`, `--ve-font-sans`, `--ve-font-mono`, `--ve-highlight-bg`, `--ve-highlight-active-bg`, `--ve-highlight-active-text`, `--ve-icon-size`, `--ve-icon-size-sm`, `--ve-icon-stroke`.
+Colors use `light-dark()` and follow the page's `color-scheme`; `theme="dark"` / `"light"` pins one editor. From JavaScript, `setTheme()` (every editor) and `editor.setTheme()` (one editor) write the same tokens with typed camelCase names:
+
+```js
+import { setTheme } from "vanilia-editor";
+setTheme({ accent: "#e11d48", fontSans: "Inter, sans-serif" });
+editor.setTheme({ accent: user.brandColor });
+```
+
+Tokens: `--ve-accent`, `--ve-accent-contrast`, `--ve-accent-soft`, `--ve-accent-ring`, `--ve-accent-border`, `--ve-accent-hover`, `--ve-danger`, `--ve-danger-soft`, `--ve-bg`, `--ve-surface-bg`, `--ve-chrome-bg`, `--ve-popover-bg`, `--ve-border`, `--ve-border-strong`, `--ve-text`, `--ve-text-muted`, `--ve-hover-bg`, `--ve-code-bg`, `--ve-shadow`, `--ve-radius`, `--ve-radius-sm`, `--ve-min-height`, `--ve-max-height`, `--ve-padding-x`, `--ve-padding-y`, `--ve-font-size`, `--ve-line-height`, `--ve-font-sans`, `--ve-font-mono`, `--ve-highlight-bg`, `--ve-highlight-active-bg`, `--ve-highlight-active-text`, `--ve-icon-size`, `--ve-icon-size-sm`, `--ve-icon-stroke`. The stable classes for direct styling (`.ve-toolbar`, `.ve-btn`, `.ve-surface`, …) are listed in the [styling docs](https://vanilia.peterszarvas.hu/docs/styling#classes).
 
 ### Icons
 
-The built-in icons are inlined Lucide-compatible SVGs (no icon library needed). Three ways to adapt them:
+The built-in icons are inlined Lucide-compatible SVGs. Resize them with `--ve-icon-size` / `--ve-icon-size-sm` / `--ve-icon-stroke`, or replace any of them with your own markup:
 
-1. **Size and stroke** via CSS: `--ve-icon-size` (16px), `--ve-icon-size-sm` (14px, bubble menu and popovers), `--ve-icon-stroke` (2).
-2. **Replace icons** with any markup (inline SVG, icon-font `<i>`, `<img>`, Templ/Templucid output). Icons you don't override keep the default.
+```html
+<vanilia-editor>
+  <template data-ve-icon="bold"><svg viewBox="0 0 256 256">…</svg></template>
+</vanilia-editor>
+```
 
-   ```html
-   <!-- one editor -->
-   <vanilia-editor>
-     <template data-ve-icon="bold"><svg viewBox="0 0 256 256">…</svg></template>
-   </vanilia-editor>
-   ```
+```js
+import { setIcons } from "vanilia-editor";
+setIcons({ undo: "<svg>…</svg>", redo: null }); // every editor; null restores a default
+editor.setIcons({ italic: '<i class="ph ph-text-italic"></i>' }); // one editor
+```
 
-   ```js
-   import { VaniliaEditorElement } from "vanilia-editor";
-   // every editor on the page (re-renders already mounted editors); pass null to restore a default
-   VaniliaEditorElement.setIcons({ undo: "<svg>…</svg>", redo: null });
-   // one editor from JS
-   document
-     .querySelector("vanilia-editor")
-     .setIcons({ italic: '<i class="ph ph-text-italic"></i>' });
-   ```
+### Labels and translation
 
-   Icon names: `VaniliaEditorElement.iconNames` (`bold`, `italic`, `underline`, `strike`, `code`, `paragraph`, `h1`–`h3`, `bulletList`, `orderedList`, `quote`, `hr`, `alignLeft`, `alignCenter`, `alignRight`, `link`, `image`, `clear`, `undo`, `redo`, `search`, `upload`, `trash`, `check`, `x`, …).
+Every text the editor shows (tooltips, popovers, find & replace, word count, status and validation messages) is a named label. Override them per editor in HTML or JavaScript, or for the whole page:
 
-3. **Bring your own toolbar** with `toolbar="none"`: the built-in toolbar is hidden and your own buttons call `editor.exec("bold")`. Active state comes from `ve:update` / `editorupdate` (`evt.detail.active.bold`, `.h2`, `.alignCenter`, …, plus `canUndo` / `canRedo`). The bubble menu, image handles, link/image popovers (anchored to the selection) and Find & Replace keep working.
+```html
+<vanilia-editor>
+  <template data-ve-labels
+    >{ "bold": "Fett", "placeholder": "Schreib los...", "wordCount": "{count} Wörter" }</template
+  >
+</vanilia-editor>
+```
 
-   ```html
-   <button
-     data-on:mousedown="evt.preventDefault()"
-     data-on:click="document.getElementById('post').exec('bold')"
-     data-class:is-active="$bold"
-   >
-     …
-   </button>
-   <vanilia-editor
-     id="post"
-     toolbar="none"
-     data-on:editorupdate="$bold = evt.detail.active.bold"
-   ></vanilia-editor>
-   ```
+```js
+import { setLabels } from "vanilia-editor";
+setLabels({ bold: "Fett", italic: "Kursiv" });
+editor.setLabels({ wordCount: ({ count }) => `${count} ${count === 1 ? "Wort" : "Wörter"}` });
+```
+
+### Keyboard shortcuts
+
+Every shortcut maps keys to a command or custom button, and all of them can be changed, added or removed: per editor with `<template data-ve-shortcuts>` or `editor.setShortcuts()`, for the whole page with `setShortcuts()`, or all at once with `shortcuts="none"`. Tooltips follow along.
+
+```js
+import { setShortcuts } from "vanilia-editor";
+setShortcuts({ strike: "Mod+Shift+S", h2: "Mod+Alt+2", find: false }); // false removes, null restores
+editor.getShortcuts(); // { bold: ["Mod+B"], ... }
+```
+
+Defaults and syntax: [keyboard shortcuts docs](https://vanilia.peterszarvas.hu/docs/shortcuts).
+
+The full JavaScript API (properties, methods, static members and module exports) is documented at [vanilia.peterszarvas.hu/docs/api](https://vanilia.peterszarvas.hu/docs/api).
+
+## Credits
+
+The logo and favicon use the [vanilla flower](https://game-icons.net/1x1/lorc/vanilla-flower.html) icon by [Lorc](https://lorcblog.blogspot.com) from [game-icons.net](https://game-icons.net), licensed [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) (placed on a rounded square). Squire is MIT-licensed by Neil Jenkins and Fastmail.
 
 ## Credits
 
@@ -124,7 +187,7 @@ The logo and favicon use the [vanilla flower](https://game-icons.net/1x1/lorc/va
 
 ## Local Development
 
-The Go server also hosts the project website: home (`/`), docs (`/docs`), examples (`/examples`, including Datastar, htmx and Alpine.js integrations) and the Go + Datastar demo (`/demo`). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Each example in `templates/examples/` is rendered live and shown as source from the same file; register new ones in `cmd/server/pages.go`. Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
+The Go server also hosts the project website: home (`/`), docs (`/docs`), generic code-only examples (`/examples`) and interactive stack demos (`/demos`: script tag, Datastar, htmx and Alpine.js — each live alongside its code and Go server handler). Pages live in `templates/` with shared layout in `templates/_layout.html` and site styles in `static/site.css`. Snippets live in `templates/examples/` and are registered in `cmd/server/pages.go` (`exampleIndex` for generic examples, `demoIndex` for interactive demos). Optional extras: `<slug>.notes.html` is shown under the code, and a `// region <slug>` block in `cmd/server/integrations.go` is shown as the server code.
 
 Start the Go + Datastar server:
 
@@ -138,7 +201,7 @@ The editor is TypeScript in `src/`, built with [Vite+](https://viteplus.dev) (`v
 
 ```bash
 npm install
-npm run build   # vp pack: dist/vanilia-editor.{js,d.ts,css}
+npm run build   # vp pack: dist/vanilia-editor.{js,iife.js,d.ts,css}
 npm run check   # vp check
 npm test        # vp test
 go test ./...

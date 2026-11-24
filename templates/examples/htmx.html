@@ -1,11 +1,12 @@
 <form hx-post="/api/htmx/save" hx-target="#htmx-output">
-  <vanilia-editor name="body" required placeholder="Write something, then save...">
+  <vanilia-editor name="body" required upload-url="/api/upload" placeholder="Write something, then save...">
     <template>
-      <p>This editor is a field in a plain <code>&lt;form&gt;</code>. <strong>Save</strong> posts it with htmx.</p>
+      <!-- demo-content -->
     </template>
   </vanilia-editor>
   <div class="row">
     <button type="submit">Save</button>
+    <button type="reset">Reset</button>
   </div>
 </form>
 <div id="htmx-output" class="result ve-prose"></div>

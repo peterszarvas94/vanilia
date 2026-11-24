@@ -44,6 +44,14 @@
   vanilia-editor {
     display: block;
     color-scheme: inherit;
+
+    /* theme="light" | "dark" pins the color scheme; "auto" (or no attribute) follows the page */
+    &[theme="light"] {
+      color-scheme: light;
+    }
+    &[theme="dark"] {
+      color-scheme: dark;
+    }
   }
 }
 

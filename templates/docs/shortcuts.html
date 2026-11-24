@@ -1,0 +1,102 @@
+{{define "doc/shortcuts"}}
+<h1>Keyboard shortcuts</h1>
+<p>
+  Every shortcut maps a key combination to a <a href="{{.BasePath}}/docs/commands">command</a> or a
+  <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a>. Change, add or remove any of them for one
+  editor or for the whole page. Button tooltips and <code>aria-keyshortcuts</code> follow the shortcuts in effect.
+</p>
+
+<h2 id="defaults">Defaults</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Command</th><th>Shortcuts</th><th>From</th></tr></thead>
+    <tbody>
+      <tr><td><code>bold</code> / <code>italic</code> / <code>underline</code></td><td><code>Mod+B</code> / <code>Mod+I</code> / <code>Mod+U</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>strike</code></td><td><code>Mod+Shift+X</code><br><code>Mod+Shift+7</code></td><td>{{template "vanilia" .BasePath}}<br>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>code</code></td><td><code>Mod+D</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>subscript</code> / <code>superscript</code></td><td><code>Mod+Shift+5</code> / <code>Mod+Shift+6</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>bulletList</code> / <code>orderedList</code></td><td><code>Mod+Shift+8</code> / <code>Mod+Shift+9</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>outdent</code> / <code>indent</code></td><td><code>Mod+[</code> / <code>Mod+]</code> (list level, or quote level outside lists)</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>link</code></td><td><code>Mod+K</code></td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>find</code></td><td><code>Mod+F</code></td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>undo</code> / <code>redo</code></td><td><code>Mod+Z</code> / <code>Mod+Shift+Z</code>, <code>Mod+Y</code></td><td>{{template "squire" .BasePath}}</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  The defaults marked {{template "squire" .BasePath}} are Squire's own; Vanilia added the ones marked
+  {{template "vanilia" .BasePath}}. Either way, all of them now go through Vanilia's shortcut map, so every one
+  can be changed or removed.
+</p>
+<p>
+  <code>Mod</code> is <kbd>⌘</kbd> on macOS and <kbd>Ctrl</kbd> elsewhere. The list is exported as
+  <code>DEFAULT_SHORTCUTS</code>. Enter, Tab, Backspace and the other editing keys aren't shortcuts and can't be
+  changed here.
+</p>
+
+<h2 id="html">In HTML</h2>
+<p>A <code>&lt;template data-ve-shortcuts&gt;</code> child holds overrides as JSON, by command or button name:</p>
+{{template "code" `<vanilia-editor>
+  <template data-ve-shortcuts>
+    { "strike": "Mod+Shift+S", "h2": "Mod+Alt+2", "redo": ["Mod+Shift+Z", "Mod+Y"], "find": false }
+  </template>
+</vanilia-editor>`}}
+<p><code>shortcuts="none"</code> turns off every shortcut of an editor, built-in and custom:</p>
+{{template "code" `<vanilia-editor shortcuts="none"></vanilia-editor>`}}
+
+<h2 id="javascript">From JavaScript</h2>
+{{template "code" `import { setShortcuts } from "vanilia-editor";
+
+// every editor on the page (mounted editors update too)
+setShortcuts({ bold: "Mod+Shift+B", find: false });
+
+// one editor
+editor.setShortcuts({
+  h2: "Mod+Alt+2",       // add one to a command that has none
+  underline: false,      // remove
+  bold: null,            // back to the default (or to the global setting)
+  signature: "Mod+Alt+1", // a custom button
+});
+
+editor.getShortcuts(); // { bold: ["Mod+B"], h2: ["Mod+Alt+2"], ... }`}}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>"Mod+Shift+B"</code></td><td>Replace the command's shortcuts with this one.</td></tr>
+      <tr><td><code>["Mod+Shift+Z", "Mod+Y"]</code></td><td>Several shortcuts for one command.</td></tr>
+      <tr><td><code>false</code>, <code>""</code> or <code>[]</code></td><td>Remove the command's shortcuts.</td></tr>
+      <tr><td><code>null</code></td><td>Drop the override, back to the next level.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  Lookup order: the editor's overrides, then <code>setShortcuts()</code>, then a custom button's own
+  <code>shortcut</code>, then the defaults. Any command can get a shortcut, including ones without a toolbar button
+  (<code>h1</code>, <code>paragraph</code>, <code>alignCenter</code>, <code>clearFormatting</code>, <code>indent</code>,
+  ...).
+</p>
+
+<h2 id="syntax">Syntax</h2>
+<p>
+  Modifiers and a key joined with <code>+</code>. Modifiers: <code>Mod</code>, <code>Ctrl</code>,
+  <code>Meta</code> (<code>Cmd</code>), <code>Alt</code> (<code>Option</code>) and <code>Shift</code>. The key is a letter,
+  a digit, or any <a href="https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values" target="_blank" rel="noopener noreferrer"><code>KeyboardEvent.key</code></a>
+  value such as <code>[</code>, <code>Enter</code> or <code>F2</code>. Letters are case-insensitive. On macOS, Option changes the character a letter key types, so
+  combine <code>Alt</code> with digits or other modifiers rather than letters (<code>Mod+Alt+2</code> works everywhere).
+</p>
+<p>
+  <code>formatShortcut("Mod+Shift+X")</code> returns the platform's display form (<code>⇧⌘X</code> or
+  <code>Ctrl+Shift+X</code>), for showing shortcuts in your own UI.
+</p>
+
+<h2 id="removed">What a removed shortcut does</h2>
+<p>
+  Keys the browser would use to edit the content itself (<kbd>Ctrl</kbd>+<kbd>B</kbd>, <kbd>I</kbd>,
+  <kbd>U</kbd>, <kbd>Z</kbd>, <kbd>Y</kbd>) are swallowed, so the browser doesn't apply its own formatting and the
+  undo history stays intact. Every other removed shortcut goes back to the browser: with <code>find: false</code>,
+  <kbd>Ctrl</kbd>+<kbd>F</kbd> opens the browser's find. The keydown event still bubbles out of the editor, so
+  your page can handle a freed combination itself.
+</p>
+<p>See the <a href="{{.BasePath}}/examples/shortcuts">keyboard shortcuts example</a>.</p>
+{{end}}

@@ -1,8 +1,20 @@
 {{define "doc/browsers"}}
 <h1>Browser support</h1>
-<p>
-  Vanilia targets current evergreen browsers: Chrome / Edge 123+, Firefox 128+ and Safari 18+. It relies on
-  custom elements with <code>ElementInternals</code>, the Popover API, CSS nesting, <code>light-dark()</code> and
-  relative colors. CSS anchor positioning and the Custom Highlight API are used when available, with fallbacks.
-</p>
+
+<h2 id="supported">Supported browsers</h2>
+<p>Vanilia targets current evergreen browsers: Chrome / Edge 123+, Firefox 128+ and Safari 18+.</p>
+
+<h2 id="platform">Platform features</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Feature</th><th>Used for</th><th>Without it</th></tr></thead>
+    <tbody>
+      <tr><td>Custom elements, <code>ElementInternals</code></td><td>The element and form association</td><td>Required</td></tr>
+      <tr><td>Popover API</td><td>Link and image popovers, selection menu, image toolbar</td><td>Required</td></tr>
+      <tr><td>CSS nesting, <code>light-dark()</code>, relative colors</td><td>Styles and dark mode</td><td>Required</td></tr>
+      <tr><td>CSS anchor positioning</td><td>Placing the selection menu</td><td>Positioned with JavaScript instead</td></tr>
+      <tr><td>CSS Custom Highlight API</td><td>Highlighting find matches</td><td>Find &amp; replace works, without highlights</td></tr>
+    </tbody>
+  </table>
+</div>
 {{end}}

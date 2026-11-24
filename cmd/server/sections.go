@@ -19,15 +19,19 @@ type doc struct {
 var docIndex = []doc{
 	{Group: "Getting started", Slug: "install", Title: "Installation"},
 	{Group: "Getting started", Slug: "usage", Title: "Usage"},
+	{Group: "Getting started", Slug: "squire", Title: "Squire & Vanilia"},
 	{Group: "Getting started", Slug: "forms", Title: "Forms"},
 	{Group: "Getting started", Slug: "typescript", Title: "TypeScript"},
 	{Group: "Reference", Slug: "attributes", Title: "Attributes"},
 	{Group: "Reference", Slug: "api", Title: "Properties & methods"},
+	{Group: "Reference", Slug: "exports", Title: "Module exports"},
 	{Group: "Reference", Slug: "commands", Title: "Commands"},
 	{Group: "Reference", Slug: "events", Title: "Events"},
-	{Group: "Guides", Slug: "styling", Title: "Styling"},
+	{Group: "Guides", Slug: "toolbar", Title: "Toolbar"},
+	{Group: "Guides", Slug: "styling", Title: "Styling & themes"},
 	{Group: "Guides", Slug: "icons", Title: "Icons"},
-	{Group: "Guides", Slug: "toolbar", Title: "Custom toolbar"},
+	{Group: "Guides", Slug: "labels", Title: "Labels & translation"},
+	{Group: "Guides", Slug: "shortcuts", Title: "Keyboard shortcuts"},
 	{Group: "Guides", Slug: "uploads", Title: "Image uploads"},
 	{Group: "Guides", Slug: "sanitize", Title: "Sanitizing on the server"},
 	{Group: "Guides", Slug: "browsers", Title: "Browser support"},
@@ -105,26 +109,62 @@ func docsHandler(basePath string) echo.HandlerFunc {
 
 func examplesHandler(basePath string) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		slug := c.Param("slug")
 		entries := make([]navEntry, len(examples))
 		var current *example
 		for i := range examples {
 			ex := &examples[i]
 			entries[i] = navEntry{ex.Group, ex.Slug, ex.Title}
-			if ex.Slug == c.Param("slug") {
+			if ex.Slug == slug {
 				current = ex
+			}
+		}
+		if current == nil {
+			// Framework demos moved from /examples/<slug> to /demos/<slug>
+			for i := range demos {
+				if demos[i].Slug == slug {
+					return c.Redirect(http.StatusFound, basePath+"/demos/"+slug)
+				}
+			}
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		data := pageData{BasePath: basePath, Active: "examples", Title: current.Title + " · Examples", Section: "Examples", Heading: current.Title, Example: current}
+		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/examples", entries, current.Slug)
+		data.Nav = append(data.Nav, navGroup{
+			Name:  "Demos",
+			Items: []navItem{{Href: basePath + "/demos", Title: "Interactive demos", External: true}},
+		})
+		return renderTemplate(c, "examples", data)
+	}
+}
+
+// demoEntries lists the interactive stack demos in sidebar order.
+func demoEntries() []navEntry {
+	entries := make([]navEntry, 0, len(demos))
+	for _, d := range demos {
+		entries = append(entries, navEntry{d.Group, d.Slug, d.Title})
+	}
+	return entries
+}
+
+func demosHandler(basePath string) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var current *example
+		for i := range demos {
+			if demos[i].Slug == c.Param("slug") {
+				current = &demos[i]
 			}
 		}
 		if current == nil {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
-		data := pageData{BasePath: basePath, Active: "examples", Title: current.Title + " · Examples", Section: "Examples", Heading: current.Title, Example: current, Modules: exampleModules}
-		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/examples", entries, current.Slug)
-		for i := range data.Nav {
-			if data.Nav[i].Name == "Integrations" {
-				data.Nav[i].Items = append(data.Nav[i].Items, navItem{Href: basePath + "/demo", Title: "Go + Datastar playground", External: true})
-			}
-		}
-		return renderTemplate(c, "examples", data)
+		data := pageData{BasePath: basePath, Active: "demos", Title: current.Title + " · Demos", Section: "Demos", Heading: current.Title, Example: current, Modules: current.Modules, ClassicEditor: current.Classic}
+		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/demos", demoEntries(), current.Slug)
+		data.Nav = append(data.Nav, navGroup{
+			Name:  "Examples",
+			Items: []navItem{{Href: basePath + "/examples", Title: "Generic examples", External: true}},
+		})
+		return renderTemplate(c, "demos", data)
 	}
 }
 

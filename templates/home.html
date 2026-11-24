@@ -7,35 +7,24 @@
         <h1>A rich text editor you can just drop in</h1>
         <p class="lede">
           <code>&lt;vanilia-editor&gt;</code> is one custom element that works in any stack (plain HTML, Go, Rails,
-          Datastar, htmx or a bundler) with one ES module, one stylesheet and no build step.
+          Datastar, htmx or a bundler) with one script, one stylesheet and no build step.
         </p>
         <div class="hero-actions">
           <a class="btn btn--primary" href="{{.BasePath}}/docs/install">Get started</a>
+          <a class="btn" href="{{.BasePath}}/demos">Try the demos</a>
           <a class="btn" href="{{.BasePath}}/examples">See examples</a>
         </div>
         <div class="hero-install">
-{{template "code" `<script type="importmap">
-  { "imports": { "vanilia-editor": "https://vanilia.peterszarvas.hu/dist/vanilia-editor.js" } }
-</script>
-<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
-<script type="module">import "vanilia-editor";</script>
+{{template "code" `<link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
+<script src="https://vanilia.peterszarvas.hu/dist/vanilia-editor.iife.js" defer></script>
 
 <vanilia-editor name="content"></vanilia-editor>`}}
         </div>
       </section>
 
-      <vanilia-editor class="home-editor" placeholder="Try it: write something, paste an image...">
+      <vanilia-editor class="home-editor" upload-url="{{.BasePath}}/api/upload" placeholder="Try it: write something, paste an image...">
         <template>
-          <h2>Try it right here</h2>
-          <p>
-            This is the real editor. Select some text to get the <strong>floating menu</strong>, press
-            <code>Ctrl+K</code> for a link or <code>Ctrl+F</code> to find &amp; replace, and paste or drop an image, then
-            click it to <em>resize and align</em> it.
-          </p>
-          <ul>
-            <li>Undo / redo, headings, lists, quotes, code</li>
-            <li>Clean, semantic HTML output</li>
-          </ul>
+          {{fingerprintHTML .DemoContent}}
         </template>
       </vanilia-editor>
 
@@ -46,7 +35,7 @@
         </div>
         <div class="card">
           <h3>One file, no build step</h3>
-          <p>One readable ES module (about 44 kB gzipped) with a pinned Squire built in, typed with a <code>.d.ts</code>. Map it in an import map and go.</p>
+          <p>One readable script (about 52 kB gzipped) with a pinned Squire built in. Load it with a plain <code>&lt;script&gt;</code> tag, as a typed ES module, or from npm.</p>
         </div>
         <div class="card">
           <h3>Images done properly</h3>
@@ -67,15 +56,13 @@
       </div>
 
       <h2 class="section-title">Three steps</h2>
-      <p class="section-lede">Map the module, load the stylesheet, then use the element. That's the whole setup.</p>
+      <p class="section-lede">Add a stylesheet and a script, then use the element. That's the whole setup.</p>
       <div class="steps">
         <div class="card">
           <h3>1. Load it</h3>
-{{template "code" `<script type="importmap">
-  { "imports": { "vanilia-editor": "/vendor/vanilia-editor.js" } }
-</script>
-<link rel="stylesheet" href="/vendor/vanilia-editor.css" />
-<script type="module">import "vanilia-editor";</script>`}}
+{{template "code" `<link rel="stylesheet" href="/vendor/vanilia-editor.css" />
+<script src="/vendor/vanilia-editor.iife.js" defer></script>`}}
+          <p class="hint">Or as an ES module, or from npm: see <a href="{{.BasePath}}/docs/install">Installation</a>.</p>
         </div>
         <div class="card">
           <h3>2. Use it</h3>

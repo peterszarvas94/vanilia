@@ -11,7 +11,7 @@ import (
 )
 
 // This file is embedded into the binary: the code between "// region <slug>" and
-// "// endregion" is shown in the matching example on /examples as its server code,
+// "// endregion" is shown in the matching demo on /demos as its server code,
 // so the page always shows the handler that actually runs.
 //
 //go:embed integrations.go

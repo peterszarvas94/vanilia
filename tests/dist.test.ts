@@ -14,6 +14,13 @@ test("dist/vanilia-editor.js is one self-contained, readable module", () => {
     "ICON_NAMES",
     "formatHTML",
     "isSafeUrl",
+    "setLabels",
+    "defineButton",
+    "setTheme",
+    "THEME_TOKENS",
+    "DEFAULT_TOOLBAR",
+    "setShortcuts",
+    "DEFAULT_SHORTCUTS",
   ]) {
     expect(js).toMatch(new RegExp(`export \\{[^}]*\\b${name}\\b`));
   }
@@ -25,4 +32,20 @@ test("dist ships types, the stylesheet and Squire's license", () => {
     /@layer ve-tokens, ve-base, ve-chrome, ve-surface, ve-popovers;/,
   );
   expect(read("SQUIRE-LICENSE.txt")).toMatch(/MIT License/);
+});
+
+test("dist/vanilia-editor.iife.js is a classic script exposing window.Vanilia", () => {
+  const iife = read("vanilia-editor.iife.js");
+  expect(iife).not.toMatch(/^\s*(import|export)\s/m);
+  expect(iife).toMatch(/^var Vanilia = \(function\(exports\) \{/m);
+  expect(iife).toMatch(/customElements\.define\("vanilia-editor"/);
+  for (const name of [
+    "VaniliaEditorElement",
+    "setLabels",
+    "defineButton",
+    "setShortcuts",
+    "setTheme",
+  ]) {
+    expect(iife).toMatch(new RegExp(`exports\\.${name} = `));
+  }
 });

@@ -1,14 +1,34 @@
 {{define "doc/usage"}}
 <h1>Usage</h1>
-<p>Use the element anywhere. Put initial content in a <code>&lt;template&gt;</code> (or the <code>value</code> attribute):</p>
+<p>Once it's <a href="{{.BasePath}}/docs/install">installed</a>, use the element anywhere in your HTML.</p>
+
+<h2 id="initial-content">Initial content</h2>
+<p>Put initial content in a child <code>&lt;template&gt;</code>, or in the <code>value</code> attribute:</p>
 {{template "code" `<vanilia-editor name="content" placeholder="Start writing...">
   <template>
     <h2>Hello</h2>
     <p>Initial <strong>content</strong>.</p>
   </template>
-</vanilia-editor>`}}
+</vanilia-editor>
+
+<vanilia-editor name="summary" value="<p>Short and sweet.</p>"></vanilia-editor>`}}
+
+<h2 id="reading">Reading the content</h2>
+<p>
+  The editor's HTML is its <code>value</code>. Inside a <code>&lt;form&gt;</code> it's submitted under its
+  <code>name</code> like any field (see <a href="{{.BasePath}}/docs/forms">Forms</a>); from JavaScript, read
+  <code>editor.value</code> and listen for <code>input</code> (see <a href="{{.BasePath}}/docs/events">Events</a>):
+</p>
+{{template "code" `const editor = document.querySelector("vanilia-editor");
+editor.addEventListener("input", () => {
+  console.log(editor.value); // "<h2>Hello</h2><p>Initial <strong>content</strong>.</p>"
+});`}}
+
+<h2 id="showing">Showing saved HTML</h2>
 <p>
   To show saved HTML elsewhere with the same typography and image alignment, add <code>class="ve-prose"</code>
-  to the container.
+  to the container. It needs only the stylesheet, not the script:
 </p>
+{{template "code" `<article class="ve-prose">{{ .Body }}</article>`}}
+<p>Sanitize the HTML on the server before you store or render it. See <a href="{{.BasePath}}/docs/sanitize">Sanitizing on the server</a>.</p>
 {{end}}

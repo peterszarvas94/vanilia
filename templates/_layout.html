@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{if .Title}}{{.Title}} · {{end}}Vanilia</title>
     <meta name="description" content="Vanilia is a drop-in rich text editor web component: one custom element, one ES module and one stylesheet, no build step." />
-    <link rel="icon" href="{{.BasePath}}/static/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="{{.BasePath}}{{asset "/static/favicon.svg"}}" type="image/svg+xml" />
     <script>
       try {
         const t = localStorage.getItem("vanilia-theme");
@@ -15,23 +15,26 @@
     <script type="importmap">
       {
         "imports": {
-          "vanilia-editor": "{{.BasePath}}/dist/vanilia-editor.js",
-          "datastar": "{{.BasePath}}/static/vendor/datastar.js",
-          "site": "{{.BasePath}}/static/site.js",
-          "htmx.org": "{{.BasePath}}/static/vendor/htmx.esm.js",
-          "alpinejs": "{{.BasePath}}/static/vendor/alpine.esm.js",
-          "alpine": "{{.BasePath}}/static/alpine.js"
+          "vanilia-editor": "{{.BasePath}}{{asset "/dist/vanilia-editor.js"}}",
+          "datastar": "{{.BasePath}}{{asset "/static/vendor/datastar.js"}}",
+          "site": "{{.BasePath}}{{asset "/static/site.js"}}",
+          "htmx.org": "{{.BasePath}}{{asset "/static/vendor/htmx.esm.js"}}",
+          "alpinejs": "{{.BasePath}}{{asset "/static/vendor/alpine.esm.js"}}",
+          "alpine": "{{.BasePath}}{{asset "/static/alpine.js"}}"
         }
       }
     </script>
-    <link rel="modulepreload" href="{{.BasePath}}/dist/vanilia-editor.js" />
-    <link rel="modulepreload" href="{{.BasePath}}/static/vendor/datastar.js" />
-    <link rel="modulepreload" href="{{.BasePath}}/static/site.js" />
-    <link rel="stylesheet" href="{{.BasePath}}/dist/vanilia-editor.css" />
-    <link rel="stylesheet" href="{{.BasePath}}/static/site.css" />
+    {{if not .ClassicEditor}}<link rel="modulepreload" href="{{.BasePath}}{{asset "/dist/vanilia-editor.js"}}" />{{end}}
+    <link rel="modulepreload" href="{{.BasePath}}{{asset "/static/vendor/datastar.js"}}" />
+    <link rel="modulepreload" href="{{.BasePath}}{{asset "/static/site.js"}}" />
+    <link rel="stylesheet" href="{{.BasePath}}{{asset "/dist/vanilia-editor.css"}}" />
+    <link rel="stylesheet" href="{{.BasePath}}{{asset "/static/site.css"}}" />
+    {{if .ClassicEditor}}
+    <!-- This page loads the editor itself, as a classic script (see the page's code) -->
+    {{end}}
     <!-- The one module entry point: the editor first, so Datastar finds it defined -->
     <script type="module">
-      import "vanilia-editor";
+      {{if not .ClassicEditor}}import "vanilia-editor";{{end}}
       import "datastar";
       import "site";
       {{range .Modules}}import "{{.}}";
@@ -50,7 +53,7 @@
         <ul class="nav-links">
           <li><a href="{{.BasePath}}/docs" {{if eq .Active "docs"}}aria-current="page"{{end}}>Docs</a></li>
           <li><a href="{{.BasePath}}/examples" {{if eq .Active "examples"}}aria-current="page"{{end}}>Examples</a></li>
-          <li><a href="{{.BasePath}}/demo" {{if eq .Active "demo"}}aria-current="page"{{end}}>Demo</a></li>
+          <li><a href="{{.BasePath}}/demos" {{if eq .Active "demos"}}aria-current="page"{{end}}>Demos</a></li>
           <li>
             <a class="nav-icon" href="https://github.com/peterszarvas94/vanilia" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
@@ -79,6 +82,8 @@
     </footer>
 {{end}}
 
+{{define "squire"}}<a class="badge badge--squire" href="{{.}}/docs/squire" title="Behavior from Squire, the editing engine Vanilia is built on">Squire</a>{{end}}
+{{define "vanilia"}}<a class="badge badge--vanilia" href="{{.}}/docs/squire" title="Built in Vanilia, on top of Squire">Vanilia</a>{{end}}
 {{define "code"}}<div class="code-block"><button type="button" class="copy-btn" data-on:click="@copy(el)">Copy</button><pre><code data-highlight>{{.}}</code></pre></div>{{end}}
 
 {{define "sidebar"}}<button type="button" class="sidebar-toggle" popovertarget="sidebar" aria-label="Open {{.Section}} menu">

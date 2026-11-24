@@ -60,7 +60,7 @@ a {
   color: var(--accent);
 }
 
-code {
+:not(pre) > code {
   font: 0.88em / 1.4 var(--mono);
   padding: 0.12em 0.35em;
   border-radius: 5px;
@@ -699,9 +699,10 @@ table {
   font-size: 14px;
 }
 
-/* ---- Examples ---- */
+/* ---- Examples (code) and demos (live) ---- */
 
-.example {
+.example,
+.demo {
   & > h1 {
     margin: 0 0 8px;
     font-size: 34px;
@@ -720,6 +721,11 @@ table {
 
   & > .hint {
     margin-top: 24px;
+  }
+
+  & > h2 {
+    margin: 36px 0 10px;
+    font-size: 21px;
   }
 
   /* Notes under an integration */
@@ -750,6 +756,23 @@ table {
     gap: 4px;
     font-size: 13px;
     font-weight: 600;
+  }
+
+  /* Controls in a button row sit on one line */
+  & .row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  & input[type="color"] {
+    inline-size: 36px;
+    block-size: 32px;
+    padding: 2px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    cursor: pointer;
   }
 
   & input:not([type]),
@@ -908,4 +931,69 @@ table {
       grid-column: auto;
     }
   }
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--card-border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--subtle-bg);
+  font: 600 12px / 1.4 var(--mono);
+}
+
+/* Where a feature comes from: Squire (the engine) or Vanilia (this wrapper) */
+.badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: 1px;
+
+  &:hover {
+    text-decoration: none;
+    filter: brightness(1.05);
+  }
+}
+
+.badge--squire {
+  color: light-dark(oklch(0.45 0.11 70), oklch(0.85 0.11 80));
+  background: light-dark(oklch(0.95 0.05 85), oklch(0.32 0.06 70));
+  border-color: light-dark(oklch(0.85 0.09 80), oklch(0.45 0.08 70));
+}
+
+.badge--vanilia {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: oklch(from var(--accent) l c h / 0.3);
+}
+
+/* Buttons between examples and demos */
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 18px;
+}
+
+/* Demos get more room for the live editor */
+.prose--wide {
+  max-width: 60rem;
+}
+
+.demo-stack {
+  margin: 0 0 6px;
+}
+
+.badge--stack {
+  color: var(--muted);
+  background: var(--subtle-bg);
+  border-color: var(--card-border);
 }

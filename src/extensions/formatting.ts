@@ -12,6 +12,8 @@ export type FormatName =
   | "underline"
   | "strike"
   | "code"
+  | "subscript"
+  | "superscript"
   | "link"
   | "bulletList"
   | "orderedList"
@@ -26,6 +28,8 @@ export type Command =
   | "underline"
   | "strike"
   | "code"
+  | "subscript"
+  | "superscript"
   | "paragraph"
   | "h1"
   | "h2"
@@ -34,6 +38,8 @@ export type Command =
   | "orderedList"
   | "blockquote"
   | "hr"
+  | "indent"
+  | "outdent"
   | "alignLeft"
   | "alignCenter"
   | "alignRight"
@@ -50,6 +56,8 @@ export interface ActiveState {
   underline: boolean;
   strike: boolean;
   code: boolean;
+  subscript: boolean;
+  superscript: boolean;
   link: boolean;
   bulletList: boolean;
   orderedList: boolean;
@@ -77,6 +85,10 @@ export function isActive(
       return squire.hasFormat("S") || squire.hasFormat("DEL");
     case "code":
       return squire.hasFormat("CODE") || squire.hasFormat("PRE");
+    case "subscript":
+      return squire.hasFormat("SUB");
+    case "superscript":
+      return squire.hasFormat("SUP");
     case "link":
       return squire.hasFormat("A");
     case "bulletList":
@@ -107,6 +119,8 @@ export function getActiveState(squire: Squire | null): ActiveState {
     underline: isActive(squire, "underline"),
     strike: isActive(squire, "strike"),
     code: isActive(squire, "code"),
+    subscript: isActive(squire, "subscript"),
+    superscript: isActive(squire, "superscript"),
     link: isActive(squire, "link"),
     bulletList: isActive(squire, "bulletList"),
     orderedList: isActive(squire, "orderedList"),
@@ -140,6 +154,26 @@ export function execCommand(squire: Squire | null, command: string, arg?: string
     case "code":
       squire.toggleCode();
       break;
+    case "subscript":
+      if (squire.hasFormat("SUB")) squire.changeFormat(null, { tag: "SUB" });
+      else squire.changeFormat({ tag: "SUB" }, { tag: "SUP" });
+      break;
+    case "superscript":
+      if (squire.hasFormat("SUP")) squire.changeFormat(null, { tag: "SUP" });
+      else squire.changeFormat({ tag: "SUP" }, { tag: "SUB" });
+      break;
+    case "indent":
+    case "outdent": {
+      // Lists change level; anything else (including quotes) changes quote level
+      const path = squire.getPath();
+      const inList = /(?:^|>)[OU]L/.test(path) && !/(?:^|>)BLOCKQUOTE/.test(path);
+      if (command === "indent") {
+        if (inList) squire.increaseListLevel();
+        else squire.increaseQuoteLevel();
+      } else if (inList) squire.decreaseListLevel();
+      else squire.decreaseQuoteLevel();
+      break;
+    }
     case "paragraph":
       setParagraph(squire);
       break;

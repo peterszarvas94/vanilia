@@ -10,16 +10,26 @@ import (
 func TestPagesRender(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	pages := map[string]string{
-		"/":                  "A rich text editor",
-		"/docs/install":      `Option A: link the hosted files`,
-		"/docs/sanitize":     `bluemonday.NewPolicy()`,
-		"/docs/browsers":     `aria-current="page">Browser support`,
-		"/examples/basic":    `id="basic"`,
-		"/examples/headless": `id="headless-editor"`,
-		"/demo":              `id="rendered-preview"`,
+		"/":                   "A rich text editor",
+		"/docs/install":       `<h2 id="script-tag">Script tag</h2>`,
+		"/docs/labels":        `data-ve-labels`,
+		"/docs/exports":       `defineButton(button)`,
+		"/examples/basic":     `id="basic"`,
+		"/examples/toolbar":   `href="/demos">Demos`,
+		"/examples/labels":    `id=&#34;labels-editor&#34;`,
+		"/examples/shortcuts": `id=&#34;shortcuts-editor&#34;`,
+		"/examples/headless":  `id=&#34;headless-editor&#34;`,
+		"/demos/script-tag":   `<script src="/dist/vanilia-editor.iife.js?v=`,
+		"/demos/datastar":     `<h2 id="code">Code</h2>`,
+		"/demos/htmx":         `import "htmx.org";`,
+		"/demos/alpine":       `import "alpine";`,
+		"/docs/shortcuts":     `data-ve-shortcuts`,
+		"/docs/squire":        `class="badge badge--squire"`,
+		"/docs/sanitize":      `bluemonday.NewPolicy()`,
+		"/docs/browsers":      `aria-current="page">Browser support`,
 	}
 	for path, want := range pages {
 		rec := httptest.NewRecorder()
@@ -37,16 +47,25 @@ func TestPagesRender(t *testing.T) {
 func TestSectionIndexesRedirect(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 
-	for path, want := range map[string]string{"/docs": "/docs/install", "/examples": "/examples/basic"} {
+	for path, want := range map[string]string{
+		"/docs":                "/docs/install",
+		"/examples":            "/examples/basic",
+		"/examples/datastar":   "/demos/datastar",
+		"/examples/htmx":       "/demos/htmx",
+		"/examples/alpine":     "/demos/alpine",
+		"/examples/script-tag": "/demos/script-tag",
+		"/demos":               "/demos/script-tag",
+		"/demo":                "/demos",
+	} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 		if rec.Code != http.StatusFound || rec.Header().Get("Location") != want {
 			t.Errorf("GET %s = %d %q, want redirect to %s", path, rec.Code, rec.Header().Get("Location"), want)
 		}
 	}
-	for _, path := range []string{"/docs/nope", "/examples/nope"} {
+	for _, path := range []string{"/docs/nope", "/examples/nope", "/demos/nope", "/demos/basic", "/demos/playground"} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 		if rec.Code != http.StatusNotFound {
