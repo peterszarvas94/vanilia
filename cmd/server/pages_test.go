@@ -10,7 +10,7 @@ import (
 func TestPagesRender(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	pages := map[string]string{
 		"/":                   "A rich text editor",
@@ -26,7 +26,6 @@ func TestPagesRender(t *testing.T) {
 		"/demos/datastar":     `<h2 id="code">Code</h2>`,
 		"/demos/htmx":         `import "htmx.org";`,
 		"/demos/alpine":       `import "alpine";`,
-		"/demos/playground":   `id="rendered-preview"`,
 		"/docs/shortcuts":     `data-ve-shortcuts`,
 		"/docs/squire":        `class="badge badge--squire"`,
 		"/docs/sanitize":      `bluemonday.NewPolicy()`,
@@ -48,7 +47,7 @@ func TestPagesRender(t *testing.T) {
 func TestSectionIndexesRedirect(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	for path, want := range map[string]string{
 		"/docs":                "/docs/install",
@@ -58,7 +57,7 @@ func TestSectionIndexesRedirect(t *testing.T) {
 		"/examples/alpine":     "/demos/alpine",
 		"/examples/script-tag": "/demos/script-tag",
 		"/demos":               "/demos/script-tag",
-		"/demo":                "/demos/playground",
+		"/demo":                "/demos",
 	} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
@@ -66,7 +65,7 @@ func TestSectionIndexesRedirect(t *testing.T) {
 			t.Errorf("GET %s = %d %q, want redirect to %s", path, rec.Code, rec.Header().Get("Location"), want)
 		}
 	}
-	for _, path := range []string{"/docs/nope", "/examples/nope", "/demos/nope", "/demos/basic"} {
+	for _, path := range []string{"/docs/nope", "/examples/nope", "/demos/nope", "/demos/basic", "/demos/playground"} {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 		if rec.Code != http.StatusNotFound {

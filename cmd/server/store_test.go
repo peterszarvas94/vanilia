@@ -24,51 +24,6 @@ func TestSanitizeEditorHTMLPreservesResizedImageAndStripsXSS(t *testing.T) {
 	}
 }
 
-func TestSessionSaveAndResetFlow(t *testing.T) {
-	mustLoadTemplates("../../templates")
-	store := newContentStore(10, buildSeedContent(""))
-	uploads := newUploadStore()
-	e := newServer("", store, uploads)
-
-	// 1. Initial GET /content sets session cookie and streams seed content
-	req := httptest.NewRequest(http.MethodGet, "/content", nil)
-	rec := httptest.NewRecorder()
-	e.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("GET /content status = %d, want 200", rec.Code)
-	}
-	if !strings.Contains(rec.Body.String(), "datastar-patch-signals") || !strings.Contains(rec.Body.String(), "datastar-patch-elements") {
-		t.Fatalf("expected SSE patch events, got: %s", rec.Body.String())
-	}
-	cookies := rec.Result().Cookies()
-	if len(cookies) == 0 {
-		t.Fatalf("expected session cookie")
-	}
-
-	// 2. PATCH /content saves sanitized HTML
-	body, _ := json.Marshal(map[string]string{"editorHtml": "<p>Saved <strong>value</strong></p><script>x()</script>"})
-	patchReq := httptest.NewRequest(http.MethodPatch, "/content", bytes.NewReader(body))
-	patchReq.Header.Set("Content-Type", "application/json")
-	patchReq.AddCookie(cookies[0])
-	patchRec := httptest.NewRecorder()
-	e.ServeHTTP(patchRec, patchReq)
-	if patchRec.Code != http.StatusOK {
-		t.Fatalf("PATCH /content status = %d, want 200", patchRec.Code)
-	}
-	if strings.Contains(patchRec.Body.String(), "<script>") || !strings.Contains(patchRec.Body.String(), "Saved <strong>value</strong>") {
-		t.Fatalf("unexpected PATCH response: %s", patchRec.Body.String())
-	}
-
-	// 3. Subsequent GET /content returns saved value for same session
-	req2 := httptest.NewRequest(http.MethodGet, "/content", nil)
-	req2.AddCookie(cookies[0])
-	rec2 := httptest.NewRecorder()
-	e.ServeHTTP(rec2, req2)
-	if !strings.Contains(rec2.Body.String(), "Saved <strong>value</strong>") {
-		t.Fatalf("expected saved content on reload, got: %s", rec2.Body.String())
-	}
-}
-
 func TestImageUploadAndServe(t *testing.T) {
 	// 1x1 transparent PNG
 	pngBytes := []byte{
@@ -81,7 +36,7 @@ func TestImageUploadAndServe(t *testing.T) {
 	}
 
 	mustLoadTemplates("../../templates")
-	e := newServer("", newContentStore(10, ""), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	req := httptest.NewRequest(http.MethodPost, "/api/upload", bytes.NewReader(pngBytes))
 	req.Header.Set("Content-Type", "image/png")
@@ -122,7 +77,7 @@ func TestSanitizeEditorHTMLPreservesLeftRightImageAlignment(t *testing.T) {
 
 func TestDistAssetsServedWithCORS(t *testing.T) {
 	mustLoadTemplates("../../templates") // also points the file servers at the repo root
-	e := newServer("", newContentStore(10, ""), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	for _, asset := range []string{"/dist/vanilia-editor.js", "/dist/vanilia-editor.css"} {
 		req := httptest.NewRequest(http.MethodGet, asset, nil)

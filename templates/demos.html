@@ -10,11 +10,6 @@
           <p class="demo-stack"><span class="badge badge--stack">{{.Stack}}</span></p>
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
-          {{if eq .Slug "datastar"}}
-          <div class="page-actions">
-            <a class="btn" href="{{$.BasePath}}/demos/playground">Go + Datastar playground <span aria-hidden="true">→</span></a>
-          </div>
-          {{end}}
           <div class="example-preview">
             {{fingerprintHTML .HTML}}
           </div>

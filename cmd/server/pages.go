@@ -99,8 +99,6 @@ type pageData struct {
 	Next    *navItem
 	Content template.HTML
 	Example *example
-	// RenderedPreview fills the demo page's "rendered-preview" block (streamed later via SSE)
-	RenderedPreview template.HTML
 	// Modules are extra import-map specifiers imported by the page's entry script
 	Modules []string
 	// ClassicEditor loads the editor as a classic script instead of importing the ES module

@@ -11,7 +11,7 @@ import (
 func TestAssetFingerprints(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	get := func(path string) *httptest.ResponseRecorder {
 		rec := httptest.NewRecorder()

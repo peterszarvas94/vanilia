@@ -138,18 +138,11 @@ func examplesHandler(basePath string) echo.HandlerFunc {
 	}
 }
 
-// playgroundSlug is the Go + Datastar playground, a demo with its own page template.
-const playgroundSlug = "playground"
-
 // demoEntries lists the interactive stack demos in sidebar order.
-// The playground follows the Datastar demo.
 func demoEntries() []navEntry {
-	entries := make([]navEntry, 0, len(demos)+1)
+	entries := make([]navEntry, 0, len(demos))
 	for _, d := range demos {
 		entries = append(entries, navEntry{d.Group, d.Slug, d.Title})
-		if d.Slug == "datastar" {
-			entries = append(entries, navEntry{d.Group, playgroundSlug, "Go + Datastar playground"})
-		}
 	}
 	return entries
 }
@@ -172,14 +165,6 @@ func demosHandler(basePath string) echo.HandlerFunc {
 			Items: []navItem{{Href: basePath + "/examples", Title: "Generic examples", External: true}},
 		})
 		return renderTemplate(c, "demos", data)
-	}
-}
-
-// playgroundHandler serves the Go + Datastar playground, which keeps its own layout.
-func playgroundHandler(basePath string) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		data := pageData{BasePath: basePath, Active: "demos", Title: "Go + Datastar playground · Demos", Modules: []string{"playground"}}
-		return renderTemplate(c, "demo", data)
 	}
 }
 

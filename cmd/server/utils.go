@@ -1,17 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"html/template"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/starfederation/datastar-go/datastar"
 )
 
 var (
@@ -87,47 +83,7 @@ func normalizeBasePath(basePath string) string {
 	return trimmed
 }
 
-func getTemplateFragment(templateName string, data any) (string, error) {
-	var buf bytes.Buffer
-	if err := templates.ExecuteTemplate(&buf, templateName, data); err != nil {
-		return "", err
-	}
-	return buf.String(), nil
-}
-
 func renderTemplate(c echo.Context, templateName string, data any) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTMLCharsetUTF8)
 	return templates.ExecuteTemplate(c.Response().Writer, templateName, data)
-}
-
-func patchSignalsJSON(sse *datastar.ServerSentEventGenerator, payload map[string]any) error {
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-	return sse.PatchSignals(raw)
-}
-
-func sendContentUpdates(sse *datastar.ServerSentEventGenerator, content string, syncEditor bool, statusText string) error {
-	signals := map[string]any{
-		"rawPreview": content,
-		"dirty":      false,
-		"savedAt":    statusText,
-	}
-	if syncEditor {
-		signals["serverHtml"] = content
-		signals["editorHtml"] = content
-		signals["serverRev"] = time.Now().UnixNano()
-	}
-	if err := patchSignalsJSON(sse, signals); err != nil {
-		return err
-	}
-
-	renderedPreview, err := getTemplateFragment("rendered-preview", map[string]any{
-		"RenderedPreview": template.HTML(content),
-	})
-	if err != nil {
-		return err
-	}
-	return sse.PatchElements(renderedPreview)
 }

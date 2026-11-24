@@ -11,7 +11,7 @@ import (
 func TestExamplesPageIntegrations(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 
 	get := func(path string) string {
 		rec := httptest.NewRecorder()
@@ -40,7 +40,7 @@ func TestExamplesPageIntegrations(t *testing.T) {
 	// Demo pages: live markup, relevant framework code, server handler & notes, and only their own stack's module
 	for slug, wants := range map[string][]string{
 		"script-tag": {`window.Vanilia`, `<h2 id="notes">Notes</h2>`},
-		"datastar":   {`data-bind:body`, "func saveDatastarPost", `href="/demos/playground"`, `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
+		"datastar":   {`data-bind:body`, "func saveDatastarPost", `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
 		"htmx":       {`hx-post`, `import "htmx.org";`, "func saveHtmxPost", `href="../docs/sanitize"`, `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
 		"alpine":     {`x-model`, `import "alpine";`, `<h2 id="notes">Notes</h2>`},
 	} {
@@ -66,7 +66,7 @@ func TestExamplesPageIntegrations(t *testing.T) {
 func TestIntegrationSaveHandlersSanitize(t *testing.T) {
 	mustLoadTemplates("../../templates")
 	mustLoadExamples("../../templates/examples")
-	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
+	e := newServer("", newUploadStore())
 	dirty := `<p>Hi <script>alert(1)</script><a href="javascript:x">link</a></p>`
 
 	form := url.Values{"body": {dirty}}
