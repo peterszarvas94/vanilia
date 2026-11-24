@@ -26,7 +26,6 @@ func TestPagesRender(t *testing.T) {
 		"/demos/datastar":     `data-panel="code"`,
 		"/demos/htmx":         `import "htmx.org";`,
 		"/demos/alpine":       `import "alpine";`,
-		"/demos/react":        `id="react-root"`,
 		"/docs/shortcuts":     `data-ve-shortcuts`,
 		"/docs/squire":        `class="badge badge--squire"`,
 		"/docs/sanitize":      `bluemonday.NewPolicy()`,

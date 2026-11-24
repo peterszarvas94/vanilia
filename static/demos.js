@@ -4,6 +4,7 @@ import { highlightHTML } from "site";
 // One shared output inspector for every stack; it never imports/registers the
 // editor, so the classic script demo remains independent of the ES module build.
 for (const demo of document.querySelectorAll("[data-demo]")) {
+  const editor = demo.querySelector("vanilia-editor");
   const tabs = demo.querySelector("site-tabs");
   const panel = demo.querySelector("[data-output-panel]");
   const code = panel.querySelector("code");
@@ -17,8 +18,6 @@ for (const demo of document.querySelectorAll("[data-demo]")) {
     controller?.abort();
     const current = ++revision;
     if (panel.hidden) return;
-    const editor = demo.querySelector("vanilia-editor");
-    if (!editor) return; // React may mount asynchronously.
     const html = editor.value;
     code.innerHTML = highlightHTML(html);
     if (!html) {
@@ -45,7 +44,7 @@ for (const demo of document.querySelectorAll("[data-demo]")) {
       }
     }
   };
-  demo.addEventListener("editorupdate", () => {
+  editor.addEventListener("editorupdate", () => {
     clearTimeout(timer);
     // Invalidate pending responses immediately; edits may arrive during a fetch.
     revision++;

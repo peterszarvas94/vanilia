@@ -43,7 +43,6 @@ func TestExamplesPageIntegrations(t *testing.T) {
 		"datastar":   {`data-bind:body`, "func saveDatastarPost", `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
 		"htmx":       {`hx-post`, `import "htmx.org";`, "func saveHtmxPost", `href="../docs/sanitize"`, `<h2 id="server">Server</h2>`, `<h2 id="notes">Notes</h2>`},
 		"alpine":     {`x-model`, `import "alpine";`, `<h2 id="notes">Notes</h2>`},
-		"react":      {`createRoot`, `oneditorupdate`, `React 19`, `<h2 id="notes">Notes</h2>`},
 	} {
 		body := get("/demos/" + slug)
 		wants = append(wants, `class="demo-panel example-preview"`, `data-panel="code"`, `<h2>Stacks</h2>`)
