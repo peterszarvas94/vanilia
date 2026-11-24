@@ -45,7 +45,7 @@ func TestExamplesPageIntegrations(t *testing.T) {
 		"alpine":     {`x-model`, `import "alpine";`, `<h2 id="notes">Notes</h2>`},
 	} {
 		body := get("/demos/" + slug)
-		wants = append(wants, `class="example-preview"`, `<h2 id="code">Code</h2>`, `<h2>Stacks</h2>`)
+		wants = append(wants, `class="demo-panel example-preview"`, `data-panel="code"`, `<h2>Stacks</h2>`)
 		for _, want := range wants {
 			if !strings.Contains(body, want) {
 				t.Errorf("GET /demos/%s is missing %q", slug, want)

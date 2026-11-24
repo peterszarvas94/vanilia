@@ -102,7 +102,7 @@ function highlightTag(tag) {
   );
 }
 
-function highlightHTML(src) {
+export function highlightHTML(src) {
   let out = "";
   let last = 0;
   const re = /<!--[\s\S]*?-->|<\/?[\w-]+(?:\s+[^\s=>]+(?:=(?:"[^"]*"|'[^']*'|[^\s>]+))?)*\s*\/?>/g;

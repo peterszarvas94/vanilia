@@ -158,7 +158,7 @@ func demosHandler(basePath string) echo.HandlerFunc {
 		if current == nil {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
-		data := pageData{BasePath: basePath, Active: "demos", Title: current.Title + " · Demos", Section: "Demos", Heading: current.Title, Example: current, Modules: current.Modules, ClassicEditor: current.Classic}
+		data := pageData{BasePath: basePath, Active: "demos", Title: current.Title + " · Demos", Section: "Demos", Heading: current.Title, Example: current, Modules: append([]string{"demos"}, current.Modules...), ClassicEditor: current.Classic}
 		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/demos", demoEntries(), current.Slug)
 		data.Nav = append(data.Nav, navGroup{
 			Name:  "Examples",
