@@ -18,7 +18,7 @@ func TestPagesRender(t *testing.T) {
 		"/docs/labels":        `data-ve-labels`,
 		"/docs/exports":       `defineButton(button)`,
 		"/examples/basic":     `id="basic"`,
-		"/examples/toolbar":   `href="/demos">Demos`,
+		"/examples/toolbar":   `<h2 id="code">Code</h2>`,
 		"/examples/labels":    `id=&#34;labels-editor&#34;`,
 		"/examples/shortcuts": `id=&#34;shortcuts-editor&#34;`,
 		"/examples/headless":  `id=&#34;headless-editor&#34;`,
