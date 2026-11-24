@@ -6,27 +6,45 @@
       {{template "sidebar" .}}
       <main id="main" class="prose prose--wide">
         {{with .Example}}
-        <section class="demo" id="{{.Slug}}">
+        <section class="demo" id="{{.Slug}}" data-demo data-format-url="{{$.BasePath}}/api/format-html">
           <p class="demo-stack"><span class="badge badge--stack">{{.Stack}}</span></p>
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
-          <div class="example-preview">
-            {{fingerprintHTML .HTML}}
-          </div>
-          <h2 id="code">Code</h2>
-          {{template "code" .Source}}
-          {{if .Server}}
-          <h2 id="server">Server</h2>
-          <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
-          {{template "code" .Server}}
-          {{end}}
+          <site-tabs>
+            <div class="tab-list" role="tablist" aria-label="{{.Title}} demo">
+              <button type="button" role="tab" id="{{.Slug}}-editor-tab" data-panel="editor" aria-selected="true" tabindex="0">Editor</button>
+              <button type="button" role="tab" id="{{.Slug}}-output-tab" data-panel="output" aria-selected="false" tabindex="-1">Output HTML</button>
+              <button type="button" role="tab" id="{{.Slug}}-code-tab" data-panel="code" aria-selected="false" tabindex="-1">Code</button>
+            </div>
+            <section role="tabpanel" id="editor" aria-labelledby="{{.Slug}}-editor-tab">
+              <div class="demo-panel example-preview">
+                {{fingerprintHTML .HTML}}
+              </div>
+            </section>
+            <section role="tabpanel" id="output" aria-labelledby="{{.Slug}}-output-tab" data-output-panel hidden="until-found">
+              <div class="demo-panel">
+                <p class="hint" role="status">Current editor HTML · open this tab to inspect it</p>
+                <div class="code-block"><button type="button" class="copy-btn" data-on:click="@copy(el)">Copy</button><pre><code></code></pre></div>
+              </div>
+            </section>
+            <section role="tabpanel" id="code" aria-labelledby="{{.Slug}}-code-tab" hidden="until-found">
+              <div class="demo-panel">
+                <h2>Integration code</h2>
+                {{template "code" .Source}}
+                {{if .Server}}
+                <h2 id="server">Server</h2>
+                <p>The Go handler behind it, straight from <code>cmd/server/integrations.go</code>:</p>
+                {{template "code" .Server}}
+                {{end}}
+              </div>
+            </section>
+          </site-tabs>
           {{if .Notes}}
           <h2 id="notes">Notes</h2>
           {{.Notes}}
           {{end}}
           <p class="hint">
-            {{if .Classic}}This is a complete setup: the code loads the editor itself.{{else}}The demo above runs
-            exactly this code, with the <a href="{{$.BasePath}}/docs/install">setup from the docs</a>.{{end}}
+            {{if .Classic}}The Code tab contains a complete setup that loads the editor itself.{{else}}The editor runs the code shown in the Code tab, with the <a href="{{$.BasePath}}/docs/install">setup from the docs</a>.{{end}}
             See <a href="{{$.BasePath}}/examples">generic examples</a> for framework-free snippets.
           </p>
         </section>

@@ -64,6 +64,7 @@ func newServer(basePath string, uploads *uploadStore) *echo.Echo {
 	e.GET("/demo", redirectTo(basePath+"/demos"))
 
 	e.POST("/api/upload", handleImageUpload(basePath, uploads))
+	e.POST("/api/format-html", formatHTMLPost, middleware.BodyLimit("256K"))
 	e.POST("/api/datastar/save", saveDatastarPost, middleware.BodyLimit("256K"))
 	e.POST("/api/htmx/save", saveHtmxPost, middleware.BodyLimit("256K"))
 	e.GET("/uploads/:id", handleServeUpload(uploads))
