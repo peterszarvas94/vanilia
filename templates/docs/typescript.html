@@ -1,10 +1,11 @@
 {{define "doc/typescript"}}
 <h1>TypeScript</h1>
 <p>
-  Types ship next to the module as <a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a>.
-  Keep it beside <code>vanilia-editor.js</code> and a relative import is typed with no setup. When you import
-  the bare <code>"vanilia-editor"</code> through an import map, tell TypeScript where the types are, because it
-  doesn't read import maps:
+  Installed from npm, the package is typed with no setup. With the hosted or copied files, keep
+  <a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a> beside
+  <code>vanilia-editor.js</code> and a relative import is typed. When you import the bare
+  <code>"vanilia-editor"</code> through an import map, tell TypeScript where the types are, because it doesn't
+  read import maps:
 </p>
 {{template "code" `// tsconfig.json
 {
@@ -13,10 +14,10 @@
   }
 }`}}
 <p>
-  Importing the module also types the element and its events, so there is nothing to cast. Commands and icon
-  names are checked too:
+  Importing the module also types the element and its events, so there is nothing to cast. Label, icon, theme
+  token and built-in button names autocomplete and are checked:
 </p>
-{{template "code" `import "vanilia-editor";
+{{template "code" `import { setLabels, setTheme, type ToolbarButton } from "vanilia-editor";
 
 const editor = document.querySelector("vanilia-editor"); // VaniliaEditorElement | null
 
@@ -24,9 +25,19 @@ editor?.addEventListener("editorupdate", (event) => {
   console.log(event.detail.words, event.detail.active.bold);
 });
 
-editor?.exec("bold"); // "bolt" would be a type error`}}
+setLabels({ bold: "Fett" });   // "bolt" would be a type error
+setTheme({ accent: "#e11d48" }); // so would "acent"
+
+const signature: ToolbarButton = {
+  name: "signature",
+  label: "Insert signature",
+  run: (editor) => editor.insertHTML("<p>— Peter</p>"),
+};
+editor?.addButton(signature);
+editor?.exec("signature"); // exec takes commands and custom button names`}}
 <p>
-  Exported types include <code>VaniliaEditorDetail</code>, <code>EditorCommand</code>, <code>IconName</code> and
-  <code>UploadHandler</code>.
+  Exported types include <code>VaniliaEditorDetail</code>, <code>EditorCommand</code>, <code>ToolbarButton</code>,
+  <code>ToolbarItem</code>, <code>LabelName</code>, <code>IconName</code>, <code>ThemeToken</code> and
+  <code>UploadHandler</code>. The full list is under <a href="{{.BasePath}}/docs/exports#types">Module exports</a>.
 </p>
 {{end}}

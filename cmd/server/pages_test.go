@@ -14,7 +14,11 @@ func TestPagesRender(t *testing.T) {
 
 	pages := map[string]string{
 		"/":                  "A rich text editor",
-		"/docs/install":      `Option A: link the hosted files`,
+		"/docs/install":      `Option A: npm`,
+		"/docs/labels":       `data-ve-labels`,
+		"/docs/exports":      `defineButton(button)`,
+		"/examples/toolbar":  `id="toolbar-editor"`,
+		"/examples/labels":   `id="labels-editor"`,
 		"/docs/sanitize":     `bluemonday.NewPolicy()`,
 		"/docs/browsers":     `aria-current="page">Browser support`,
 		"/examples/basic":    `id="basic"`,

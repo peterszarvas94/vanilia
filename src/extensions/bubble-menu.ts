@@ -20,14 +20,30 @@ export interface BubbleMenuOptions {
   onOpenLink?: () => void;
   isImageSelected?: () => boolean;
   renderIcon?: IconRenderer;
+  /** Accessible name of the menu. */
+  label?: string;
+  /**
+   * The menu's buttons as markup (`<button data-cmd="...">`). An empty string disables
+   * the menu. Defaults to bold, italic, underline, strike, code and link.
+   */
+  renderButtons?: () => string;
+  /** Run a button's command. Defaults to the built-in formatting commands. */
+  runCommand?: (name: string) => void;
+  /** Update the buttons' pressed / disabled state. Defaults to the built-in formats. */
+  syncButtons?: (menu: HTMLElement) => void;
 }
 
 export interface BubbleMenuExtension {
   name: "bubbleMenu";
   hide(): void;
   update(): void;
+  /** Re-render the buttons (after a layout, label or icon change). */
+  refresh(): void;
   destroy(): void;
 }
+
+/** Commands that open a popover or panel: the menu closes instead of following the selection. */
+const OPENS_UI = new Set(["link", "image", "find"]);
 
 export function createBubbleMenuExtension({
   squire,
@@ -37,6 +53,10 @@ export function createBubbleMenuExtension({
   onOpenLink,
   isImageSelected,
   renderIcon = icon,
+  label = "Text formatting",
+  renderButtons,
+  runCommand,
+  syncButtons,
 }: BubbleMenuOptions): BubbleMenuExtension {
   const anchorName = `--ve-sel-anchor-${++anchorCounter}`;
 
@@ -51,12 +71,12 @@ export function createBubbleMenuExtension({
   menu.className = "ve-popover ve-bubble-menu";
   menu.setAttribute("popover", "manual");
   menu.setAttribute("role", "toolbar");
-  menu.setAttribute("aria-label", "Text formatting");
+  menu.setAttribute("aria-label", label);
   if (SUPPORTS_ANCHOR) {
     menu.style.setProperty("position-anchor", anchorName);
   }
 
-  menu.innerHTML = `
+  const defaultButtons = () => `
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="bold" title="Bold (Ctrl+B)">${renderIcon("bold", 14)}</button>
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="italic" title="Italic (Ctrl+I)">${renderIcon("italic", 14)}</button>
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="underline" title="Underline (Ctrl+U)">${renderIcon("underline", 14)}</button>
@@ -65,6 +85,14 @@ export function createBubbleMenuExtension({
     <span class="ve-sep"></span>
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="link" title="Link (Ctrl+K)">${renderIcon("link", 14)}</button>
   `;
+  let empty = false;
+  function refresh() {
+    const html = (renderButtons ?? defaultButtons)().trim();
+    empty = !html;
+    menu.innerHTML = html;
+    if (empty) hide();
+  }
+  refresh();
   overlayHost.appendChild(menu);
 
   let visible = false;
@@ -77,19 +105,26 @@ export function createBubbleMenuExtension({
   menu.addEventListener("click", (e) => {
     const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-cmd]");
     const cmd = btn?.dataset.cmd;
-    if (!cmd) return;
-    if (cmd === "link") {
-      hide();
+    if (!cmd || btn?.disabled) return;
+    if (OPENS_UI.has(cmd)) hide();
+    if (runCommand) {
+      runCommand(cmd);
+    } else if (cmd === "link") {
       onOpenLink?.();
-      return;
+    } else {
+      execCommand(squire, cmd);
+      onCommand?.();
     }
-    execCommand(squire, cmd);
+    if (OPENS_UI.has(cmd)) return;
     syncActive();
-    onCommand?.();
     scheduleUpdate();
   });
 
   function syncActive() {
+    if (syncButtons) {
+      syncButtons(menu);
+      return;
+    }
     const active = getActiveState(squire);
     for (const btn of menu.querySelectorAll<HTMLButtonElement>("button[data-cmd]")) {
       const isOn = Boolean(active[btn.dataset.cmd as keyof ActiveState]);
@@ -121,7 +156,7 @@ export function createBubbleMenuExtension({
   }
 
   function update() {
-    if (isImageSelected?.()) {
+    if (empty || isImageSelected?.()) {
       hide();
       return;
     }
@@ -186,6 +221,10 @@ export function createBubbleMenuExtension({
     name: "bubbleMenu",
     hide,
     update: scheduleUpdate,
+    refresh() {
+      refresh();
+      if (visible) syncActive();
+    },
     destroy() {
       cancelAnimationFrame(rafId);
       hide();

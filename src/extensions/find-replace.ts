@@ -1,5 +1,6 @@
 import type Squire from "squire-rte";
 import { icon, type IconRenderer } from "../icons.js";
+import { applyLabels, defaultTranslate, type Translate } from "../labels.js";
 
 /**
  * Non-destructive Find & Replace extension powered by the native
@@ -18,6 +19,8 @@ export interface FindReplaceOptions {
   squire: Squire;
   onChange?: () => void;
   renderIcon?: IconRenderer;
+  /** Label lookup (defaults to English). */
+  t?: Translate;
 }
 
 export interface FindReplaceExtension {
@@ -34,27 +37,31 @@ export function createFindReplaceExtension({
   squire,
   onChange,
   renderIcon = icon,
+  t = defaultTranslate,
 }: FindReplaceOptions): FindReplaceExtension {
   const bar = document.createElement("div");
   bar.className = "ve-find-bar";
   bar.hidden = true;
   bar.innerHTML = `
     <div class="ve-find-row">
-      <input type="search" class="ve-input ve-input--sm" data-find-input placeholder="Find in document..." aria-label="Find text" />
-      <span class="ve-find-count" data-find-count>0 / 0</span>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="prev" title="Previous match">↑</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="next" title="Next match">↓</button>
-      <input type="text" class="ve-input ve-input--sm" data-replace-input placeholder="Replace with..." aria-label="Replace text" />
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace">Replace</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace-all">All</button>
-      <button type="button" class="ve-btn ve-btn--sm" data-action="close" title="Close (Esc)">${renderIcon("x", 14)}</button>
+      <input type="search" class="ve-input ve-input--sm" data-find-input data-ve-placeholder="findPlaceholder" data-ve-aria-label="findLabel" />
+      <span class="ve-find-count" data-find-count></span>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="prev" data-ve-title="previousMatch" data-ve-aria-label="previousMatch">↑</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="next" data-ve-title="nextMatch" data-ve-aria-label="nextMatch">↓</button>
+      <input type="text" class="ve-input ve-input--sm" data-replace-input data-ve-placeholder="replacePlaceholder" data-ve-aria-label="replaceLabel" />
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace" data-ve-text="replace"></button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace-all" data-ve-text="replaceAll"></button>
+      <button type="button" class="ve-btn ve-btn--sm" data-action="close" data-ve-title="close" data-ve-aria-label="close">${renderIcon("x", 14)}</button>
     </div>
   `;
+  applyLabels(bar, t);
   barSlot.appendChild(bar);
 
   const findInput = bar.querySelector<HTMLInputElement>("[data-find-input]")!;
   const replaceInput = bar.querySelector<HTMLInputElement>("[data-replace-input]")!;
   const countEl = bar.querySelector<HTMLElement>("[data-find-count]")!;
+  const zeroCount = () => t("matchCount", { current: 0, total: 0 });
+  countEl.textContent = zeroCount();
 
   let matches: Range[] = [];
   let activeIndex = -1;
@@ -71,7 +78,7 @@ export function createFindReplaceExtension({
     const query = findInput.value;
     if (!query) {
       activeIndex = -1;
-      countEl.textContent = "0 / 0";
+      countEl.textContent = zeroCount();
       return;
     }
 
@@ -100,7 +107,9 @@ export function createFindReplaceExtension({
   }
 
   function paintHighlights() {
-    countEl.textContent = matches.length ? `${activeIndex + 1} / ${matches.length}` : "0 / 0";
+    countEl.textContent = matches.length
+      ? t("matchCount", { current: activeIndex + 1, total: matches.length })
+      : zeroCount();
     if (!SUPPORTS_HIGHLIGHTS || matches.length === 0) return;
 
     const all = new Highlight(...matches);

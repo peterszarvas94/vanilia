@@ -1,0 +1,63 @@
+{{define "doc/labels"}}
+<h1>Labels &amp; translation</h1>
+<p>
+  Every piece of text the editor shows has a name: button tooltips, popovers, find &amp; replace, the word count,
+  status and validation messages. Override any of them for one editor or for the whole page. Names you leave out
+  keep the English default.
+</p>
+
+<h2 id="html">In HTML</h2>
+<p>A <code>&lt;template data-ve-labels&gt;</code> child holds overrides as JSON:</p>
+{{template "code" `<vanilia-editor>
+  <template data-ve-labels>
+    { "bold": "Fett", "italic": "Kursiv", "placeholder": "Schreib los...", "wordCount": "{count} Wörter" }
+  </template>
+</vanilia-editor>`}}
+
+<h2 id="javascript">From JavaScript</h2>
+{{template "code" `import { setLabels } from "vanilia-editor";
+
+// every editor on the page (mounted editors update too)
+setLabels({ bold: "Fett", italic: "Kursiv" });
+
+// one editor; null restores a default
+editor.setLabels({ placeholder: "Antwort schreiben...", bold: null });`}}
+<p>
+  Lookup order: the editor's own labels, then <code>setLabels()</code>, then English. The
+  <code>placeholder</code> attribute wins over the <code>placeholder</code> label.
+</p>
+
+<h2 id="placeholders">Placeholders and plurals</h2>
+<p>
+  Some labels contain values in braces, like <code>{count}</code>. A label can also be a function that gets
+  those values, for plural rules and grammar a template string can't express:
+</p>
+{{template "code" `const plural = new Intl.PluralRules("pl");
+const forms = { one: "słowo", few: "słowa", many: "słów", other: "słowa" };
+
+editor.setLabels({
+  wordCount: ({ count }) => count + " " + forms[plural.select(count)],
+  imageCount: "{count} obr.",
+});`}}
+
+<h2 id="names">Label names</h2>
+<p>The full list with the English defaults is exported as <code>DEFAULT_LABELS</code>; <code>LABEL_NAMES</code> lists the names.</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Where</th><th>Names</th></tr></thead>
+    <tbody>
+      <tr><td>Buttons</td><td>Same as the <a href="{{.BasePath}}/docs/commands">commands</a>: <code>bold</code> <code>italic</code> <code>underline</code> <code>strike</code> <code>code</code> <code>paragraph</code> <code>h1</code> <code>h2</code> <code>h3</code> <code>bulletList</code> <code>orderedList</code> <code>blockquote</code> <code>hr</code> <code>alignLeft</code> <code>alignCenter</code> <code>alignRight</code> <code>link</code> <code>image</code> <code>clearFormatting</code> <code>undo</code> <code>redo</code> <code>find</code></td></tr>
+      <tr><td>Editor</td><td><code>toolbar</code> <code>bubbleMenu</code> <code>editor</code> (accessible names), <code>placeholder</code></td></tr>
+      <tr><td>Link popover</td><td><code>linkUrl</code> <code>linkUrlPlaceholder</code> <code>removeLink</code> <code>cancel</code> <code>apply</code></td></tr>
+      <tr><td>Image popover</td><td><code>chooseImageFile</code> <code>orPasteUrl</code> <code>imageUrl</code> <code>imageUrlPlaceholder</code> <code>altText</code> <code>altTextPlaceholder</code> <code>insert</code></td></tr>
+      <tr><td>Selected image</td><td><code>imageOptions</code> <code>imageWidth</code> <code>imageAlignment</code> <code>widthPreset</code> ({width}) <code>resizeImage</code> ({handle}) <code>imageSize</code> ({width} {height} {percent}) <code>editAlt</code> <code>altButton</code> <code>altInputPlaceholder</code> <code>saveAlt</code> <code>deleteImage</code></td></tr>
+      <tr><td>Find &amp; replace</td><td><code>findPlaceholder</code> <code>findLabel</code> <code>previousMatch</code> <code>nextMatch</code> <code>replacePlaceholder</code> <code>replaceLabel</code> <code>replace</code> <code>replaceAll</code> <code>close</code> <code>matchCount</code> ({current} {total})</td></tr>
+      <tr><td>Status</td><td><code>wordCount</code> ({count}) <code>imageCount</code> ({count}) <code>uploading</code> ({name}) <code>uploadFailed</code> <code>valueMissing</code></td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  Custom buttons bring their own <code>label</code>; to translate one, add it again with the translated label.
+  See the <a href="{{.BasePath}}/examples/labels">translated editor example</a>.
+</p>
+{{end}}

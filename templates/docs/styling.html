@@ -1,5 +1,5 @@
 {{define "doc/styling"}}
-<h1>Styling</h1>
+<h1>Styling &amp; themes</h1>
 <p>
   All styles live in the cascade layers <code>ve-tokens, ve-base, ve-chrome, ve-surface, ve-popovers</code>, so
   any unlayered CSS of yours wins. Most of the time you only set variables, globally or per editor:
@@ -11,6 +11,8 @@
   --ve-max-height: 520px;    /* scroll inside the editor beyond this */
   --ve-font-sans: Inter, system-ui, sans-serif;
 }`}}
+
+<h2 id="tokens">Tokens</h2>
 <div class="table-wrap">
   <table>
     <thead><tr><th>Group</th><th>Variables</th></tr></thead>
@@ -26,7 +28,71 @@
   </table>
 </div>
 <p>
-  Colors use <code>light-dark()</code>, so dark mode follows the page's <code>color-scheme</code>. See the
-  <a href="{{.BasePath}}/examples/theme">theme example</a>.
+  The soft, ring, border and hover accents are derived from <code>--ve-accent</code> (and the soft danger from
+  <code>--ve-danger</code>) unless you set them.
 </p>
+
+<h2 id="dark-mode">Dark mode</h2>
+<p>
+  Colors use <code>light-dark()</code>, so the editor follows the page's <code>color-scheme</code>. To pin one
+  editor, set <code>theme</code>:
+</p>
+{{template "code" `<vanilia-editor theme="dark"></vanilia-editor>  <!-- "light", "dark" or "auto" (default) -->`}}
+<p>To use different colors per scheme, set your own tokens with <code>light-dark()</code>:</p>
+{{template "code" `vanilia-editor {
+  --ve-bg: light-dark(#fffaf3, #1c1712);
+  --ve-border: light-dark(#e6d6bf, #3a2f24);
+}`}}
+
+<h2 id="javascript">From JavaScript</h2>
+<p>
+  <code>setTheme()</code> writes the same variables with typed, camelCase names (<code>accentSoft</code> is
+  <code>--ve-accent-soft</code>). Use it when colors come from data, like a user's brand color. <code>null</code>
+  removes a value.
+</p>
+{{template "code" `import { setTheme } from "vanilia-editor";
+
+// every editor: an unlayered :root rule
+setTheme({ accent: "#e11d48", radius: "8px", fontSans: "Inter, sans-serif" });
+
+// one editor: inline --ve-* properties on the element
+editor.setTheme({ accent: user.brandColor, minHeight: "120px" });
+editor.setTheme({ accent: null });
+
+editor.theme = "dark"; // same as the attribute`}}
+<p>
+  Token names are exported as <code>THEME_TOKENS</code> and <code>tokenVar(name)</code> gives the CSS property.
+  Precedence, lowest first: built-in defaults, <code>setTheme()</code> and your <code>:root</code> CSS, CSS on
+  <code>vanilia-editor</code> selectors, <code>editor.setTheme()</code>.
+</p>
+
+<h2 id="classes">Classes you can style</h2>
+<p>
+  The editor renders into the light DOM, so its parts are plain elements. These classes are stable across minor
+  versions; others are internal.
+</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Selector</th><th>Element</th></tr></thead>
+    <tbody>
+      <tr><td><code>.ve-root</code></td><td>The frame around everything. <code>.is-disabled</code> while disabled.</td></tr>
+      <tr><td><code>.ve-toolbar</code></td><td>The toolbar.</td></tr>
+      <tr><td><code>.ve-btn-group</code>, <code>.ve-sep</code></td><td>A group of buttons and the separator between groups.</td></tr>
+      <tr><td><code>.ve-btn</code></td><td>Any button. <code>[data-cmd="bold"]</code> picks one; <code>.is-active</code> when pressed; <code>.ve-btn--custom</code> for custom buttons.</td></tr>
+      <tr><td><code>.ve-surface</code></td><td>The editable area. <code>[data-empty]</code> while empty.</td></tr>
+      <tr><td><code>.ve-footer</code>, <code>.ve-status</code>, <code>.ve-metrics</code></td><td>The footer, its status message and the word count.</td></tr>
+      <tr><td><code>.ve-bubble-menu</code></td><td>The selection menu.</td></tr>
+      <tr><td><code>.ve-popover</code></td><td>Link and image popovers and the image toolbar.</td></tr>
+      <tr><td><code>.ve-find-bar</code></td><td>Find &amp; replace.</td></tr>
+      <tr><td><code>.ve-icon</code></td><td>An icon (<code>.ve-icon--custom</code> when replaced).</td></tr>
+      <tr><td><code>.ve-prose</code></td><td>Add it to any container that shows saved HTML, for the editor's typography and image alignment.</td></tr>
+    </tbody>
+  </table>
+</div>
+{{template "code" `/* hide the word count */
+vanilia-editor .ve-footer { display: none; }
+
+/* a sticky toolbar in a long editor */
+vanilia-editor .ve-toolbar { position: sticky; top: 0; z-index: 1; }`}}
+<p>See the <a href="{{.BasePath}}/examples/theme">theme example</a>.</p>
 {{end}}

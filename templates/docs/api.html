@@ -1,25 +1,92 @@
 {{define "doc/api"}}
 <h1>Properties &amp; methods</h1>
+<p>
+  Everything on a <code>&lt;vanilia-editor&gt;</code> element. Methods called before the element is upgraded don't
+  exist yet, so in scripts that run early wait for the definition first:
+</p>
+{{template "code" `await customElements.whenDefined("vanilia-editor");
+const editor = document.querySelector("vanilia-editor");`}}
+
+<h2 id="content">Content</h2>
 <div class="table-wrap">
   <table>
     <thead><tr><th>Member</th><th>Description</th></tr></thead>
     <tbody>
-      <tr><td><code>value</code></td><td>Get or set the content as HTML.</td></tr>
+      <tr><td><code>value</code></td><td>Get or set the content as HTML. Writing the current value again is a no-op, so two-way bindings keep the caret.</td></tr>
       <tr><td><code>getHTML()</code></td><td>Current content as clean HTML (<code>""</code> when empty).</td></tr>
       <tr><td><code>getFormattedHTML()</code></td><td>Same, indented for display.</td></tr>
       <tr><td><code>getText()</code></td><td>Plain text content.</td></tr>
-      <tr><td><code>setHTML(html, { silent })</code></td><td>Replace the content. <code>silent: true</code> skips the <code>input</code> event.</td></tr>
-      <tr><td><code>exec(command, arg?)</code></td><td>Run a <a href="{{.BasePath}}/docs/commands">command</a>.</td></tr>
-      <tr><td><code>isActive(name)</code></td><td>Whether a format (<code>"bold"</code>, <code>"link"</code>, …) is active at the selection.</td></tr>
-      <tr><td><code>insertImage(url, alt?)</code></td><td>Insert an image at the cursor.</td></tr>
-      <tr><td><code>setIcons(map)</code></td><td>Override icons for this editor. See <a href="{{.BasePath}}/docs/icons">Icons</a>.</td></tr>
-      <tr><td><code>onImageUpload</code></td><td><code>async (file) =&gt; url</code> upload hook.</td></tr>
-      <tr><td><code>focus()</code></td><td>Focus the editing surface.</td></tr>
-      <tr><td><code>form</code>, <code>validity</code>, <code>checkValidity()</code>, <code>reportValidity()</code></td><td>Standard form-field members.</td></tr>
-      <tr><td><code>VaniliaEditorElement.setIcons(map)</code></td><td>Static: override icons for every editor on the page.</td></tr>
-      <tr><td><code>VaniliaEditorElement.iconNames</code></td><td>Static: names of all overridable icons.</td></tr>
+      <tr><td><code>getSelectedText()</code></td><td>The selected text (<code>""</code> when nothing is selected).</td></tr>
+      <tr><td><code>setHTML(html, { silent? })</code></td><td>Replace the content. <code>silent: true</code> skips the <code>input</code> event.</td></tr>
+      <tr><td><code>insertHTML(html)</code></td><td>Insert HTML at the cursor, replacing the selection. Sanitized like pasted content.</td></tr>
+      <tr><td><code>insertText(text)</code></td><td>Insert plain text at the cursor, replacing the selection.</td></tr>
+      <tr><td><code>insertImage(url, alt?)</code></td><td>Insert an image at the cursor. Returns the <code><code>insertImage(url, alt?): HTMLImageElement | null</code></td><td>Insert an image at the cursor. Returns <code>null</code> for unsafe URLs.lt;img<code>insertImage(url, alt?): HTMLImageElement | null</code></td><td>Insert an image at the cursor. Returns <code>null</code> for unsafe URLs.gt;</code>, or <code>null</code> for an unsafe URL.</td></tr>
     </tbody>
   </table>
 </div>
-<p>The module also exports <code>VaniliaEditorElement</code>, <code>setIcons</code>, <code>ICON_NAMES</code>, <code>formatHTML</code>, <code>isSafeUrl</code> and the sanitizer helpers.</p>
+
+<h2 id="commands">Commands &amp; state</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>exec(command, arg?)</code></td><td>Run a <a href="{{.BasePath}}/docs/commands">command</a>, or the <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a> of that name. <code>arg</code> is the URL for <code>makeLink</code>.</td></tr>
+      <tr><td><code>isActive(name, attrs?)</code></td><td>Whether a format is active at the selection: <code>"bold"</code>, <code>"italic"</code>, <code>"underline"</code>, <code>"strike"</code>, <code>"code"</code>, <code>"link"</code>, <code>"bulletList"</code>, <code>"orderedList"</code>, <code>"blockquote"</code>, <code>"paragraph"</code>, or <code>"heading"</code> (optionally <code>{ level: 2 }</code>).</td></tr>
+      <tr><td><code>focus()</code></td><td>Focus the editing surface.</td></tr>
+      <tr><td><code>squire</code></td><td>The underlying <a href="https://github.com/fastmail/Squire#api" target="_blank" rel="noopener noreferrer">Squire</a> instance, for anything the API doesn't cover. <code>null</code> until the element is connected. Read-only.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="toolbar">Toolbar</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>toolbar</code></td><td>The toolbar layout. Reads back the items in use (an array, <code>"|"</code> between groups). Set a string like <code>"bold italic | link"</code>, an array, <code>"none"</code>, or <code>null</code> for the default. Reflects the <code>toolbar</code> attribute. See <a href="{{.BasePath}}/docs/toolbar">Toolbar</a>.</td></tr>
+      <tr><td><code>bubbleMenu</code></td><td>The selection menu layout, same values. Reflects <code>bubble-menu</code>.</td></tr>
+      <tr><td><code>addButton(button)</code></td><td>Add a <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a> to this editor. An existing name is replaced.</td></tr>
+      <tr><td><code>removeButton(name)</code></td><td>Remove a button added with <code>addButton()</code>.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="appearance">Icons, labels &amp; theme</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>setIcons(map)</code></td><td>Override icons for this editor; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/icons">Icons</a>.</td></tr>
+      <tr><td><code>setLabels(map)</code></td><td>Override labels for this editor; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/labels">Labels &amp; translation</a>.</td></tr>
+      <tr><td><code>setTheme(tokens)</code></td><td>Set <code>--ve-*</code> tokens on this editor, e.g. <code>{ accent: "#e11d48" }</code>; <code>null</code> removes one. See <a href="{{.BasePath}}/docs/styling#javascript">Styling</a>.</td></tr>
+      <tr><td><code>theme</code></td><td><code>"light"</code>, <code>"dark"</code> or <code>"auto"</code> (follow the page). Reflects the <code>theme</code> attribute.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="forms">Forms &amp; uploads</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>onImageUpload</code></td><td><code>async (file) =&gt; url</code> upload hook. See <a href="{{.BasePath}}/docs/uploads">Image uploads</a>.</td></tr>
+      <tr><td><code>form</code><br><code>validity</code><br><code>validationMessage</code><br><code>checkValidity()</code><br><code>reportValidity()</code></td><td>Standard form-field members. See <a href="{{.BasePath}}/docs/forms">Forms</a>.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="static">Static members</h2>
+<p>On <code>VaniliaEditorElement</code> (also <code>customElements.get("vanilia-editor")</code>), for pages that don't import the module's named exports. They affect every editor on the page, including ones already mounted.</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Same as</th></tr></thead>
+    <tbody>
+      <tr><td><code>setIcons(map)</code>, <code>iconNames</code></td><td><code>setIcons</code>, <code>ICON_NAMES</code></td></tr>
+      <tr><td><code>setLabels(map)</code>, <code>labelNames</code></td><td><code>setLabels</code>, <code>LABEL_NAMES</code></td></tr>
+      <tr><td><code>defineButton(button)</code><br><code>undefineButton(name)</code><br><code>buttonNames</code></td><td><code>defineButton</code><br><code>undefineButton</code><br><code>BUTTON_NAMES</code></td></tr>
+      <tr><td><code>setTheme(tokens)</code>, <code>themeTokens</code></td><td><code>setTheme</code>, <code>THEME_TOKENS</code></td></tr>
+    </tbody>
+  </table>
+</div>
+<p>The module's named exports are listed under <a href="{{.BasePath}}/docs/exports">Module exports</a>.</p>
 {{end}}

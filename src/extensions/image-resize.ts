@@ -1,6 +1,7 @@
 import type Squire from "squire-rte";
 import { icon, type IconRenderer } from "../icons.js";
 import { isSafeUrl } from "../sanitizer.js";
+import { defaultTranslate, type Translate } from "../labels.js";
 
 /**
  * Custom TipTap-style Image Resize, Alignment, Alt-Text & Upload extension for Squire.
@@ -39,6 +40,8 @@ export interface ImageResizeOptions {
   getUploadHandler?: () => UploadHandler | null | undefined;
   onStatus?: (message: string) => void;
   renderIcon?: IconRenderer;
+  /** Label lookup (defaults to English). */
+  t?: Translate;
 }
 
 export interface ImageResizeExtension {
@@ -85,6 +88,7 @@ export function createImageResizeExtension({
   getUploadHandler,
   onStatus,
   renderIcon = icon,
+  t = defaultTranslate,
 }: ImageResizeOptions): ImageResizeExtension {
   // Disable Squire's built-in DOM-polluting image resizer cleanly
   if (squire._imageResizer && typeof squire._imageResizer.destroy === "function") {
@@ -112,7 +116,7 @@ export function createImageResizeExtension({
     h.className = `ve-img-handle ve-img-handle--${pos}`;
     h.dataset.handle = pos;
     h.style.cursor = cursor;
-    h.setAttribute("aria-label", `Resize image (${pos})`);
+    h.setAttribute("aria-label", t("resizeImage", { handle: pos }));
     h.addEventListener("pointerdown", onHandlePointerDown);
     h.addEventListener("touchstart", preventTouchScroll, { passive: false });
     box.appendChild(h);
@@ -124,7 +128,7 @@ export function createImageResizeExtension({
   toolbar.className = "ve-popover ve-img-toolbar";
   toolbar.setAttribute("popover", "manual");
   toolbar.setAttribute("role", "toolbar");
-  toolbar.setAttribute("aria-label", "Image options");
+  toolbar.setAttribute("aria-label", t("imageOptions"));
   overlayHost.appendChild(toolbar);
 
   function renderToolbar() {
@@ -133,9 +137,9 @@ export function createImageResizeExtension({
     if (altEditing) {
       toolbar.innerHTML = `
         <form class="ve-img-alt-form">
-          <input type="text" class="ve-input ve-input--sm" name="alt" placeholder="Describe this image..." value="${escapeAttr(selectedImg.getAttribute("alt") || "")}" />
-          <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary" title="Save alt text">${renderIcon("check", 14)}</button>
-          <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="Cancel">${renderIcon("x", 14)}</button>
+          <input type="text" class="ve-input ve-input--sm" name="alt" placeholder="${escapeAttr(t("altInputPlaceholder"))}" value="${escapeAttr(selectedImg.getAttribute("alt") || "")}" />
+          <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary" title="${escapeAttr(t("saveAlt"))}">${renderIcon("check", 14)}</button>
+          <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="${escapeAttr(t("cancel"))}">${renderIcon("x", 14)}</button>
         </form>
       `;
       const form = toolbar.querySelector("form")!;
@@ -165,22 +169,22 @@ export function createImageResizeExtension({
     const currentStyleWidth = selectedImg.style.width || "";
 
     toolbar.innerHTML = `
-      <div class="ve-btn-group" role="group" aria-label="Image width">
+      <div class="ve-btn-group" role="group" aria-label="${escapeAttr(t("imageWidth"))}">
         ${WIDTH_PRESETS.map(
           (w) => `
-          <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${currentStyleWidth === w ? "is-active" : ""}" data-width="${w}" title="Width ${w}">${w}</button>
+          <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${currentStyleWidth === w ? "is-active" : ""}" data-width="${w}" title="${escapeAttr(t("widthPreset", { width: w }))}">${w}</button>
         `,
         ).join("")}
       </div>
       <span class="ve-sep"></span>
-      <div class="ve-btn-group" role="group" aria-label="Image alignment">
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "left" ? "is-active" : ""}" data-align="left" title="Align left">${renderIcon("alignLeft", 14)}</button>
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "center" ? "is-active" : ""}" data-align="center" title="Align center">${renderIcon("alignCenter", 14)}</button>
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "right" ? "is-active" : ""}" data-align="right" title="Align right">${renderIcon("alignRight", 14)}</button>
+      <div class="ve-btn-group" role="group" aria-label="${escapeAttr(t("imageAlignment"))}">
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "left" ? "is-active" : ""}" data-align="left" title="${escapeAttr(t("alignLeft"))}">${renderIcon("alignLeft", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "center" ? "is-active" : ""}" data-align="center" title="${escapeAttr(t("alignCenter"))}">${renderIcon("alignCenter", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "right" ? "is-active" : ""}" data-align="right" title="${escapeAttr(t("alignRight"))}">${renderIcon("alignRight", 14)}</button>
       </div>
       <span class="ve-sep"></span>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${selectedImg.getAttribute("alt") ? "is-active" : ""}" data-action="edit-alt" title="Edit alt text">Alt</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--danger" data-action="delete" title="Delete image">${renderIcon("trash", 14)}</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${selectedImg.getAttribute("alt") ? "is-active" : ""}" data-action="edit-alt" title="${escapeAttr(t("editAlt"))}">${escapeAttr(t("altButton"))}</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--danger" data-action="delete" title="${escapeAttr(t("deleteImage"))}">${renderIcon("trash", 14)}</button>
     `;
   }
 
@@ -443,7 +447,11 @@ export function createImageResizeExtension({
 
   function updateBadge(w: number, h: number, maxWidth: number) {
     const pct = Math.min(100, Math.round((w / maxWidth) * 100));
-    dimBadge.textContent = `${Math.round(w)} × ${Math.round(h)} px · ${pct}%`;
+    dimBadge.textContent = t("imageSize", {
+      width: Math.round(w),
+      height: Math.round(h),
+      percent: pct,
+    });
   }
 
   // Click selection & outside dismissal
@@ -493,7 +501,7 @@ export function createImageResizeExtension({
   // Image upload / paste / drag-and-drop
   async function insertImageFile(file: File): Promise<HTMLImageElement | null> {
     if (!file || !file.type.startsWith("image/")) return null;
-    onStatus?.(`Uploading ${file.name || "image"}...`);
+    onStatus?.(t("uploading", { name: file.name || "image" }));
     try {
       const uploader = getUploadHandler?.();
       const src = uploader ? await uploader(file) : await fileToDataUrl(file);
@@ -511,7 +519,7 @@ export function createImageResizeExtension({
       }
       return img;
     } catch (err) {
-      onStatus?.((err instanceof Error && err.message) || "Image upload failed");
+      onStatus?.((err instanceof Error && err.message) || t("uploadFailed"));
       setTimeout(() => onStatus?.(""), 3000);
       return null;
     }

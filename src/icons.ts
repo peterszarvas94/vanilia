@@ -66,8 +66,12 @@ const SVG_PATHS: Record<IconName, string> = {
   text: `<path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/>`,
 };
 
-/** Icon overrides: icon name to trusted markup. `null` or `""` restores the built-in icon. */
-export type IconMap = Partial<Record<IconName, string | null | undefined>>;
+/**
+ * Icon overrides: icon name to trusted markup. `null` or `""` restores the built-in icon.
+ * Names other than the built-in ones register new icons for custom toolbar buttons.
+ */
+export type IconMap = Partial<Record<IconName, string | null | undefined>> &
+  Record<string, string | null | undefined>;
 
 /** Names of all built-in icons (each can be overridden). */
 export const ICON_NAMES: readonly IconName[] = Object.freeze(Object.keys(SVG_PATHS) as IconName[]);

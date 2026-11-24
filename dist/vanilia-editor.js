@@ -1,5 +1,5 @@
 /*! Vanilia | includes Squire, MIT License, Copyright (c) 2011-2023 Neil Jenkins */
-// node_modules/squire-rte/dist/squire-raw.mjs
+// ../t3-da708bec/node_modules/squire-rte/dist/squire-raw.mjs
 var SHOW_ELEMENT = 1;
 var SHOW_TEXT = 4;
 var SHOW_ELEMENT_OR_TEXT = 5;
@@ -4002,6 +4002,132 @@ function execCommand(squire, command, arg) {
 		case "removeLink": squire.removeLink();
 	}
 }
+// src/labels.ts
+const plural = (one, other) => (vars) => Number(vars.count) === 1 ? `${vars.count} ${one}` : `${vars.count} ${other}`;
+/** Built-in English labels. */
+const DEFAULT_LABELS = Object.freeze({
+	bold: "Bold",
+	italic: "Italic",
+	underline: "Underline",
+	strike: "Strikethrough",
+	code: "Code",
+	paragraph: "Paragraph",
+	h1: "Heading 1",
+	h2: "Heading 2",
+	h3: "Heading 3",
+	bulletList: "Bullet list",
+	orderedList: "Numbered list",
+	blockquote: "Quote",
+	hr: "Horizontal rule",
+	alignLeft: "Align left",
+	alignCenter: "Align center",
+	alignRight: "Align right",
+	link: "Link",
+	image: "Image",
+	clearFormatting: "Clear formatting",
+	undo: "Undo",
+	redo: "Redo",
+	find: "Find and replace",
+	toolbar: "Formatting toolbar",
+	bubbleMenu: "Text formatting",
+	editor: "Rich text editor",
+	placeholder: "Start writing, paste an image, or drop a photo here...",
+	linkUrl: "Link URL",
+	linkUrlPlaceholder: "https://example.com",
+	removeLink: "Remove",
+	cancel: "Cancel",
+	apply: "Apply",
+	chooseImageFile: "Choose image file...",
+	orPasteUrl: "or paste URL",
+	imageUrl: "Image URL",
+	imageUrlPlaceholder: "https://...",
+	altText: "Alt text (optional)",
+	altTextPlaceholder: "Describe the image",
+	insert: "Insert",
+	imageOptions: "Image options",
+	imageWidth: "Image width",
+	imageAlignment: "Image alignment",
+	widthPreset: "Width {width}",
+	resizeImage: "Resize image ({handle})",
+	imageSize: "{width} × {height} px · {percent}%",
+	editAlt: "Edit alt text",
+	altButton: "Alt",
+	altInputPlaceholder: "Describe this image...",
+	saveAlt: "Save alt text",
+	deleteImage: "Delete image",
+	findPlaceholder: "Find in document...",
+	findLabel: "Find text",
+	previousMatch: "Previous match",
+	nextMatch: "Next match",
+	replacePlaceholder: "Replace with...",
+	replaceLabel: "Replace text",
+	replace: "Replace",
+	replaceAll: "All",
+	close: "Close",
+	matchCount: "{current} / {total}",
+	wordCount: plural("word", "words"),
+	imageCount: plural("image", "images"),
+	uploading: "Uploading {name}...",
+	uploadFailed: "Image upload failed",
+	valueMissing: "Please fill out this field."
+});
+/** Names of all built-in labels. */
+const LABEL_NAMES = Object.freeze(Object.keys(DEFAULT_LABELS));
+const globalLabels = /* @__PURE__ */ new Map();
+const labelListeners = /* @__PURE__ */ new Set();
+/** Write label overrides into `target`; `null` / `""` deletes an entry. */
+function mergeLabels(target, map) {
+	for (const [name, value] of Object.entries(map)) if (value == null || value === "") target.delete(name);
+	else target.set(name, typeof value === "function" ? value : String(value));
+}
+/**
+* Override labels for every <vanilia-editor> on the page (mounted editors update).
+*
+*   setLabels({ bold: "Félkövér", wordCount: "{count} szó" });
+*/
+function setLabels(map = {}) {
+	mergeLabels(globalLabels, map);
+	for (const listener of labelListeners) listener();
+}
+/** Subscribe to global label changes; returns an unsubscribe function. */
+function onLabelsChange(listener) {
+	labelListeners.add(listener);
+	return () => {
+		labelListeners.delete(listener);
+	};
+}
+/**
+* Create a translator. Lookup order: `overrides`, global `setLabels()`, built-in English.
+* Unknown names come back unchanged.
+*/
+function createTranslator(overrides) {
+	return (name, vars = {}) => {
+		const label = overrides?.get(name) ?? globalLabels.get(name) ?? DEFAULT_LABELS[name];
+		if (label === void 0) return name;
+		if (typeof label === "function") return label(vars);
+		return label.replace(/\{(\w+)\}/g, (match, key) => key in vars ? String(vars[key]) : match);
+	};
+}
+/** English translator used when an extension is created without one. */
+const defaultTranslate = createTranslator();
+const LABEL_ATTRS = [
+	["data-ve-text", null],
+	["data-ve-title", "title"],
+	["data-ve-placeholder", "placeholder"],
+	["data-ve-aria-label", "aria-label"]
+];
+/**
+* Fill in text marked with label hooks under `root`:
+* `data-ve-text="cancel"` sets the text, `data-ve-title`, `data-ve-placeholder` and
+* `data-ve-aria-label` set those attributes. Re-run it after a label change.
+*/
+function applyLabels(root, t) {
+	for (const [hook, attr] of LABEL_ATTRS) for (const el of root.querySelectorAll(`[${hook}]`)) {
+		const text = t(el.getAttribute(hook));
+		if (attr) el.setAttribute(attr, text);
+		else el.textContent = text;
+	}
+}
 // src/extensions/image-resize.ts
 /**
 * Custom TipTap-style Image Resize, Alignment, Alt-Text & Upload extension for Squire.
@@ -4050,7 +4176,7 @@ function fileToDataUrl(file) {
 		reader.readAsDataURL(file);
 	});
 }
-function createImageResizeExtension({ squire, surface, overlayHost, editorToolbar, onChange, onSelectChange, getUploadHandler, onStatus, renderIcon = icon }) {
+function createImageResizeExtension({ squire, surface, overlayHost, editorToolbar, onChange, onSelectChange, getUploadHandler, onStatus, renderIcon = icon, t = defaultTranslate }) {
 	if (squire._imageResizer && typeof squire._imageResizer.destroy === "function") squire._imageResizer.destroy();
 	let selectedImg = null;
 	let dragState = null;
@@ -4069,7 +4195,7 @@ function createImageResizeExtension({ squire, surface, overlayHost, editorToolba
 		h.className = `ve-img-handle ve-img-handle--${pos}`;
 		h.dataset.handle = pos;
 		h.style.cursor = cursor;
-		h.setAttribute("aria-label", `Resize image (${pos})`);
+		h.setAttribute("aria-label", t("resizeImage", { handle: pos }));
 		h.addEventListener("pointerdown", onHandlePointerDown);
 		h.addEventListener("touchstart", preventTouchScroll, { passive: false });
 		box.appendChild(h);
@@ -4079,16 +4205,16 @@ function createImageResizeExtension({ squire, surface, overlayHost, editorToolba
 	toolbar.className = "ve-popover ve-img-toolbar";
 	toolbar.setAttribute("popover", "manual");
 	toolbar.setAttribute("role", "toolbar");
-	toolbar.setAttribute("aria-label", "Image options");
+	toolbar.setAttribute("aria-label", t("imageOptions"));
 	overlayHost.appendChild(toolbar);
 	function renderToolbar() {
 		if (!selectedImg) return;
 		if (altEditing) {
 			toolbar.innerHTML = `
         <form class="ve-img-alt-form">
-          <input type="text" class="ve-input ve-input--sm" name="alt" placeholder="Describe this image..." value="${escapeAttr$1(selectedImg.getAttribute("alt") || "")}" />
-          <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary" title="Save alt text">${renderIcon("check", 14)}</button>
-          <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="Cancel">${renderIcon("x", 14)}</button>
+          <input type="text" class="ve-input ve-input--sm" name="alt" placeholder="${escapeAttr$1(t("altInputPlaceholder"))}" value="${escapeAttr$1(selectedImg.getAttribute("alt") || "")}" />
+          <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary" title="${escapeAttr$1(t("saveAlt"))}">${renderIcon("check", 14)}</button>
+          <button type="button" class="ve-btn ve-btn--sm" data-action="cancel-alt" title="${escapeAttr$1(t("cancel"))}">${renderIcon("x", 14)}</button>
         </form>
       `;
 			const form = toolbar.querySelector("form");
@@ -4116,20 +4242,20 @@ function createImageResizeExtension({ squire, surface, overlayHost, editorToolba
 		const currentAlign = selectedImg.getAttribute("data-align") || inferAlign(selectedImg);
 		const currentStyleWidth = selectedImg.style.width || "";
 		toolbar.innerHTML = `
-      <div class="ve-btn-group" role="group" aria-label="Image width">
+      <div class="ve-btn-group" role="group" aria-label="${escapeAttr$1(t("imageWidth"))}">
         ${WIDTH_PRESETS.map((w) => `
-          <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${currentStyleWidth === w ? "is-active" : ""}" data-width="${w}" title="Width ${w}">${w}</button>
+          <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${currentStyleWidth === w ? "is-active" : ""}" data-width="${w}" title="${escapeAttr$1(t("widthPreset", { width: w }))}">${w}</button>
         `).join("")}
       </div>
       <span class="ve-sep"></span>
-      <div class="ve-btn-group" role="group" aria-label="Image alignment">
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "left" ? "is-active" : ""}" data-align="left" title="Align left">${renderIcon("alignLeft", 14)}</button>
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "center" ? "is-active" : ""}" data-align="center" title="Align center">${renderIcon("alignCenter", 14)}</button>
-        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "right" ? "is-active" : ""}" data-align="right" title="Align right">${renderIcon("alignRight", 14)}</button>
+      <div class="ve-btn-group" role="group" aria-label="${escapeAttr$1(t("imageAlignment"))}">
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "left" ? "is-active" : ""}" data-align="left" title="${escapeAttr$1(t("alignLeft"))}">${renderIcon("alignLeft", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "center" ? "is-active" : ""}" data-align="center" title="${escapeAttr$1(t("alignCenter"))}">${renderIcon("alignCenter", 14)}</button>
+        <button type="button" class="ve-btn ve-btn--sm ${currentAlign === "right" ? "is-active" : ""}" data-align="right" title="${escapeAttr$1(t("alignRight"))}">${renderIcon("alignRight", 14)}</button>
       </div>
       <span class="ve-sep"></span>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${selectedImg.getAttribute("alt") ? "is-active" : ""}" data-action="edit-alt" title="Edit alt text">Alt</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--danger" data-action="delete" title="Delete image">${renderIcon("trash", 14)}</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text ${selectedImg.getAttribute("alt") ? "is-active" : ""}" data-action="edit-alt" title="${escapeAttr$1(t("editAlt"))}">${escapeAttr$1(t("altButton"))}</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--danger" data-action="delete" title="${escapeAttr$1(t("deleteImage"))}">${renderIcon("trash", 14)}</button>
     `;
 	}
 	toolbar.addEventListener("mousedown", (e) => {
@@ -4335,7 +4461,11 @@ function createImageResizeExtension({ squire, surface, overlayHost, editorToolba
 	}
 	function updateBadge(w, h, maxWidth) {
 		const pct = Math.min(100, Math.round(w / maxWidth * 100));
-		dimBadge.textContent = `${Math.round(w)} × ${Math.round(h)} px · ${pct}%`;
+		dimBadge.textContent = t("imageSize", {
+			width: Math.round(w),
+			height: Math.round(h),
+			percent: pct
+		});
 	}
 	function onSurfaceClick(e) {
 		const img = e.target.closest("img");
@@ -4375,7 +4505,7 @@ function createImageResizeExtension({ squire, surface, overlayHost, editorToolba
 	}
 	async function insertImageFile(file) {
 		if (!file || !file.type.startsWith("image/")) return null;
-		onStatus?.(`Uploading ${file.name || "image"}...`);
+		onStatus?.(t("uploading", { name: file.name || "image" }));
 		try {
 			const uploader = getUploadHandler?.();
 			const src = uploader ? await uploader(file) : await fileToDataUrl(file);
@@ -4394,7 +4524,7 @@ function createImageResizeExtension({ squire, surface, overlayHost, editorToolba
 			}
 			return img;
 		} catch (err) {
-			onStatus?.(err instanceof Error && err.message || "Image upload failed");
+			onStatus?.(err instanceof Error && err.message || t("uploadFailed"));
 			setTimeout(() => onStatus?.(""), 3e3);
 			return null;
 		}
@@ -4494,7 +4624,13 @@ function escapeAttr$1(str) {
 */
 const SUPPORTS_ANCHOR = typeof CSS !== "undefined" && CSS.supports("anchor-name: --a");
 let anchorCounter = 0;
-function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, onOpenLink, isImageSelected, renderIcon = icon }) {
+/** Commands that open a popover or panel: the menu closes instead of following the selection. */
+const OPENS_UI = /* @__PURE__ */ new Set([
+	"link",
+	"image",
+	"find"
+]);
+function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, onOpenLink, isImageSelected, renderIcon = icon, label = "Text formatting", renderButtons, runCommand, syncButtons }) {
 	const anchorName = `--ve-sel-anchor-${++anchorCounter}`;
 	const anchor = document.createElement("div");
 	anchor.className = "ve-virtual-anchor";
@@ -4504,9 +4640,9 @@ function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, on
 	menu.className = "ve-popover ve-bubble-menu";
 	menu.setAttribute("popover", "manual");
 	menu.setAttribute("role", "toolbar");
-	menu.setAttribute("aria-label", "Text formatting");
+	menu.setAttribute("aria-label", label);
 	if (SUPPORTS_ANCHOR) menu.style.setProperty("position-anchor", anchorName);
-	menu.innerHTML = `
+	const defaultButtons = () => `
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="bold" title="Bold (Ctrl+B)">${renderIcon("bold", 14)}</button>
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="italic" title="Italic (Ctrl+I)">${renderIcon("italic", 14)}</button>
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="underline" title="Underline (Ctrl+U)">${renderIcon("underline", 14)}</button>
@@ -4515,6 +4651,14 @@ function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, on
     <span class="ve-sep"></span>
     <button type="button" class="ve-btn ve-btn--sm" data-cmd="link" title="Link (Ctrl+K)">${renderIcon("link", 14)}</button>
   `;
+	let empty = false;
+	function refresh() {
+		const html = (renderButtons ?? defaultButtons)().trim();
+		empty = !html;
+		menu.innerHTML = html;
+		if (empty) hide();
+	}
+	refresh();
 	overlayHost.appendChild(menu);
 	let visible = false;
 	let rafId = 0;
@@ -4522,19 +4666,25 @@ function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, on
 		e.preventDefault();
 	});
 	menu.addEventListener("click", (e) => {
-		const cmd = e.target.closest("button[data-cmd]")?.dataset.cmd;
-		if (!cmd) return;
-		if (cmd === "link") {
-			hide();
-			onOpenLink?.();
-			return;
+		const btn = e.target.closest("button[data-cmd]");
+		const cmd = btn?.dataset.cmd;
+		if (!cmd || btn?.disabled) return;
+		if (OPENS_UI.has(cmd)) hide();
+		if (runCommand) runCommand(cmd);
+		else if (cmd === "link") onOpenLink?.();
+		else {
+			execCommand(squire, cmd);
+			onCommand?.();
 		}
-		execCommand(squire, cmd);
+		if (OPENS_UI.has(cmd)) return;
 		syncActive();
-		onCommand?.();
 		scheduleUpdate();
 	});
 	function syncActive() {
+		if (syncButtons) {
+			syncButtons(menu);
+			return;
+		}
 		const active = getActiveState(squire);
 		for (const btn of menu.querySelectorAll("button[data-cmd]")) {
 			const isOn = Boolean(active[btn.dataset.cmd]);
@@ -4563,7 +4713,7 @@ function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, on
 		}
 	}
 	function update() {
-		if (isImageSelected?.()) {
+		if (empty || isImageSelected?.()) {
 			hide();
 			return;
 		}
@@ -4618,6 +4768,10 @@ function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, on
 		name: "bubbleMenu",
 		hide,
 		update: scheduleUpdate,
+		refresh() {
+			refresh();
+			if (visible) syncActive();
+		},
 		destroy() {
 			cancelAnimationFrame(rafId);
 			hide();
@@ -4637,26 +4791,32 @@ function createBubbleMenuExtension({ squire, surface, overlayHost, onCommand, on
 * Highlights matches directly in the browser paint layer without mutating `contenteditable`.
 */
 const SUPPORTS_HIGHLIGHTS = typeof CSS !== "undefined" && "highlights" in CSS && typeof Highlight !== "undefined";
-function createFindReplaceExtension({ surface, barSlot, squire, onChange, renderIcon = icon }) {
+function createFindReplaceExtension({ surface, barSlot, squire, onChange, renderIcon = icon, t = defaultTranslate }) {
 	const bar = document.createElement("div");
 	bar.className = "ve-find-bar";
 	bar.hidden = true;
 	bar.innerHTML = `
     <div class="ve-find-row">
-      <input type="search" class="ve-input ve-input--sm" data-find-input placeholder="Find in document..." aria-label="Find text" />
-      <span class="ve-find-count" data-find-count>0 / 0</span>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="prev" title="Previous match">↑</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="next" title="Next match">↓</button>
-      <input type="text" class="ve-input ve-input--sm" data-replace-input placeholder="Replace with..." aria-label="Replace text" />
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace">Replace</button>
-      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace-all">All</button>
-      <button type="button" class="ve-btn ve-btn--sm" data-action="close" title="Close (Esc)">${renderIcon("x", 14)}</button>
+      <input type="search" class="ve-input ve-input--sm" data-find-input data-ve-placeholder="findPlaceholder" data-ve-aria-label="findLabel" />
+      <span class="ve-find-count" data-find-count></span>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="prev" data-ve-title="previousMatch" data-ve-aria-label="previousMatch">↑</button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="next" data-ve-title="nextMatch" data-ve-aria-label="nextMatch">↓</button>
+      <input type="text" class="ve-input ve-input--sm" data-replace-input data-ve-placeholder="replacePlaceholder" data-ve-aria-label="replaceLabel" />
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace" data-ve-text="replace"></button>
+      <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-action="replace-all" data-ve-text="replaceAll"></button>
+      <button type="button" class="ve-btn ve-btn--sm" data-action="close" data-ve-title="close" data-ve-aria-label="close">${renderIcon("x", 14)}</button>
     </div>
   `;
+	applyLabels(bar, t);
 	barSlot.appendChild(bar);
 	const findInput = bar.querySelector("[data-find-input]");
 	const replaceInput = bar.querySelector("[data-replace-input]");
 	const countEl = bar.querySelector("[data-find-count]");
+	const zeroCount = () => t("matchCount", {
+		current: 0,
+		total: 0
+	});
+	countEl.textContent = zeroCount();
 	let matches = [];
 	let activeIndex = -1;
 	function clearHighlights() {
@@ -4670,7 +4830,7 @@ function createFindReplaceExtension({ surface, barSlot, squire, onChange, render
 		const query = findInput.value;
 		if (!query) {
 			activeIndex = -1;
-			countEl.textContent = "0 / 0";
+			countEl.textContent = zeroCount();
 			return;
 		}
 		const needle = query.toLowerCase();
@@ -4692,7 +4852,10 @@ function createFindReplaceExtension({ surface, barSlot, squire, onChange, render
 		paintHighlights();
 	}
 	function paintHighlights() {
-		countEl.textContent = matches.length ? `${activeIndex + 1} / ${matches.length}` : "0 / 0";
+		countEl.textContent = matches.length ? t("matchCount", {
+			current: activeIndex + 1,
+			total: matches.length
+		}) : zeroCount();
 		if (!SUPPORTS_HIGHLIGHTS || matches.length === 0) return;
 		const all = new Highlight(...matches);
 		CSS.highlights.set("ve-find", all);
@@ -4807,6 +4970,253 @@ function createFindReplaceExtension({ surface, barSlot, squire, onChange, render
 		}
 	};
 }
+// src/toolbar.ts
+const BUILTIN_BUTTONS = Object.freeze({
+	bold: {
+		icon: "bold",
+		label: "bold",
+		shortcut: "Mod+B"
+	},
+	italic: {
+		icon: "italic",
+		label: "italic",
+		shortcut: "Mod+I"
+	},
+	underline: {
+		icon: "underline",
+		label: "underline",
+		shortcut: "Mod+U"
+	},
+	strike: {
+		icon: "strike",
+		label: "strike",
+		shortcut: "Mod+Shift+X"
+	},
+	code: {
+		icon: "code",
+		label: "code"
+	},
+	paragraph: {
+		icon: "paragraph",
+		label: "paragraph"
+	},
+	h1: {
+		icon: "h1",
+		label: "h1"
+	},
+	h2: {
+		icon: "h2",
+		label: "h2"
+	},
+	h3: {
+		icon: "h3",
+		label: "h3"
+	},
+	bulletList: {
+		icon: "bulletList",
+		label: "bulletList"
+	},
+	orderedList: {
+		icon: "orderedList",
+		label: "orderedList"
+	},
+	blockquote: {
+		icon: "quote",
+		label: "blockquote"
+	},
+	hr: {
+		icon: "hr",
+		label: "hr"
+	},
+	alignLeft: {
+		icon: "alignLeft",
+		label: "alignLeft"
+	},
+	alignCenter: {
+		icon: "alignCenter",
+		label: "alignCenter"
+	},
+	alignRight: {
+		icon: "alignRight",
+		label: "alignRight"
+	},
+	link: {
+		icon: "link",
+		label: "link",
+		shortcut: "Mod+K"
+	},
+	image: {
+		icon: "image",
+		label: "image"
+	},
+	clearFormatting: {
+		icon: "clear",
+		label: "clearFormatting"
+	},
+	undo: {
+		icon: "undo",
+		label: "undo",
+		shortcut: "Mod+Z"
+	},
+	redo: {
+		icon: "redo",
+		label: "redo",
+		shortcut: "Mod+Shift+Z"
+	},
+	find: {
+		icon: "search",
+		label: "find",
+		shortcut: "Mod+F"
+	}
+});
+/** Names of all built-in toolbar buttons. */
+const BUTTON_NAMES = Object.freeze(Object.keys(BUILTIN_BUTTONS));
+/** The default toolbar layout. */
+const DEFAULT_TOOLBAR = Object.freeze(parseItems("bold italic underline strike code | paragraph h1 h2 h3 | bulletList orderedList blockquote hr | alignLeft alignCenter alignRight | link image clearFormatting | undo redo find"));
+/** The default selection (bubble) menu layout. */
+const DEFAULT_BUBBLE_MENU = Object.freeze(parseItems("bold italic underline strike code | link"));
+/** Split a layout string (`"bold italic | link"`, commas allowed) into items. */
+function parseItems(layout) {
+	return layout.replace(/\|/g, " | ").split(/[\s,]+/).filter(Boolean);
+}
+/** Normalize a layout given as a string or an array. `null` means the default layout. */
+function toItems(layout) {
+	if (layout == null) return null;
+	if (typeof layout === "string") {
+		const trimmed = layout.trim();
+		if (trimmed === "" || trimmed === "default") return null;
+		if (trimmed === "none") return [];
+		return parseItems(trimmed);
+	}
+	return layout.flatMap((item) => parseItems(String(item)));
+}
+const globalButtons = /* @__PURE__ */ new Map();
+const buttonListeners = /* @__PURE__ */ new Set();
+/**
+* Register a custom button for every <vanilia-editor> on the page. Editors with
+* the default layout show it in a group at the end of the toolbar; editors with a
+* custom `toolbar` layout show it where its name appears.
+*/
+function defineButton(button) {
+	globalButtons.set(validateButton(button).name, button);
+	for (const listener of buttonListeners) listener();
+}
+/** Remove a button registered with `defineButton()`. */
+function undefineButton(name) {
+	if (globalButtons.delete(name)) for (const listener of buttonListeners) listener();
+}
+/** Buttons registered with `defineButton()`. */
+function getDefinedButtons() {
+	return globalButtons;
+}
+/** Subscribe to `defineButton()` / `undefineButton()`; returns an unsubscribe function. */
+function onButtonsChange(listener) {
+	buttonListeners.add(listener);
+	return () => {
+		buttonListeners.delete(listener);
+	};
+}
+function validateButton(button) {
+	if (!button || typeof button.name !== "string" || !/^[\w-]+$/.test(button.name)) throw new TypeError("Toolbar button needs a name made of letters, digits, _ or -");
+	if (button.name in BUILTIN_BUTTONS) throw new TypeError(`"${button.name}" is a built-in button`);
+	if (typeof button.run !== "function") throw new TypeError(`Toolbar button "${button.name}" needs a run() function`);
+	return button;
+}
+const IS_MAC$1 = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || "");
+/** Format `"Mod+Shift+X"` for the current platform: `⇧⌘X` on macOS, `Ctrl+Shift+X` elsewhere. */
+function formatShortcut(shortcut) {
+	const parts = shortcut.split("+");
+	if (!IS_MAC$1) return parts.map((p) => p === "Mod" ? "Ctrl" : p).join("+");
+	const symbols = {
+		Mod: "⌘",
+		Shift: "⇧",
+		Alt: "⌥",
+		Ctrl: "⌃"
+	};
+	return parts.slice(0, -1).sort((a, b) => a === "Shift" ? -1 : b === "Shift" ? 1 : 0).map((p) => symbols[p] ?? p).join("") + parts[parts.length - 1];
+}
+/** `aria-keyshortcuts` value for `"Mod+B"`. */
+function ariaShortcut(shortcut) {
+	return shortcut.replace("Mod", IS_MAC$1 ? "Meta" : "Control");
+}
+// src/theme.ts
+/**
+* Typed access to the `--ve-*` CSS custom properties. CSS stays the source of
+* truth: `setTheme()` and `editor.setTheme()` only write those properties.
+*/
+/** Theme tokens, camelCased: `accentContrast` is `--ve-accent-contrast`. */
+const THEME_TOKENS = Object.freeze([
+	"accent",
+	"accentContrast",
+	"accentSoft",
+	"accentRing",
+	"accentBorder",
+	"accentHover",
+	"danger",
+	"dangerSoft",
+	"bg",
+	"surfaceBg",
+	"chromeBg",
+	"popoverBg",
+	"hoverBg",
+	"codeBg",
+	"shadow",
+	"border",
+	"borderStrong",
+	"text",
+	"textMuted",
+	"radius",
+	"radiusSm",
+	"minHeight",
+	"maxHeight",
+	"paddingX",
+	"paddingY",
+	"fontSize",
+	"lineHeight",
+	"fontSans",
+	"fontMono",
+	"highlightBg",
+	"highlightActiveBg",
+	"highlightActiveText",
+	"iconSize",
+	"iconSizeSm",
+	"iconStroke"
+]);
+const TOKEN_SET = new Set(THEME_TOKENS);
+/** The CSS custom property of a token: `tokenVar("accentSoft")` is `"--ve-accent-soft"`. */
+function tokenVar(token) {
+	return `--ve-${token.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+}
+/** Set or remove token properties on an element's inline style. */
+function applyTokens(style, tokens) {
+	for (const [token, value] of Object.entries(tokens)) {
+		if (!TOKEN_SET.has(token)) {
+			console.warn(`[vanilia-editor] unknown theme token "${token}"`);
+			continue;
+		}
+		const prop = tokenVar(token);
+		if (value == null || value === "") style.removeProperty(prop);
+		else style.setProperty(prop, String(value));
+	}
+}
+let globalRule = null;
+/**
+* Set tokens for every editor on the page. Writes one unlayered `:root` rule, so it
+* beats the built-in defaults but loses to per-editor CSS and `editor.setTheme()`.
+*
+*   setTheme({ accent: "#e11d48", radius: "8px" });
+*/
+function setTheme(tokens = {}) {
+	if (typeof document === "undefined") return;
+	if (!globalRule) {
+		const style = document.createElement("style");
+		style.dataset.vaniliaTheme = "";
+		style.textContent = ":root {}";
+		document.head.append(style);
+		globalRule = style.sheet.cssRules[0];
+	}
+	applyTokens(globalRule.style, tokens);
+}
 // src/vanilia-editor.ts
 /**
 * <vanilia-editor> — Form-Associated Custom Element (ElementInternals)
@@ -4820,9 +5230,10 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		"disabled",
 		"required",
 		"upload-url",
-		"toolbar"
+		"toolbar",
+		"bubble-menu"
 	];
-	/** Override icons for every editor on the page (see `setIcons` in icons.js). */
+	/** Override icons for every editor on the page (same as the `setIcons` export). */
 	static setIcons(map) {
 		setIcons(map);
 	}
@@ -4830,9 +5241,40 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	static get iconNames() {
 		return ICON_NAMES;
 	}
+	/** Override labels for every editor on the page (same as the `setLabels` export). */
+	static setLabels(map) {
+		setLabels(map);
+	}
+	/** Names of all labels. */
+	static get labelNames() {
+		return LABEL_NAMES;
+	}
+	/** Register a custom button for every editor on the page (same as the `defineButton` export). */
+	static defineButton(button) {
+		defineButton(button);
+	}
+	/** Remove a button registered with `defineButton()`. */
+	static undefineButton(name) {
+		undefineButton(name);
+	}
+	/** Names of the built-in toolbar buttons. */
+	static get buttonNames() {
+		return BUTTON_NAMES;
+	}
+	/** Set theme tokens for every editor on the page (same as the `setTheme` export). */
+	static setTheme(tokens) {
+		setTheme(tokens);
+	}
+	/** Names of all theme tokens. */
+	static get themeTokens() {
+		return THEME_TOKENS;
+	}
 	#iconOverrides = /* @__PURE__ */ new Map();
-	#unsubscribeIcons = null;
 	#icon = (name, size) => icon(name, size, this.#iconOverrides);
+	#labelOverrides = /* @__PURE__ */ new Map();
+	#t = createTranslator(this.#labelOverrides);
+	#buttons = /* @__PURE__ */ new Map();
+	#unsubscribers = [];
 	#internals;
 	#squire = null;
 	#extensions = [];
@@ -4879,6 +5321,36 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		if (str === this.getHTML()) return;
 		this.setHTML(str);
 	}
+	/**
+	* Toolbar layout, reflected to the `toolbar` attribute. Reads back the layout in use;
+	* set a string (`"bold italic | link"`), an array, `"none"`, or `null` for the default.
+	*/
+	get toolbar() {
+		return this.#toolbarItems();
+	}
+	set toolbar(layout) {
+		this.#reflectLayout("toolbar", layout);
+	}
+	/** Selection (bubble) menu layout, reflected to the `bubble-menu` attribute. Same values as `toolbar`. */
+	get bubbleMenu() {
+		return this.#bubbleItems();
+	}
+	set bubbleMenu(layout) {
+		this.#reflectLayout("bubble-menu", layout);
+	}
+	/** Color scheme, reflected to the `theme` attribute: `"light"`, `"dark"` or `"auto"` (follow the page). */
+	get theme() {
+		const value = this.getAttribute("theme");
+		return value === "light" || value === "dark" ? value : "auto";
+	}
+	set theme(scheme) {
+		if (scheme === "light" || scheme === "dark") this.setAttribute("theme", scheme);
+		else this.removeAttribute("theme");
+	}
+	/** The underlying Squire instance (advanced; `null` until the editor is connected). */
+	get squire() {
+		return this.#squire;
+	}
 	get form() {
 		return this.#internals.form;
 	}
@@ -4904,6 +5376,14 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			if (name) this.#iconOverrides.set(name, tpl.innerHTML.trim());
 			tpl.remove();
 		}
+		for (const tpl of this.querySelectorAll(":scope > template[data-ve-labels]")) {
+			try {
+				mergeLabels(this.#labelOverrides, JSON.parse(tpl.content.textContent || "{}"));
+			} catch (err) {
+				console.error("[vanilia-editor] invalid JSON in <template data-ve-labels>", err);
+			}
+			tpl.remove();
+		}
 		if (this.#pendingValue !== null) {
 			this.#initialHTML = this.#pendingValue;
 			this.#pendingValue = null;
@@ -4915,7 +5395,12 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		this.#buildDOM();
 		this.#initEditor();
 		this.#mounted = true;
-		this.#unsubscribeIcons = onIconsChange(() => this.#refreshIcons());
+		this.#unsubscribers = [
+			onIconsChange(() => this.#refreshIcons()),
+			onLabelsChange(() => this.#refreshLabels()),
+			onButtonsChange(() => this.#renderButtons())
+		];
+		this.#bindShortcuts();
 		if (this.#initialHTML) this.setHTML(this.#initialHTML, { silent: true });
 		this.#applyDisabled(this.hasAttribute("disabled"));
 		this.#syncFormState();
@@ -4927,10 +5412,10 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	}
 	attributeChangedCallback(name, _oldVal, newVal) {
 		if (!this.#mounted) return;
-		if (name === "placeholder" && this.#surface) this.#surface.dataset.placeholder = newVal || "Start writing...";
+		if (name === "placeholder") this.#syncPlaceholder();
 		else if (name === "disabled") this.#applyDisabled(newVal !== null);
 		else if (name === "required") this.#syncFormState();
-		else if (name === "toolbar" && this.#toolbar) this.#toolbar.hidden = newVal === "none";
+		else if (name === "toolbar" || name === "bubble-menu") this.#renderButtons();
 	}
 	formDisabledCallback(disabled) {
 		this.#applyDisabled(disabled);
@@ -4965,8 +5450,19 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		if (silent) this.#emitStateEvent();
 		else this.#emitUpdate();
 	}
+	/**
+	* Run a command, or the custom button of that name. `arg` is the URL for `makeLink`.
+	*/
 	exec(command, arg) {
 		if (!this.#squire || this.hasAttribute("disabled")) return;
+		const custom = this.#customButton(command);
+		if (custom) {
+			if (this.#safeCall(custom, "isEnabled") === false) return;
+			custom.run(this);
+			this.#syncToolbar();
+			this.#emitStateEvent();
+			return;
+		}
 		if (command === "link") {
 			this.#openLinkPopover();
 			return;
@@ -5006,8 +5502,49 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		else this.#iconOverrides.set(name, String(markup));
 		this.#refreshIcons();
 	}
+	/**
+	* Override labels for this editor only. Pass `null` for a name to fall back to the
+	* global `setLabels()` registry / built-in English text.
+	*/
+	setLabels(map = {}) {
+		mergeLabels(this.#labelOverrides, map);
+		this.#refreshLabels();
+	}
+	/** Set theme tokens on this editor (inline `--ve-*` properties). `null` removes one. */
+	setTheme(tokens = {}) {
+		applyTokens(this.style, tokens);
+	}
+	/**
+	* Add a custom button to this editor. With the default layout it appears in a group
+	* at the end of the toolbar; with a custom `toolbar` layout, where its name appears.
+	* Adding a button with an existing name replaces it.
+	*/
+	addButton(button) {
+		this.#buttons.set(validateButton(button).name, button);
+		this.#renderButtons();
+	}
+	/** Remove a button added with `addButton()`. */
+	removeButton(name) {
+		if (this.#buttons.delete(name)) this.#renderButtons();
+	}
 	insertImage(url, alt = "") {
 		return this.#imageResize?.insertImageUrl(url, alt) ?? null;
+	}
+	/** Insert HTML at the cursor (sanitized like pasted content), replacing the selection. */
+	insertHTML(html) {
+		if (!this.#squire) return;
+		this.#squire.insertHTML(html);
+		this.#afterChange();
+	}
+	/** Insert plain text at the cursor, replacing the selection. */
+	insertText(text) {
+		if (!this.#squire) return;
+		this.#squire.insertPlainText(text, false);
+		this.#afterChange();
+	}
+	/** The selected text (`""` when the selection is collapsed). */
+	getSelectedText() {
+		return this.#squire?.getSelectedText() ?? "";
 	}
 	focus() {
 		this.#squire?.focus();
@@ -5018,47 +5555,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		root.className = "ve-root";
 		root.setAttribute("data-ignore", "");
 		root.innerHTML = `
-      <div class="ve-toolbar" role="toolbar" aria-label="Formatting toolbar">
-        <div class="ve-btn-group">
-          <button type="button" class="ve-btn" data-cmd="bold" title="Bold (Ctrl+B)">${this.#icon("bold")}</button>
-          <button type="button" class="ve-btn" data-cmd="italic" title="Italic (Ctrl+I)">${this.#icon("italic")}</button>
-          <button type="button" class="ve-btn" data-cmd="underline" title="Underline (Ctrl+U)">${this.#icon("underline")}</button>
-          <button type="button" class="ve-btn" data-cmd="strike" title="Strikethrough (Ctrl+Shift+X)">${this.#icon("strike")}</button>
-          <button type="button" class="ve-btn" data-cmd="code" title="Code / Code Block">${this.#icon("code")}</button>
-        </div>
-        <span class="ve-sep"></span>
-        <div class="ve-btn-group">
-          <button type="button" class="ve-btn" data-cmd="paragraph" title="Paragraph">${this.#icon("paragraph")}</button>
-          <button type="button" class="ve-btn" data-cmd="h1" title="Heading 1">${this.#icon("h1")}</button>
-          <button type="button" class="ve-btn" data-cmd="h2" title="Heading 2">${this.#icon("h2")}</button>
-          <button type="button" class="ve-btn" data-cmd="h3" title="Heading 3">${this.#icon("h3")}</button>
-        </div>
-        <span class="ve-sep"></span>
-        <div class="ve-btn-group">
-          <button type="button" class="ve-btn" data-cmd="bulletList" title="Bullet list">${this.#icon("bulletList")}</button>
-          <button type="button" class="ve-btn" data-cmd="orderedList" title="Numbered list">${this.#icon("orderedList")}</button>
-          <button type="button" class="ve-btn" data-cmd="blockquote" title="Blockquote">${this.#icon("quote")}</button>
-          <button type="button" class="ve-btn" data-cmd="hr" title="Horizontal rule">${this.#icon("hr")}</button>
-        </div>
-        <span class="ve-sep"></span>
-        <div class="ve-btn-group">
-          <button type="button" class="ve-btn" data-cmd="alignLeft" title="Align left">${this.#icon("alignLeft")}</button>
-          <button type="button" class="ve-btn" data-cmd="alignCenter" title="Align center">${this.#icon("alignCenter")}</button>
-          <button type="button" class="ve-btn" data-cmd="alignRight" title="Align right">${this.#icon("alignRight")}</button>
-        </div>
-        <span class="ve-sep"></span>
-        <div class="ve-btn-group">
-          <button type="button" class="ve-btn" data-cmd="link" title="Insert or edit link (Ctrl+K)">${this.#icon("link")}</button>
-          <button type="button" class="ve-btn" data-cmd="image" title="Insert or upload image">${this.#icon("image")}</button>
-          <button type="button" class="ve-btn" data-cmd="clearFormatting" title="Clear formatting">${this.#icon("clear")}</button>
-        </div>
-        <span class="ve-sep"></span>
-        <div class="ve-btn-group">
-          <button type="button" class="ve-btn" data-cmd="undo" title="Undo (Ctrl+Z)">${this.#icon("undo")}</button>
-          <button type="button" class="ve-btn" data-cmd="redo" title="Redo (Ctrl+Shift+Z)">${this.#icon("redo")}</button>
-          <button type="button" class="ve-btn" data-cmd="find" title="Find & Replace (Ctrl+F)">${this.#icon("search")}</button>
-        </div>
-      </div>
+      <div class="ve-toolbar" role="toolbar" data-ve-aria-label="toolbar"></div>
 
       <div class="ve-find-slot"></div>
 
@@ -5067,14 +5564,13 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
           class="ve-surface"
           role="textbox"
           aria-multiline="true"
-          aria-label="Rich text editor"
-          data-placeholder="${escapeAttr(this.getAttribute("placeholder") || "Start writing, paste an image, or drop a photo here...")}"
+          data-ve-aria-label="editor"
         ></div>
       </div>
 
       <div class="ve-footer">
         <span class="ve-status" data-status></span>
-        <span class="ve-metrics" data-metrics>0 words</span>
+        <span class="ve-metrics" data-metrics></span>
       </div>
 
       <input type="file" accept="image/*" hidden data-file-input />
@@ -5082,14 +5578,14 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
       <div class="ve-popover ve-form-popover" popover="auto" data-link-popover>
         <form class="ve-popover-form" data-link-form>
           <label class="ve-field">
-            <span>Link URL</span>
-            <input type="url" class="ve-input" name="href" placeholder="https://example.com" required />
+            <span data-ve-text="linkUrl"></span>
+            <input type="url" class="ve-input" name="href" data-ve-placeholder="linkUrlPlaceholder" required />
           </label>
           <div class="ve-popover-actions">
-            <button type="button" class="ve-btn ve-btn--sm ve-btn--danger ve-btn--text" data-remove-link hidden>Remove</button>
+            <button type="button" class="ve-btn ve-btn--sm ve-btn--danger ve-btn--text" data-remove-link data-ve-text="removeLink" hidden></button>
             <span class="ve-spacer"></span>
-            <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-close-popover>Cancel</button>
-            <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary ve-btn--text">Apply</button>
+            <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-close-popover data-ve-text="cancel"></button>
+            <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary ve-btn--text" data-ve-text="apply"></button>
           </div>
         </form>
       </div>
@@ -5099,37 +5595,38 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
           <div class="ve-upload-row">
             <button type="button" class="ve-btn ve-btn--text ve-btn--upload" data-pick-file>
               ${this.#icon("upload", 15)}
-              <span>Choose image file...</span>
+              <span data-ve-text="chooseImageFile"></span>
             </button>
           </div>
-          <div class="ve-divider-label"><span>or paste URL</span></div>
+          <div class="ve-divider-label"><span data-ve-text="orPasteUrl"></span></div>
           <label class="ve-field">
-            <span>Image URL</span>
-            <input type="url" class="ve-input" name="src" placeholder="https://..." required />
+            <span data-ve-text="imageUrl"></span>
+            <input type="url" class="ve-input" name="src" data-ve-placeholder="imageUrlPlaceholder" required />
           </label>
           <label class="ve-field">
-            <span>Alt text (optional)</span>
-            <input type="text" class="ve-input" name="alt" placeholder="Describe the image" />
+            <span data-ve-text="altText"></span>
+            <input type="text" class="ve-input" name="alt" data-ve-placeholder="altTextPlaceholder" />
           </label>
           <div class="ve-popover-actions">
             <span class="ve-spacer"></span>
-            <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-close-popover>Cancel</button>
-            <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary ve-btn--text">Insert</button>
+            <button type="button" class="ve-btn ve-btn--sm ve-btn--text" data-close-popover data-ve-text="cancel"></button>
+            <button type="submit" class="ve-btn ve-btn--sm ve-btn--primary ve-btn--text" data-ve-text="insert"></button>
           </div>
         </form>
       </div>
     `;
 		this.appendChild(root);
-		const toolbar = root.querySelector(".ve-toolbar");
-		toolbar.hidden = this.getAttribute("toolbar") === "none";
 		this.#root = root;
-		this.#toolbar = toolbar;
+		this.#toolbar = root.querySelector(".ve-toolbar");
 		this.#surface = root.querySelector(".ve-surface");
 		this.#overlayHost = root.querySelector(".ve-stage");
 		this.#statusEl = root.querySelector("[data-status]");
 		this.#linkPopover = root.querySelector("[data-link-popover]");
 		this.#imagePopover = root.querySelector("[data-image-popover]");
 		this.#fileInput = root.querySelector("[data-file-input]");
+		applyLabels(root, this.#t);
+		this.#syncPlaceholder();
+		this.#renderToolbar();
 		this.#bindUIEvents();
 	}
 	#initEditor() {
@@ -5157,6 +5654,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			},
 			getUploadHandler: () => this.#resolveUploadHandler(),
 			renderIcon: this.#icon,
+			t: this.#t,
 			onStatus: (msg) => {
 				if (this.#statusEl) this.#statusEl.textContent = msg || "";
 			}
@@ -5168,14 +5666,19 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			onCommand: onEditorMutate,
 			onOpenLink: () => this.#openLinkPopover(),
 			isImageSelected: () => Boolean(this.#imageResize?.getSelectedImage()),
-			renderIcon: this.#icon
+			renderIcon: this.#icon,
+			label: this.#t("bubbleMenu"),
+			renderButtons: () => this.#renderItems(this.#bubbleItems(), 14),
+			runCommand: (name) => this.exec(name),
+			syncButtons: (menu) => this.#syncButtons(menu)
 		});
 		this.#findReplace = createFindReplaceExtension({
 			surface,
 			barSlot: this.#root.querySelector(".ve-find-slot"),
 			squire,
 			onChange: onEditorMutate,
-			renderIcon: this.#icon
+			renderIcon: this.#icon,
+			t: this.#t
 		});
 		this.#extensions = [
 			this.#imageResize,
@@ -5191,7 +5694,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			event.preventDefault();
 			this.#findReplace?.open();
 		});
-		squire.setKeyHandler(`${mod}-Shift-x`, (_ed, event) => {
+		for (const key of [`${mod}-Shift-x`, `${mod}-Shift-X`]) squire.setKeyHandler(key, (_ed, event) => {
 			event.preventDefault();
 			this.exec("strike");
 		});
@@ -5402,20 +5905,153 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			alignRight: activeAlign === "right"
 		};
 	}
-	#syncToolbar() {
-		if (!this.#toolbar || !this.#squire) return;
-		const active = this.#getActiveState();
-		for (const btn of this.#toolbar.querySelectorAll("button[data-cmd]")) {
+	#reflectLayout(attr, layout) {
+		if (layout == null) {
+			this.removeAttribute(attr);
+			return;
+		}
+		const value = typeof layout === "string" ? layout : layout.join(" ");
+		this.setAttribute(attr, value.trim() === "" ? "none" : value);
+	}
+	/** The toolbar layout in use: the `toolbar` attribute, or the default plus custom buttons. */
+	#toolbarItems() {
+		const explicit = toItems(this.getAttribute("toolbar"));
+		if (explicit) return explicit;
+		const custom = [.../* @__PURE__ */ new Set([...getDefinedButtons().keys(), ...this.#buttons.keys()])];
+		return custom.length ? [
+			...DEFAULT_TOOLBAR,
+			"|",
+			...custom
+		] : [...DEFAULT_TOOLBAR];
+	}
+	#bubbleItems() {
+		return toItems(this.getAttribute("bubble-menu")) ?? [...DEFAULT_BUBBLE_MENU];
+	}
+	#customButton(name) {
+		return this.#buttons.get(name) ?? getDefinedButtons().get(name);
+	}
+	/** Call a custom button's optional hook; errors are logged instead of breaking the editor. */
+	#safeCall(button, hook) {
+		try {
+			return button[hook]?.(this);
+		} catch (err) {
+			console.error(`[vanilia-editor] ${hook}() of button "${button.name}" failed`, err);
+			return;
+		}
+	}
+	/** Markup for a layout: groups of buttons split by `|`, unknown names skipped. */
+	#renderItems(items, size) {
+		const groups = [[]];
+		for (const item of items) if (item === "|") groups.push([]);
+		else {
+			const html = this.#renderButton(item, size);
+			if (html) groups[groups.length - 1].push(html);
+		}
+		return groups.filter((group) => group.length).map((group) => `<div class="ve-btn-group">${group.join("")}</div>`).join(`<span class="ve-sep"></span>`);
+	}
+	#renderButton(name, size) {
+		const small = size < 16 ? " ve-btn--sm" : "";
+		const builtin = BUILTIN_BUTTONS[name];
+		if (builtin) return this.#buttonMarkup({
+			name,
+			label: this.#t(builtin.label),
+			shortcut: builtin.shortcut,
+			iconHTML: this.#icon(builtin.icon, size),
+			className: `ve-btn${small}`
+		});
+		const custom = this.#customButton(name);
+		if (!custom) return "";
+		const iconHTML = !custom.icon ? "" : custom.icon.includes("<") ? `<span class="ve-icon ve-icon--custom" aria-hidden="true">${custom.icon}</span>` : this.#icon(custom.icon, size);
+		const text = custom.text ? `<span class="ve-btn-text">${escapeAttr(custom.text)}</span>` : "";
+		return this.#buttonMarkup({
+			name,
+			label: custom.label,
+			shortcut: custom.shortcut,
+			iconHTML: iconHTML + text,
+			className: `ve-btn${small}${custom.text ? " ve-btn--text" : ""} ve-btn--custom`
+		});
+	}
+	#buttonMarkup(b) {
+		const title = b.shortcut ? `${b.label} (${formatShortcut(b.shortcut)})` : b.label;
+		const keys = b.shortcut ? ` aria-keyshortcuts="${escapeAttr(ariaShortcut(b.shortcut))}"` : "";
+		return `<button type="button" class="${b.className}" data-cmd="${escapeAttr(b.name)}" title="${escapeAttr(title)}" aria-label="${escapeAttr(b.label)}"${keys}>${b.iconHTML}</button>`;
+	}
+	#renderToolbar() {
+		const toolbar = this.#toolbar;
+		if (!toolbar) return;
+		toolbar.innerHTML = this.#renderItems(this.#toolbarItems(), 16);
+		toolbar.hidden = !toolbar.querySelector("button");
+		this.#syncButtons(toolbar);
+	}
+	/** Re-render the toolbar and the selection menu (layout, label or button changes). */
+	#renderButtons() {
+		if (!this.#mounted) return;
+		this.#renderToolbar();
+		this.#bubbleMenu?.refresh();
+		this.#bindShortcuts();
+	}
+	#boundKeys = [];
+	/** Bind the shortcuts of the custom buttons shown in the toolbar or the selection menu. */
+	#bindShortcuts() {
+		const squire = this.#squire;
+		if (!squire) return;
+		for (const key of this.#boundKeys) squire.setKeyHandler(key, null);
+		this.#boundKeys = [];
+		const shown = /* @__PURE__ */ new Set([...this.#toolbarItems(), ...this.#bubbleItems()]);
+		for (const name of shown) {
+			const button = this.#customButton(name);
+			if (!button?.shortcut) continue;
+			for (const key of squireKeys(button.shortcut)) {
+				squire.setKeyHandler(key, (_ed, event) => {
+					event.preventDefault();
+					this.exec(name);
+				});
+				this.#boundKeys.push(key);
+			}
+		}
+	}
+	/** Pressed and disabled state of the buttons in `container`. */
+	#syncButtons(container) {
+		const editorDisabled = this.hasAttribute("disabled") || this.matches(":disabled");
+		const active = this.#squire ? this.#getActiveState() : null;
+		for (const btn of container.querySelectorAll("button[data-cmd]")) {
 			const cmd = btn.dataset.cmd ?? "";
-			if (cmd in active) {
-				const isOn = active[cmd];
+			let isOn;
+			let enabled = true;
+			const custom = cmd in BUILTIN_BUTTONS ? void 0 : this.#customButton(cmd);
+			if (custom) {
+				isOn = custom.isActive ? Boolean(this.#safeCall(custom, "isActive")) : void 0;
+				enabled = this.#safeCall(custom, "isEnabled") !== false;
+			} else if (active && cmd in active) isOn = active[cmd];
+			if (cmd === "undo") enabled = this.#canUndo;
+			if (cmd === "redo") enabled = this.#canRedo;
+			btn.disabled = editorDisabled || !enabled;
+			if (isOn !== void 0) {
 				btn.classList.toggle("is-active", isOn);
 				btn.setAttribute("aria-pressed", String(isOn));
 			}
-			if (cmd === "undo") btn.disabled = !this.#canUndo || this.hasAttribute("disabled");
-			if (cmd === "redo") btn.disabled = !this.#canRedo || this.hasAttribute("disabled");
 		}
-		const html = this.getHTML();
+	}
+	#syncPlaceholder() {
+		if (this.#surface) this.#surface.dataset.placeholder = this.getAttribute("placeholder") || this.#t("placeholder");
+	}
+	#refreshLabels() {
+		if (!this.#root) return;
+		applyLabels(this.#root, this.#t);
+		this.#syncPlaceholder();
+		this.#renderButtons();
+		this.#root.querySelector(".ve-bubble-menu")?.setAttribute("aria-label", this.#t("bubbleMenu"));
+		this.#syncToolbar();
+		this.#syncFormState();
+	}
+	#afterChange() {
+		this.#syncFormState();
+		this.#syncToolbar();
+		this.#emitUpdate();
+	}
+	#syncToolbar() {
+		if (!this.#toolbar || !this.#squire) return;
+		this.#syncButtons(this.#toolbar);
 		const text = this.getText();
 		const hasImg = Boolean(this.#surface?.querySelector("img"));
 		const isEmpty = !text && !hasImg;
@@ -5424,18 +6060,17 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		const metricsEl = this.#root?.querySelector("[data-metrics]");
 		if (metricsEl) {
 			const imgCount = this.#surface?.querySelectorAll("img").length || 0;
-			const parts = [`${words} ${words === 1 ? "word" : "words"}`];
-			if (imgCount) parts.push(`${imgCount} ${imgCount === 1 ? "image" : "images"}`);
+			const parts = [this.#t("wordCount", { count: words })];
+			if (imgCount) parts.push(this.#t("imageCount", { count: imgCount }));
 			metricsEl.textContent = parts.join(" · ");
 		}
-		return html;
 	}
 	#syncFormState() {
 		const html = this.getHTML();
 		this.#internals.setFormValue(html, html);
 		const isRequired = this.hasAttribute("required");
 		const hasContent = Boolean(this.getText() || this.#surface?.querySelector("img"));
-		if (isRequired && !hasContent) this.#internals.setValidity({ valueMissing: true }, "Please fill out this field.", this.#surface || void 0);
+		if (isRequired && !hasContent) this.#internals.setValidity({ valueMissing: true }, this.#t("valueMissing"), this.#surface || void 0);
 		else this.#internals.setValidity({});
 	}
 	#applyDisabled(disabled) {
@@ -5443,6 +6078,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		this.#surface.setAttribute("contenteditable", disabled ? "false" : "true");
 		this.#root?.classList.toggle("is-disabled", disabled);
 		for (const btn of this.#toolbar.querySelectorAll("button")) btn.disabled = disabled;
+		if (!disabled) this.#syncButtons(this.#toolbar);
 		if (disabled) this.#imageResize?.deselect();
 	}
 	#buildDetail() {
@@ -5487,13 +6123,28 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		this.#findReplace = null;
 		this.#squire?.destroy();
 		this.#squire = null;
-		this.#unsubscribeIcons?.();
-		this.#unsubscribeIcons = null;
+		for (const unsubscribe of this.#unsubscribers) unsubscribe();
+		this.#unsubscribers = [];
 		this.#mounted = false;
 	}
 };
 if (typeof customElements !== "undefined" && !customElements.get("vanilia-editor")) customElements.define("vanilia-editor", VaniliaEditorElement);
+const IS_MAC = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || "");
+/** Squire key-handler names for `"Mod+Shift+S"`: modifiers in Squire's order, both letter cases. */
+function squireKeys(shortcut) {
+	const parts = shortcut.split("+").map((p) => p.trim());
+	const key = parts.pop() ?? "";
+	const mods = new Set(parts.map((p) => p === "Mod" ? IS_MAC ? "Meta" : "Ctrl" : p));
+	const prefix = [
+		"Alt",
+		"Ctrl",
+		"Meta",
+		"Shift"
+	].filter((m) => mods.has(m)).map((m) => `${m}-`).join("");
+	const variants = key.length === 1 ? [key.toLowerCase(), key.toUpperCase()] : [key];
+	return [...new Set(variants)].map((k) => prefix + k);
+}
 function escapeAttr(str) {
 	return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-export { ICON_NAMES, VaniliaEditorElement, createBubbleMenuExtension, createFindReplaceExtension, createImageResizeExtension, formatHTML, icon, isSafeUrl, normalizeExportHTML, sanitizeToDOMFragment, setIcons };
+export { BUTTON_NAMES, DEFAULT_BUBBLE_MENU, DEFAULT_LABELS, DEFAULT_TOOLBAR, ICON_NAMES, LABEL_NAMES, THEME_TOKENS, VaniliaEditorElement, createBubbleMenuExtension, createFindReplaceExtension, createImageResizeExtension, createTranslator, defineButton, formatHTML, icon, isSafeUrl, normalizeExportHTML, sanitizeToDOMFragment, setIcons, setLabels, setTheme, tokenVar, undefineButton };

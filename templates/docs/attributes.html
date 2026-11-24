@@ -6,11 +6,24 @@
     <tbody>
       <tr><td><code>name</code></td><td>Form field name.</td></tr>
       <tr><td><code>value</code></td><td>Initial HTML (alternative to a child <code>&lt;template&gt;</code>).</td></tr>
-      <tr><td><code>placeholder</code></td><td>Text shown while the editor is empty.</td></tr>
+      <tr><td><code>placeholder</code></td><td>Text shown while the editor is empty. Overrides the <code>placeholder</code> <a href="{{.BasePath}}/docs/labels">label</a>.</td></tr>
       <tr><td><code>required</code></td><td>Fails form validation when the editor has no text or image.</td></tr>
       <tr><td><code>disabled</code></td><td>Makes the editor read-only and excludes it from submission.</td></tr>
       <tr><td><code>upload-url</code></td><td>Endpoint that receives image uploads. See <a href="{{.BasePath}}/docs/uploads">Image uploads</a>.</td></tr>
-      <tr><td><code>toolbar</code></td><td><code>"none"</code> hides the built-in toolbar. See <a href="{{.BasePath}}/docs/toolbar">Custom toolbar</a>.</td></tr>
+      <tr><td><code>toolbar</code></td><td>Toolbar layout: button names with <code>|</code> between groups (<code>"bold italic | h2 h3 | link"</code>), or <code>"none"</code> to hide it. Without it the full default toolbar is shown. See <a href="{{.BasePath}}/docs/toolbar">Toolbar</a>.</td></tr>
+      <tr><td><code>bubble-menu</code></td><td>Layout of the menu shown over selected text, same syntax. <code>"none"</code> turns it off.</td></tr>
+      <tr><td><code>theme</code></td><td><code>"light"</code> or <code>"dark"</code> pins the color scheme; <code>"auto"</code> (or no attribute) follows the page's <code>color-scheme</code>.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>Child templates configure an editor without JavaScript:</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Child</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>&lt;template&gt;</code></td><td>Initial content.</td></tr>
+      <tr><td><code>&lt;template data-ve-icon="bold"&gt;</code></td><td>Replaces one icon. See <a href="{{.BasePath}}/docs/icons">Icons</a>.</td></tr>
+      <tr><td><code>&lt;template data-ve-labels&gt;</code></td><td>Label overrides as JSON. See <a href="{{.BasePath}}/docs/labels">Labels &amp; translation</a>.</td></tr>
     </tbody>
   </table>
 </div>

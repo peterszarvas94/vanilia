@@ -1,6 +1,10 @@
 {{define "doc/commands"}}
 <h1>Commands</h1>
-<p>Pass these to <code>editor.exec()</code>:</p>
+<p>
+  Pass these to <code>editor.exec()</code>. The built-in toolbar buttons have the same names, so a name that
+  works in <code>exec()</code> also works in a <code>toolbar</code> layout (except <code>makeLink</code> and
+  <code>removeLink</code>, which have no button).
+</p>
 <div class="table-wrap">
   <table>
     <thead><tr><th>Group</th><th>Commands</th></tr></thead>
@@ -10,7 +14,26 @@
       <tr><td>Alignment</td><td><code>alignLeft</code> <code>alignCenter</code> <code>alignRight</code> (aligns the selected image when one is selected)</td></tr>
       <tr><td>Links</td><td><code>link</code> (opens the link popover), <code>makeLink</code> + URL, <code>removeLink</code></td></tr>
       <tr><td>Other</td><td><code>image</code> (opens the image popover), <code>find</code>, <code>undo</code>, <code>redo</code></td></tr>
+      <tr><td>Custom</td><td>The name of any <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a> runs its <code>run()</code>.</td></tr>
     </tbody>
   </table>
 </div>
+{{template "code" `editor.exec("h2");
+editor.exec("makeLink", "https://example.com");
+editor.exec("signature"); // a custom button`}}
+<h2 id="shortcuts">Keyboard shortcuts</h2>
+<p><kbd>Ctrl</kbd> is <kbd>⌘</kbd> on macOS.</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Keys</th><th>Command</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>I</kbd> / <kbd>U</kbd></td><td><code>bold</code> / <code>italic</code> / <code>underline</code></td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></td><td><code>strike</code></td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td><code>link</code></td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td><code>find</code></td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td><code>undo</code> / <code>redo</code></td></tr>
+    </tbody>
+  </table>
+</div>
+<p>Custom buttons can add their own with <code>shortcut</code>.</p>
 {{end}}

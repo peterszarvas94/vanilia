@@ -752,6 +752,23 @@ table {
     font-weight: 600;
   }
 
+  /* Controls in a button row sit on one line */
+  & .row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  & input[type="color"] {
+    inline-size: 36px;
+    block-size: 32px;
+    padding: 2px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    cursor: pointer;
+  }
+
   & input:not([type]),
   & input[type="text"] {
     height: 36px;
@@ -908,4 +925,14 @@ table {
       grid-column: auto;
     }
   }
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--card-border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--subtle-bg);
+  font: 600 12px / 1.4 var(--mono);
 }

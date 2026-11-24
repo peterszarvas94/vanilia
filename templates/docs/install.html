@@ -5,14 +5,22 @@
   <table>
     <thead><tr><th>File</th><th>Size (gzip)</th><th>What</th></tr></thead>
     <tbody>
-      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.js"><code>vanilia-editor.js</code></a></td><td>~44 kB</td><td>The element and its extensions, with a pinned <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a> 2.4.11 (MIT) built in. Readable, not minified.</td></tr>
+      <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.js"><code>vanilia-editor.js</code></a></td><td>~50 kB</td><td>The element and its extensions, with a pinned <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a> 2.4.11 (MIT) built in. Readable, not minified.</td></tr>
       <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.d.ts"><code>vanilia-editor.d.ts</code></a></td><td></td><td>TypeScript types (optional)</td></tr>
       <tr><td><a href="{{.BasePath}}/dist/vanilia-editor.css"><code>vanilia-editor.css</code></a></td><td>~4 kB</td><td>All styles, in cascade layers</td></tr>
     </tbody>
   </table>
 </div>
 
-<h3>Option A: link the hosted files</h3>
+<h3>Option A: npm</h3>
+{{template "code" `npm install vanilia-editor`}}
+{{template "code" `import "vanilia-editor";                     // registers <vanilia-editor>
+import "vanilia-editor/vanilia-editor.css";
+
+const editor = document.querySelector("vanilia-editor"); // typed: VaniliaEditorElement | null`}}
+<p>The package has no dependencies (Squire is bundled) and ships its types.</p>
+
+<h3>Option B: link the hosted files</h3>
 <p>The files on this site are served with CORS headers, so you can link them directly:</p>
 {{template "code" `<script type="importmap">
   {
@@ -24,7 +32,7 @@
 <link rel="stylesheet" href="https://vanilia.peterszarvas.hu/dist/vanilia-editor.css" />
 <script type="module">import "vanilia-editor";</script>`}}
 
-<h3>Option B: copy them into your project</h3>
+<h3>Option C: copy them into your project</h3>
 <p>Download the files into your static folder (for example <code>/static/vendor/</code>) and use the same snippet with local paths:</p>
 {{template "code" `curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.js
 curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.css
@@ -33,7 +41,7 @@ curl -LO https://vanilia.peterszarvas.hu/dist/vanilia-editor.d.ts  # optional, f
   The import map has to come before any module script that imports Vanilia. Put it once in your base layout.
 </div>
 
-<h3>Option C: with a bundler</h3>
+<h3>Copied files with a bundler</h3>
 <p>
   The module has no imports of its own, so a bundler needs nothing extra: import the copied files, and keep
   <code>vanilia-editor.d.ts</code> next to the module for types.
