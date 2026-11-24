@@ -1,0 +1,32 @@
+{{define "doc/styling"}}
+<h1>Styling</h1>
+<p>
+  All styles live in the cascade layers <code>ve-tokens, ve-base, ve-chrome, ve-surface, ve-popovers</code>, so
+  any unlayered CSS of yours wins. Most of the time you only set variables, globally or per editor:
+</p>
+{{template "code" `vanilia-editor {
+  --ve-accent: #e11d48;      /* hover, focus ring and active states derive from it */
+  --ve-radius: 8px;
+  --ve-min-height: 220px;
+  --ve-max-height: 520px;    /* scroll inside the editor beyond this */
+  --ve-font-sans: Inter, system-ui, sans-serif;
+}`}}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Group</th><th>Variables</th></tr></thead>
+    <tbody>
+      <tr><td>Accent</td><td><code>--ve-accent</code> <code>--ve-accent-contrast</code> <code>--ve-accent-soft</code> <code>--ve-accent-ring</code> <code>--ve-accent-border</code> <code>--ve-accent-hover</code> <code>--ve-danger</code> <code>--ve-danger-soft</code></td></tr>
+      <tr><td>Surfaces</td><td><code>--ve-bg</code> <code>--ve-surface-bg</code> <code>--ve-chrome-bg</code> <code>--ve-popover-bg</code> <code>--ve-hover-bg</code> <code>--ve-code-bg</code> <code>--ve-shadow</code></td></tr>
+      <tr><td>Lines &amp; text</td><td><code>--ve-border</code> <code>--ve-border-strong</code> <code>--ve-text</code> <code>--ve-text-muted</code></td></tr>
+      <tr><td>Size</td><td><code>--ve-radius</code> <code>--ve-radius-sm</code> <code>--ve-min-height</code> <code>--ve-max-height</code> <code>--ve-padding-x</code> <code>--ve-padding-y</code></td></tr>
+      <tr><td>Type</td><td><code>--ve-font-size</code> <code>--ve-line-height</code> <code>--ve-font-sans</code> <code>--ve-font-mono</code></td></tr>
+      <tr><td>Find</td><td><code>--ve-highlight-bg</code> <code>--ve-highlight-active-bg</code> <code>--ve-highlight-active-text</code></td></tr>
+      <tr><td>Icons</td><td><code>--ve-icon-size</code> <code>--ve-icon-size-sm</code> <code>--ve-icon-stroke</code></td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  Colors use <code>light-dark()</code>, so dark mode follows the page's <code>color-scheme</code>. See the
+  <a href="{{.BasePath}}/examples/theme">theme example</a>.
+</p>
+{{end}}

@@ -15,7 +15,7 @@ type saveSignals struct {
 }
 
 func main() {
-	mustLoadTemplates("templates/*.html")
+	mustLoadTemplates("templates")
 	mustLoadExamples("templates/examples")
 
 	basePath := normalizeBasePath(os.Getenv("BASE_PATH"))
@@ -59,8 +59,10 @@ func newServer(basePath string, store *contentStore, uploads *uploadStore) *echo
 	})
 
 	e.GET("/", pageHandler(basePath, "home", ""))
-	e.GET("/docs", pageHandler(basePath, "docs", "Docs"))
-	e.GET("/examples", pageHandler(basePath, "examples", "Examples"))
+	e.GET("/docs", redirectTo(basePath+"/docs/"+docIndex[0].Slug))
+	e.GET("/docs/:slug", docsHandler(basePath))
+	e.GET("/examples", redirectTo(basePath+"/examples/"+exampleIndex[0].Slug))
+	e.GET("/examples/:slug", examplesHandler(basePath))
 	e.GET("/demo", pageHandler(basePath, "demo", "Demo"))
 
 	e.GET("/content", func(c echo.Context) error {

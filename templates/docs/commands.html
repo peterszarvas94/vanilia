@@ -1,0 +1,16 @@
+{{define "doc/commands"}}
+<h1>Commands</h1>
+<p>Pass these to <code>editor.exec()</code>:</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Group</th><th>Commands</th></tr></thead>
+    <tbody>
+      <tr><td>Inline</td><td><code>bold</code> <code>italic</code> <code>underline</code> <code>strike</code> <code>code</code> <code>clearFormatting</code></td></tr>
+      <tr><td>Blocks</td><td><code>paragraph</code> <code>h1</code> <code>h2</code> <code>h3</code> <code>bulletList</code> <code>orderedList</code> <code>blockquote</code> <code>hr</code></td></tr>
+      <tr><td>Alignment</td><td><code>alignLeft</code> <code>alignCenter</code> <code>alignRight</code> (aligns the selected image when one is selected)</td></tr>
+      <tr><td>Links</td><td><code>link</code> (opens the link popover), <code>makeLink</code> + URL, <code>removeLink</code></td></tr>
+      <tr><td>Other</td><td><code>image</code> (opens the image popover), <code>find</code>, <code>undo</code>, <code>redo</code></td></tr>
+    </tbody>
+  </table>
+</div>
+{{end}}

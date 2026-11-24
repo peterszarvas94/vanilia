@@ -1,0 +1,17 @@
+{{define "doc/attributes"}}
+<h1>Attributes</h1>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Form field name.</td></tr>
+      <tr><td><code>value</code></td><td>Initial HTML (alternative to a child <code>&lt;template&gt;</code>).</td></tr>
+      <tr><td><code>placeholder</code></td><td>Text shown while the editor is empty.</td></tr>
+      <tr><td><code>required</code></td><td>Fails form validation when the editor has no text or image.</td></tr>
+      <tr><td><code>disabled</code></td><td>Makes the editor read-only and excludes it from submission.</td></tr>
+      <tr><td><code>upload-url</code></td><td>Endpoint that receives image uploads. See <a href="{{.BasePath}}/docs/uploads">Image uploads</a>.</td></tr>
+      <tr><td><code>toolbar</code></td><td><code>"none"</code> hides the built-in toolbar. See <a href="{{.BasePath}}/docs/toolbar">Custom toolbar</a>.</td></tr>
+    </tbody>
+  </table>
+</div>
+{{end}}

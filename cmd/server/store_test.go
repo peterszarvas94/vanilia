@@ -25,7 +25,7 @@ func TestSanitizeEditorHTMLPreservesResizedImageAndStripsXSS(t *testing.T) {
 }
 
 func TestSessionSaveAndResetFlow(t *testing.T) {
-	mustLoadTemplates("../../templates/*.html")
+	mustLoadTemplates("../../templates")
 	store := newContentStore(10, buildSeedContent(""))
 	uploads := newUploadStore()
 	e := newServer("", store, uploads)
@@ -80,7 +80,7 @@ func TestImageUploadAndServe(t *testing.T) {
 		0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
 	}
 
-	mustLoadTemplates("../../templates/*.html")
+	mustLoadTemplates("../../templates")
 	e := newServer("", newContentStore(10, ""), newUploadStore())
 
 	req := httptest.NewRequest(http.MethodPost, "/api/upload", bytes.NewReader(pngBytes))

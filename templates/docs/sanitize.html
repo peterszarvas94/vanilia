@@ -1,0 +1,27 @@
+{{define "doc/sanitize"}}
+<h1>Sanitizing on the server</h1>
+<p>
+  The editor sanitizes pasted HTML in the browser, but anything a client sends can be forged, so sanitize again
+  on the server before storing or rendering it. Allow only what the editor produces. For Go, this is the
+  <a href="https://github.com/microcosm-cc/bluemonday" target="_blank" rel="noopener noreferrer">bluemonday</a>
+  policy this site uses (<a href="https://github.com/peterszarvas94/vanilia/blob/master/cmd/server/utils.go" target="_blank" rel="noopener noreferrer">full source</a>):
+</p>
+{{template "code" (print `p := bluemonday.NewPolicy()
+p.AllowStandardURLs()
+p.AllowRelativeURLs(true)
+p.AllowElements("p", "div", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6",
+  "blockquote", "pre", "code", "ul", "ol", "li",
+  "b", "strong", "i", "em", "u", "s", "del", "sub", "sup", "mark", "span",
+  "a", "img", "figure", "figcaption")
+p.AllowAttrs("href", "title").OnElements("a")
+p.AllowAttrs("src", "alt", "title").OnElements("img")
+p.AllowAttrs("class").Matching(regexp.MustCompile(` "`" `^align-(left|center|right|justify)$` "`" `)).Globally()
+// image size and alignment styles
+p.AllowStyles("width", "max-width", "height").
+  Matching(regexp.MustCompile(` "`" `^(auto|\d+(\.\d+)?(%|px))$` "`" `)).OnElements("img")
+p.AllowStyles("display").Matching(regexp.MustCompile(` "`" `^(block|inline-block)$` "`" `)).OnElements("img")
+p.AllowStyles("margin-left", "margin-right").Matching(regexp.MustCompile(` "`" `^(0(px)?|auto)$` "`" `)).OnElements("img")
+p.AllowStyles("text-align").Matching(regexp.MustCompile(` "`" `^(left|center|right|justify)$` "`" `)).Globally()
+
+clean := p.Sanitize(r.FormValue("body"))`)}}
+{{end}}

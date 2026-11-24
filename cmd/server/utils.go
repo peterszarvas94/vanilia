@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"html/template"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -59,8 +60,10 @@ func init() {
 	sanitizePolicy = p
 }
 
-func mustLoadTemplates(pattern string) {
-	templates = template.Must(template.ParseGlob(pattern))
+// mustLoadTemplates parses the page templates in dir and the docs pages in dir/docs.
+func mustLoadTemplates(dir string) {
+	templates = template.Must(template.ParseGlob(filepath.Join(dir, "*.html")))
+	templates = template.Must(templates.ParseGlob(filepath.Join(dir, "docs", "*.html")))
 }
 
 func sanitizeEditorHTML(raw string) string {

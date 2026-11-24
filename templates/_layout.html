@@ -80,8 +80,22 @@
 
 {{define "code"}}<div class="code-block"><button type="button" class="copy-btn" data-on:click="@copy(el)">Copy</button><pre><code data-highlight>{{.}}</code></pre></div>{{end}}
 
-{{define "sidebar-toggle"}}<button type="button" class="sidebar-toggle" popovertarget="sidebar" aria-label="Open {{.}} menu">
+{{define "sidebar"}}<button type="button" class="sidebar-toggle" popovertarget="sidebar" aria-label="Open {{.Section}} menu">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-        <span data-signals:_section="'{{.}}'" data-text="$_section">{{.}}</span>
+        <span>{{.Heading}}</span>
         <svg class="sidebar-toggle-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-      </button>{{end}}
+      </button>
+      <nav class="sidebar" id="sidebar" popover data-hash-redirect aria-label="{{.Section}}">
+        {{range .Nav}}
+        <h2>{{.Name}}</h2>
+        <ul>
+          {{range .Items}}<li><a href="{{.Href}}"{{if .Current}} aria-current="page"{{end}}>{{.Title}}{{if .External}} ↗{{end}}</a></li>
+          {{end}}
+        </ul>
+        {{end}}
+      </nav>{{end}}
+
+{{define "pager"}}{{if or .Prev .Next}}<nav class="pager" aria-label="{{.Section}} pages">
+          {{with .Prev}}<a class="pager-prev" href="{{.Href}}"><span>Previous</span>{{.Title}}</a>{{end}}
+          {{with .Next}}<a class="pager-next" href="{{.Href}}"><span>Next</span>{{.Title}}</a>{{end}}
+        </nav>{{end}}{{end}}

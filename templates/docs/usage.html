@@ -1,0 +1,14 @@
+{{define "doc/usage"}}
+<h1>Usage</h1>
+<p>Use the element anywhere. Put initial content in a <code>&lt;template&gt;</code> (or the <code>value</code> attribute):</p>
+{{template "code" `<vanilia-editor name="content" placeholder="Start writing...">
+  <template>
+    <h2>Hello</h2>
+    <p>Initial <strong>content</strong>.</p>
+  </template>
+</vanilia-editor>`}}
+<p>
+  To show saved HTML elsewhere with the same typography and image alignment, add <code>class="ve-prose"</code>
+  to the container.
+</p>
+{{end}}

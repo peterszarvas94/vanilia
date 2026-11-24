@@ -41,9 +41,6 @@ var exampleIndex = []example{
 	{Group: "Integrations", Slug: "alpine", Title: "Alpine.js", Description: "Bind the content both ways with <code>x-model</code> and react to editor events."},
 }
 
-// exampleGroups is the sidebar order of exampleIndex's groups.
-var exampleGroups = []string{"Examples", "Integrations"}
-
 // exampleModules are import-map specifiers the examples page imports for its integrations.
 var exampleModules = []string{"htmx.org", "alpine"}
 
@@ -70,31 +67,18 @@ func mustLoadExamples(dir string) {
 	}
 }
 
-// exampleGroup is one sidebar category with its examples.
-type exampleGroup struct {
-	Name     string
-	Examples []example
-}
-
-func groupedExamples() []exampleGroup {
-	groups := make([]exampleGroup, 0, len(exampleGroups))
-	for _, name := range exampleGroups {
-		group := exampleGroup{Name: name}
-		for _, ex := range examples {
-			if ex.Group == name {
-				group.Examples = append(group.Examples, ex)
-			}
-		}
-		groups = append(groups, group)
-	}
-	return groups
-}
-
 type pageData struct {
-	BasePath      string
-	Active        string
-	Title         string
-	ExampleGroups []exampleGroup
+	BasePath string
+	Active   string
+	Title    string
+	// Docs and examples pages: sidebar, current page and pager
+	Section string
+	Heading string
+	Nav     []navGroup
+	Prev    *navItem
+	Next    *navItem
+	Content template.HTML
+	Example *example
 	// RenderedPreview fills the demo page's "rendered-preview" block (streamed later via SSE)
 	RenderedPreview template.HTML
 	// Modules are extra import-map specifiers imported by the page's entry script
@@ -107,10 +91,6 @@ func pageHandler(basePath, name, title string) echo.HandlerFunc {
 			BasePath: basePath,
 			Active:   name,
 			Title:    title,
-		}
-		if name == "examples" {
-			data.ExampleGroups = groupedExamples()
-			data.Modules = exampleModules
 		}
 		return renderTemplate(c, name, data)
 	}

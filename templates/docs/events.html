@@ -1,0 +1,23 @@
+{{define "doc/events"}}
+<h1>Events</h1>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Event</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td><code>input</code></td><td>The content changed.</td></tr>
+      <tr><td><code>change</code></td><td>The editor lost focus.</td></tr>
+      <tr><td><code>ve:update</code> / <code>editorupdate</code></td><td>Content or selection state changed. Same event under two names (the second is easier to use in attribute-based frameworks).</td></tr>
+    </tbody>
+  </table>
+</div>
+<p><code>ve:update</code> carries the full editor state in <code>event.detail</code>:</p>
+{{template "code" `{
+  html: "<p>Hello</p>",
+  text: "Hello",
+  words: 1,
+  images: 0,
+  active: { bold: false, italic: false, h2: false, bulletList: false, link: false, alignCenter: false, ... },
+  canUndo: true,
+  canRedo: false
+}`}}
+{{end}}

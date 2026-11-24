@@ -1,0 +1,36 @@
+{{define "doc/toolbar"}}
+<h1>Custom toolbar</h1>
+<p>
+  <code>toolbar="none"</code> hides the built-in toolbar. Your own buttons call <code>editor.exec()</code> and
+  read the active state from <code>ve:update</code>. The selection menu, image handles, link and image popovers
+  and find &amp; replace keep working.
+</p>
+{{template "code" `<div id="toolbar">
+  <button type="button" data-cmd="bold">Bold</button>
+  <button type="button" data-cmd="h2">Heading</button>
+</div>
+<vanilia-editor id="editor" toolbar="none"></vanilia-editor>
+
+<script type="module">
+  const editor = document.getElementById("editor");
+  const toolbar = document.getElementById("toolbar");
+
+  toolbar.onmousedown = (e) => e.preventDefault(); // keep the selection
+  toolbar.onclick = (e) => {
+    const btn = e.target.closest("[data-cmd]");
+    if (btn) editor.exec(btn.dataset.cmd);
+  };
+  editor.addEventListener("ve:update", ({ detail }) => {
+    for (const btn of toolbar.querySelectorAll("[data-cmd]")) {
+      btn.setAttribute("aria-pressed", detail.active[btn.dataset.cmd]);
+    }
+  });
+</script>`}}
+<p>With Datastar, the same thing is a few attributes:</p>
+{{template "code" `<button data-on:mousedown="evt.preventDefault()"
+data-on:click="document.getElementById('editor').exec('bold')"
+data-class:is-active="$bold">Bold</button>
+
+<vanilia-editor id="editor" toolbar="none"
+  data-on:editorupdate="$bold = evt.detail.active.bold"></vanilia-editor>`}}
+{{end}}

@@ -1,0 +1,25 @@
+{{define "doc/api"}}
+<h1>Properties &amp; methods</h1>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Member</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>value</code></td><td>Get or set the content as HTML.</td></tr>
+      <tr><td><code>getHTML()</code></td><td>Current content as clean HTML (<code>""</code> when empty).</td></tr>
+      <tr><td><code>getFormattedHTML()</code></td><td>Same, indented for display.</td></tr>
+      <tr><td><code>getText()</code></td><td>Plain text content.</td></tr>
+      <tr><td><code>setHTML(html, { silent })</code></td><td>Replace the content. <code>silent: true</code> skips the <code>input</code> event.</td></tr>
+      <tr><td><code>exec(command, arg?)</code></td><td>Run a <a href="{{.BasePath}}/docs/commands">command</a>.</td></tr>
+      <tr><td><code>isActive(name)</code></td><td>Whether a format (<code>"bold"</code>, <code>"link"</code>, …) is active at the selection.</td></tr>
+      <tr><td><code>insertImage(url, alt?)</code></td><td>Insert an image at the cursor.</td></tr>
+      <tr><td><code>setIcons(map)</code></td><td>Override icons for this editor. See <a href="{{.BasePath}}/docs/icons">Icons</a>.</td></tr>
+      <tr><td><code>onImageUpload</code></td><td><code>async (file) =&gt; url</code> upload hook.</td></tr>
+      <tr><td><code>focus()</code></td><td>Focus the editing surface.</td></tr>
+      <tr><td><code>form</code>, <code>validity</code>, <code>checkValidity()</code>, <code>reportValidity()</code></td><td>Standard form-field members.</td></tr>
+      <tr><td><code>VaniliaEditorElement.setIcons(map)</code></td><td>Static: override icons for every editor on the page.</td></tr>
+      <tr><td><code>VaniliaEditorElement.iconNames</code></td><td>Static: names of all overridable icons.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>The module also exports <code>VaniliaEditorElement</code>, <code>setIcons</code>, <code>ICON_NAMES</code>, <code>formatHTML</code>, <code>isSafeUrl</code> and the sanitizer helpers.</p>
+{{end}}
