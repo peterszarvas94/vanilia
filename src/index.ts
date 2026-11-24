@@ -35,6 +35,13 @@ export {
   type ToolbarItem,
 } from "./toolbar.js";
 export {
+  setShortcuts,
+  formatShortcut,
+  DEFAULT_SHORTCUTS,
+  type Shortcut,
+  type ShortcutMap,
+} from "./shortcuts.js";
+export {
   setTheme,
   tokenVar,
   THEME_TOKENS,

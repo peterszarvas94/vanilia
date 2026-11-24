@@ -229,9 +229,9 @@ type HeadingLevel = 1 | 2 | 3;
  * TipTap-inspired command & active-state adapter on top of Squire.
  */
 /** Names accepted by `isActive()`. */
-type FormatName = "bold" | "italic" | "underline" | "strike" | "code" | "link" | "bulletList" | "orderedList" | "blockquote" | "heading" | "paragraph";
+type FormatName = "bold" | "italic" | "underline" | "strike" | "code" | "subscript" | "superscript" | "link" | "bulletList" | "orderedList" | "blockquote" | "heading" | "paragraph";
 /** Commands accepted by `editor.exec()`. */
-type Command = "bold" | "italic" | "underline" | "strike" | "code" | "paragraph" | "h1" | "h2" | "h3" | "bulletList" | "orderedList" | "blockquote" | "hr" | "alignLeft" | "alignCenter" | "alignRight" | "clearFormatting" | "undo" | "redo" | "makeLink" | "removeLink";
+type Command = "bold" | "italic" | "underline" | "strike" | "code" | "subscript" | "superscript" | "paragraph" | "h1" | "h2" | "h3" | "bulletList" | "orderedList" | "blockquote" | "hr" | "indent" | "outdent" | "alignLeft" | "alignCenter" | "alignRight" | "clearFormatting" | "undo" | "redo" | "makeLink" | "removeLink";
 /** Which formats are active at the selection. */
 interface ActiveState {
   bold: boolean;
@@ -239,6 +239,8 @@ interface ActiveState {
   underline: boolean;
   strike: boolean;
   code: boolean;
+  subscript: boolean;
+  superscript: boolean;
   link: boolean;
   bulletList: boolean;
   orderedList: boolean;
@@ -392,8 +394,11 @@ interface ToolbarButton {
   icon?: string;
   /** Visible text, shown after the icon (or alone when there is no icon). */
   text?: string;
-  /** Keyboard shortcut shown in the tooltip only, e.g. `"Mod+Shift+S"` (`Mod` = ⌘ on macOS, Ctrl elsewhere). */
-  shortcut?: string;
+  /**
+   * Default keyboard shortcut(s), e.g. `"Mod+Shift+S"` (`Mod` is ⌘ on macOS, Ctrl elsewhere).
+   * Shown in the tooltip; `setShortcuts()` / `editor.setShortcuts()` can override it by name.
+   */
+  shortcut?: string | readonly string[];
   /** Runs on click and on `editor.exec(name)`. */
   run(editor: VaniliaEditorElement): void;
   /** Pressed state, re-checked whenever the selection or content changes. */
@@ -415,6 +420,33 @@ export declare const DEFAULT_BUBBLE_MENU: readonly ToolbarItem[];
 export declare function defineButton(button: ToolbarButton): void;
 /** Remove a button registered with `defineButton()`. */
 export declare function undefineButton(name: string): void;
+/**
+ * Keyboard shortcuts: command name to key combinations. Override or remove any of
+ * them globally with `setShortcuts()`, per editor with `editor.setShortcuts()` or
+ * `<template data-ve-shortcuts>{...}</template>`, or turn them all off with
+ * `shortcuts="none"`.
+ *
+ * Syntax: modifiers and a key joined with `+`, e.g. `"Mod+Shift+X"`. `Mod` is ⌘ on
+ * macOS and Ctrl elsewhere; `Ctrl`, `Meta`, `Alt` and `Shift` are also accepted. The
+ * key is a letter, a digit, or a `KeyboardEvent.key` name such as `[`, `Enter` or `F2`.
+ */
+/** A key combination like `"Mod+Shift+X"`. */
+type Shortcut = string;
+/**
+ * Shortcut overrides by command or custom button name: one combination, several, or
+ * `false` / `""` / `[]` to remove them. `null` restores the default.
+ */
+type ShortcutMap = Record<string, Shortcut | readonly Shortcut[] | false | null | undefined>;
+/** The built-in shortcuts. */
+export declare const DEFAULT_SHORTCUTS: Readonly<Record<string, readonly Shortcut[]>>;
+/**
+ * Override shortcuts for every <vanilia-editor> on the page (mounted editors update).
+ *
+ *   setShortcuts({ bold: "Mod+Shift+B", find: false, h2: "Mod+Alt+2" });
+ */
+export declare function setShortcuts(map?: ShortcutMap): void;
+/** Format a shortcut for the current platform: `⇧⌘X` on macOS, `Ctrl+Shift+X` elsewhere. */
+export declare function formatShortcut(shortcut: Shortcut): string;
 /**
  * Typed access to the `--ve-*` CSS custom properties. CSS stays the source of
  * truth: `setTheme()` and `editor.setTheme()` only write those properties.
@@ -479,6 +511,8 @@ export declare class VaniliaEditorElement extends BaseHTMLElement {
   static undefineButton(name: string): void;
   /** Names of the built-in toolbar buttons. */
   static get buttonNames(): readonly BuiltinButtonName[];
+  /** Override keyboard shortcuts for every editor on the page (same as the `setShortcuts` export). */
+  static setShortcuts(map: ShortcutMap): void;
   /** Set theme tokens for every editor on the page (same as the `setTheme` export). */
   static setTheme(tokens: ThemeTokens): void;
   /** Names of all theme tokens. */
@@ -537,6 +571,13 @@ export declare class VaniliaEditorElement extends BaseHTMLElement {
    * global `setLabels()` registry / built-in English text.
    */
   setLabels(map?: LabelMap): void;
+  /**
+   * Override keyboard shortcuts for this editor, by command or button name: a combination
+   * like `"Mod+Shift+B"`, several, `false` to remove them, or `null` to restore the default.
+   */
+  setShortcuts(map?: ShortcutMap): void;
+  /** The shortcuts in effect, by command or button name (`{ bold: ["Mod+B"], ... }`). */
+  getShortcuts(): Record<string, Shortcut[]>;
   /** Set theme tokens on this editor (inline `--ve-*` properties). `null` removes one. */
   setTheme(tokens?: ThemeTokens): void;
   /**
@@ -630,4 +671,4 @@ interface FindReplaceExtension {
   destroy(): void;
 }
 export declare function createFindReplaceExtension({ surface, barSlot, squire, onChange, renderIcon, t }: FindReplaceOptions): FindReplaceExtension;
-export type { BuiltinButtonName, ColorScheme, EditorActiveState, EditorCommand, FormatName, HeadingLevel, IconMap, IconName, IconRenderer, ImageAlign, Label, LabelMap, LabelName, LabelVars, ThemeToken, ThemeTokens, ToolbarButton, ToolbarItem, ToolbarLayout, Translate, UploadHandler, VaniliaEditorDetail };
+export type { BuiltinButtonName, ColorScheme, EditorActiveState, EditorCommand, FormatName, HeadingLevel, IconMap, IconName, IconRenderer, ImageAlign, Label, LabelMap, LabelName, LabelVars, Shortcut, ShortcutMap, ThemeToken, ThemeTokens, ToolbarButton, ToolbarItem, ToolbarLayout, Translate, UploadHandler, VaniliaEditorDetail };

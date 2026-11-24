@@ -32,7 +32,7 @@ import "vanilia-editor/vanilia-editor.css";
 
 ## Drop-In Integration (ESM + import map)
 
-One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~50 kB gzipped, readable, Squire built in, no imports), [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped) and optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts). Copy them into your project or link the hosted deployment (CORS-enabled). Map the module once in your base layout:
+One ES module and one stylesheet, no build step: [`dist/vanilia-editor.js`](./dist/vanilia-editor.js) (~52 kB gzipped, readable, Squire built in, no imports), [`dist/vanilia-editor.css`](./dist/vanilia-editor.css) (~4 kB gzipped) and optional types in [`dist/vanilia-editor.d.ts`](./dist/vanilia-editor.d.ts). Copy them into your project or link the hosted deployment (CORS-enabled). Map the module once in your base layout:
 
 ```html
 <script type="importmap">
@@ -144,6 +144,18 @@ import { setLabels } from "vanilia-editor";
 setLabels({ bold: "Fett", italic: "Kursiv" });
 editor.setLabels({ wordCount: ({ count }) => `${count} ${count === 1 ? "Wort" : "Wörter"}` });
 ```
+
+### Keyboard shortcuts
+
+Every shortcut maps keys to a command or custom button, and all of them can be changed, added or removed: per editor with `<template data-ve-shortcuts>` or `editor.setShortcuts()`, for the whole page with `setShortcuts()`, or all at once with `shortcuts="none"`. Tooltips follow along.
+
+```js
+import { setShortcuts } from "vanilia-editor";
+setShortcuts({ strike: "Mod+Shift+S", h2: "Mod+Alt+2", find: false }); // false removes, null restores
+editor.getShortcuts(); // { bold: ["Mod+B"], ... }
+```
+
+Defaults and syntax: [keyboard shortcuts docs](https://vanilia.peterszarvas.hu/docs/shortcuts).
 
 The full JavaScript API (properties, methods, static members and module exports) is documented at [vanilia.peterszarvas.hu/docs/api](https://vanilia.peterszarvas.hu/docs/api).
 

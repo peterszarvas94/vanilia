@@ -50,8 +50,11 @@ export interface ToolbarButton {
   icon?: string;
   /** Visible text, shown after the icon (or alone when there is no icon). */
   text?: string;
-  /** Keyboard shortcut shown in the tooltip only, e.g. `"Mod+Shift+S"` (`Mod` = ⌘ on macOS, Ctrl elsewhere). */
-  shortcut?: string;
+  /**
+   * Default keyboard shortcut(s), e.g. `"Mod+Shift+S"` (`Mod` is ⌘ on macOS, Ctrl elsewhere).
+   * Shown in the tooltip; `setShortcuts()` / `editor.setShortcuts()` can override it by name.
+   */
+  shortcut?: string | readonly string[];
   /** Runs on click and on `editor.exec(name)`. */
   run(editor: VaniliaEditorElement): void;
   /** Pressed state, re-checked whenever the selection or content changes. */
@@ -63,14 +66,13 @@ export interface ToolbarButton {
 interface BuiltinButton {
   icon: IconName;
   label: LabelName;
-  shortcut?: string;
 }
 
 export const BUILTIN_BUTTONS: Readonly<Record<BuiltinButtonName, BuiltinButton>> = Object.freeze({
-  bold: { icon: "bold", label: "bold", shortcut: "Mod+B" },
-  italic: { icon: "italic", label: "italic", shortcut: "Mod+I" },
-  underline: { icon: "underline", label: "underline", shortcut: "Mod+U" },
-  strike: { icon: "strike", label: "strike", shortcut: "Mod+Shift+X" },
+  bold: { icon: "bold", label: "bold" },
+  italic: { icon: "italic", label: "italic" },
+  underline: { icon: "underline", label: "underline" },
+  strike: { icon: "strike", label: "strike" },
   code: { icon: "code", label: "code" },
   paragraph: { icon: "paragraph", label: "paragraph" },
   h1: { icon: "h1", label: "h1" },
@@ -83,18 +85,28 @@ export const BUILTIN_BUTTONS: Readonly<Record<BuiltinButtonName, BuiltinButton>>
   alignLeft: { icon: "alignLeft", label: "alignLeft" },
   alignCenter: { icon: "alignCenter", label: "alignCenter" },
   alignRight: { icon: "alignRight", label: "alignRight" },
-  link: { icon: "link", label: "link", shortcut: "Mod+K" },
+  link: { icon: "link", label: "link" },
   image: { icon: "image", label: "image" },
   clearFormatting: { icon: "clear", label: "clearFormatting" },
-  undo: { icon: "undo", label: "undo", shortcut: "Mod+Z" },
-  redo: { icon: "redo", label: "redo", shortcut: "Mod+Shift+Z" },
-  find: { icon: "search", label: "find", shortcut: "Mod+F" },
+  undo: { icon: "undo", label: "undo" },
+  redo: { icon: "redo", label: "redo" },
+  find: { icon: "search", label: "find" },
 });
 
 /** Names of all built-in toolbar buttons. */
 export const BUTTON_NAMES: readonly BuiltinButtonName[] = Object.freeze(
   Object.keys(BUILTIN_BUTTONS) as BuiltinButtonName[],
 );
+
+/** Built-in commands without a button (they run with `exec()` and shortcuts). */
+export const BUTTONLESS_COMMANDS: readonly string[] = Object.freeze([
+  "makeLink",
+  "removeLink",
+  "subscript",
+  "superscript",
+  "indent",
+  "outdent",
+]);
 
 /** The default toolbar layout. */
 export const DEFAULT_TOOLBAR: readonly ToolbarItem[] = Object.freeze(
@@ -167,28 +179,11 @@ export function validateButton(button: ToolbarButton): ToolbarButton {
   if (!button || typeof button.name !== "string" || !/^[\w-]+$/.test(button.name)) {
     throw new TypeError("Toolbar button needs a name made of letters, digits, _ or -");
   }
-  if (button.name in BUILTIN_BUTTONS) {
-    throw new TypeError(`"${button.name}" is a built-in button`);
+  if (button.name in BUILTIN_BUTTONS || BUTTONLESS_COMMANDS.includes(button.name)) {
+    throw new TypeError(`"${button.name}" is a built-in command`);
   }
   if (typeof button.run !== "function") {
     throw new TypeError(`Toolbar button "${button.name}" needs a run() function`);
   }
   return button;
-}
-
-const IS_MAC =
-  typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || "");
-
-/** Format `"Mod+Shift+X"` for the current platform: `⇧⌘X` on macOS, `Ctrl+Shift+X` elsewhere. */
-export function formatShortcut(shortcut: string): string {
-  const parts = shortcut.split("+");
-  if (!IS_MAC) return parts.map((p) => (p === "Mod" ? "Ctrl" : p)).join("+");
-  const symbols: Record<string, string> = { Mod: "⌘", Shift: "⇧", Alt: "⌥", Ctrl: "⌃" };
-  const mods = parts.slice(0, -1).sort((a, b) => (a === "Shift" ? -1 : b === "Shift" ? 1 : 0));
-  return mods.map((p) => symbols[p] ?? p).join("") + parts[parts.length - 1];
-}
-
-/** `aria-keyshortcuts` value for `"Mod+B"`. */
-export function ariaShortcut(shortcut: string): string {
-  return shortcut.replace("Mod", IS_MAC ? "Meta" : "Control");
 }

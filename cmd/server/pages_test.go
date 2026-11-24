@@ -13,17 +13,19 @@ func TestPagesRender(t *testing.T) {
 	e := newServer("", newContentStore(10, buildSeedContent("")), newUploadStore())
 
 	pages := map[string]string{
-		"/":                  "A rich text editor",
-		"/docs/install":      `Option A: npm`,
-		"/docs/labels":       `data-ve-labels`,
-		"/docs/exports":      `defineButton(button)`,
-		"/examples/toolbar":  `id="toolbar-editor"`,
-		"/examples/labels":   `id="labels-editor"`,
-		"/docs/sanitize":     `bluemonday.NewPolicy()`,
-		"/docs/browsers":     `aria-current="page">Browser support`,
-		"/examples/basic":    `id="basic"`,
-		"/examples/headless": `id="headless-editor"`,
-		"/demo":              `id="rendered-preview"`,
+		"/":                   "A rich text editor",
+		"/docs/install":       `Option A: npm`,
+		"/docs/labels":        `data-ve-labels`,
+		"/docs/exports":       `defineButton(button)`,
+		"/examples/toolbar":   `id="toolbar-editor"`,
+		"/examples/labels":    `id="labels-editor"`,
+		"/examples/shortcuts": `id="shortcuts-editor"`,
+		"/docs/shortcuts":     `data-ve-shortcuts`,
+		"/docs/sanitize":      `bluemonday.NewPolicy()`,
+		"/docs/browsers":      `aria-current="page">Browser support`,
+		"/examples/basic":     `id="basic"`,
+		"/examples/headless":  `id="headless-editor"`,
+		"/demo":               `id="rendered-preview"`,
 	}
 	for path, want := range pages {
 		rec := httptest.NewRecorder()

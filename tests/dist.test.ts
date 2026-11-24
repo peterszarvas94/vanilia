@@ -19,6 +19,8 @@ test("dist/vanilia-editor.js is one self-contained, readable module", () => {
     "setTheme",
     "THEME_TOKENS",
     "DEFAULT_TOOLBAR",
+    "setShortcuts",
+    "DEFAULT_SHORTCUTS",
   ]) {
     expect(js).toMatch(new RegExp(`export \\{[^}]*\\b${name}\\b`));
   }

@@ -15,9 +15,11 @@
       <tr><td><code>undefineButton(name)</code></td><td>Remove a button registered with <code>defineButton()</code>.</td></tr>
       <tr><td><code>setIcons(map)</code></td><td>Override icons; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/icons">Icons</a>.</td></tr>
       <tr><td><code>setLabels(map)</code></td><td>Override labels; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/labels">Labels &amp; translation</a>.</td></tr>
+      <tr><td><code>setShortcuts(map)</code></td><td>Change, add or remove keyboard shortcuts; <code>null</code> restores one. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
       <tr><td><code>setTheme(tokens)</code></td><td>Set <code>--ve-*</code> tokens on <code>:root</code>; <code>null</code> removes one. See <a href="{{.BasePath}}/docs/styling#javascript">Styling</a>.</td></tr>
       <tr><td><code>icon(name, size?, overrides?)</code></td><td>The markup of an icon, as the editor renders it.</td></tr>
       <tr><td><code>createTranslator(overrides?)</code></td><td>A label lookup, <code>(name, vars?) =&gt; string</code>: overrides, then <code>setLabels()</code>, then English.</td></tr>
+      <tr><td><code>formatShortcut(shortcut)</code></td><td>A shortcut for display on this platform: <code>"Mod+Shift+X"</code> is <code>⇧⌘X</code> on macOS and <code>Ctrl+Shift+X</code> elsewhere.</td></tr>
       <tr><td><code>tokenVar(token)</code></td><td>The CSS property of a token: <code>tokenVar("accentSoft")</code> is <code>"--ve-accent-soft"</code>.</td></tr>
       <tr><td><code>formatHTML(html)</code></td><td>Indent HTML for display.</td></tr>
       <tr><td><code>isSafeUrl(url, kind)</code></td><td>Whether a URL is allowed as a link (<code>"link"</code>) or image source (<code>"image"</code>).</td></tr>
@@ -35,6 +37,7 @@
       <tr><td><code>BUTTON_NAMES</code></td><td>Names of the built-in toolbar buttons.</td></tr>
       <tr><td><code>DEFAULT_TOOLBAR</code></td><td>The default toolbar layout.</td></tr>
       <tr><td><code>DEFAULT_BUBBLE_MENU</code></td><td>The default selection menu layout.</td></tr>
+      <tr><td><code>DEFAULT_SHORTCUTS</code></td><td>The default keyboard shortcuts, by command.</td></tr>
       <tr><td><code>ICON_NAMES</code></td><td>Names of the built-in icons.</td></tr>
       <tr><td><code>LABEL_NAMES</code><br><code>DEFAULT_LABELS</code></td><td>Label names, and the built-in English labels.</td></tr>
       <tr><td><code>THEME_TOKENS</code></td><td>Theme token names (camelCase).</td></tr>
@@ -49,7 +52,7 @@
   <code>ToolbarItem</code>, <code>ToolbarLayout</code>, <code>BuiltinButtonName</code>, <code>IconName</code>,
   <code>IconMap</code>, <code>IconRenderer</code>, <code>Label</code>, <code>LabelName</code>, <code>LabelMap</code>,
   <code>LabelVars</code>, <code>Translate</code>, <code>ThemeToken</code>, <code>ThemeTokens</code>,
-  <code>ColorScheme</code>, <code>ImageAlign</code>, <code>UploadHandler</code>. See
+  <code>ColorScheme</code>, <code>Shortcut</code>, <code>ShortcutMap</code>, <code>ImageAlign</code>, <code>UploadHandler</code>. See
   <a href="{{.BasePath}}/docs/typescript">TypeScript</a>.
 </p>
 {{end}}

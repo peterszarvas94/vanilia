@@ -1,0 +1,30 @@
+<vanilia-editor id="shortcuts-editor" toolbar="bold italic strike | paragraph h2 h3 | bulletList | link | undo redo find">
+  <template data-ve-shortcuts>
+    {
+      "strike": "Mod+Shift+S",
+      "paragraph": "Mod+Alt+0",
+      "h2": "Mod+Alt+2",
+      "h3": "Mod+Alt+3",
+      "find": false
+    }
+  </template>
+  <template>
+    <p>Strike is remapped to Ctrl+Shift+S, Ctrl+Alt+2 and Ctrl+Alt+3 make headings, Ctrl+Alt+0 a paragraph, and Ctrl+F is left to the browser. Ctrl+U no longer underlines in this editor. Hover a button to see its shortcut.</p>
+  </template>
+</vanilia-editor>
+<pre class="output" id="shortcuts-output"></pre>
+
+<script type="module">
+  import { formatShortcut } from "vanilia-editor";
+
+  await customElements.whenDefined("vanilia-editor");
+  const editor = document.getElementById("shortcuts-editor");
+
+  // From JavaScript: false removes a shortcut, null restores the default
+  editor.setShortcuts({ underline: false });
+
+  // getShortcuts() lists what is in effect, formatted for this platform
+  document.getElementById("shortcuts-output").textContent = Object.entries(editor.getShortcuts())
+    .map(([command, keys]) => `${command.padEnd(12)} ${keys.map(formatShortcut).join("  ")}`)
+    .join("\n");
+</script>

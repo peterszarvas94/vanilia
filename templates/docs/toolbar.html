@@ -36,7 +36,7 @@ editor.toolbar = null;   // back to the default
 
 import { DEFAULT_TOOLBAR } from "vanilia-editor";
 editor.toolbar = [...DEFAULT_TOOLBAR, "|", "signature"]; // default plus a custom button`}}
-<p>A name with no button yet is skipped, and shows up once a custom button with that name is added, so a layout can list buttons you add later. The built-in keyboard shortcuts keep working for buttons that aren't shown.</p>
+<p>A name with no button yet is skipped, and shows up once a custom button with that name is added, so a layout can list buttons you add later. Keyboard shortcuts work whether or not their button is shown.</p>
 
 <h2 id="bubble-menu">Selection menu</h2>
 <p>
@@ -73,7 +73,7 @@ editor.removeButton("signature");`}}
       <tr><td><code>run(editor)</code></td><td>Required. Runs on click, on the shortcut and on <code>exec(name)</code>.</td></tr>
       <tr><td><code>icon</code></td><td>A built-in icon name, a name registered with <code>setIcons()</code>, or trusted markup (anything containing <code>&lt;</code>).</td></tr>
       <tr><td><code>text</code></td><td>Visible text, after the icon or on its own.</td></tr>
-      <tr><td><code>shortcut</code></td><td>Keyboard shortcut like <code>"Mod+Shift+S"</code> or <code>"Alt+H"</code>. Bound while the button is in the toolbar or the selection menu, and shown in its tooltip.</td></tr>
+      <tr><td><code>shortcut</code></td><td>Default keyboard shortcut, like <code>"Mod+Shift+S"</code> or <code>"Mod+Alt+1"</code>, or an array of them. Shown in the tooltip; <code>setShortcuts()</code> can change or remove it by the button's name. See <a href="{{.BasePath}}/docs/shortcuts">Keyboard shortcuts</a>.</td></tr>
       <tr><td><code>isActive(editor)</code></td><td>Pressed state, re-checked whenever the selection or content changes.</td></tr>
       <tr><td><code>isEnabled(editor)</code></td><td>Return <code>false</code> to disable the button. Re-checked like <code>isActive</code>.</td></tr>
     </tbody>
@@ -84,7 +84,7 @@ editor.removeButton("signature");`}}
   or <code>bubble-menu</code> layout, wherever its name appears. Inside <code>run()</code> you have the whole
   <a href="{{.BasePath}}/docs/api">element API</a> (<code>insertHTML</code>, <code>insertText</code>,
   <code>getSelectedText</code>, <code>exec</code>, ...) and, for formatting the API doesn't cover, the underlying
-  <code>editor.squire</code>. A superscript toggle, for example:
+  <code>editor.squire</code>. A button for the <code>superscript</code> command, which has no built-in button:
 </p>
 {{template "code" `import { defineButton } from "vanilia-editor";
 
@@ -92,12 +92,9 @@ defineButton({
   name: "sup",
   label: "Superscript",
   icon: "superscript", // a name registered with setIcons(), see below
-  shortcut: "Mod+Shift+P",
-  isActive: (editor) => editor.squire.hasFormat("SUP"),
-  run(editor) {
-    if (editor.squire.hasFormat("SUP")) editor.squire.changeFormat(null, { tag: "SUP" });
-    else editor.squire.changeFormat({ tag: "SUP" });
-  },
+  shortcut: "Mod+.",
+  isActive: (editor) => editor.isActive("superscript"),
+  run: (editor) => editor.exec("superscript"),
 });`}}
 <p>
   For icons by name, register the markup once with <code>setIcons({ superscript: "&lt;svg&gt;...&lt;/svg&gt;" })</code>.

@@ -30,6 +30,7 @@ var docIndex = []doc{
 	{Group: "Guides", Slug: "styling", Title: "Styling & themes"},
 	{Group: "Guides", Slug: "icons", Title: "Icons"},
 	{Group: "Guides", Slug: "labels", Title: "Labels & translation"},
+	{Group: "Guides", Slug: "shortcuts", Title: "Keyboard shortcuts"},
 	{Group: "Guides", Slug: "uploads", Title: "Image uploads"},
 	{Group: "Guides", Slug: "sanitize", Title: "Sanitizing on the server"},
 	{Group: "Guides", Slug: "browsers", Title: "Browser support"},

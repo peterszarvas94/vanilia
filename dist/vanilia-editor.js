@@ -3900,6 +3900,8 @@ function isActive(squire, name, attrs = {}) {
 		case "underline": return squire.hasFormat("U");
 		case "strike": return squire.hasFormat("S") || squire.hasFormat("DEL");
 		case "code": return squire.hasFormat("CODE") || squire.hasFormat("PRE");
+		case "subscript": return squire.hasFormat("SUB");
+		case "superscript": return squire.hasFormat("SUP");
 		case "link": return squire.hasFormat("A");
 		case "bulletList": return squire.hasFormat("UL");
 		case "orderedList": return squire.hasFormat("OL");
@@ -3916,6 +3918,8 @@ function getActiveState(squire) {
 		underline: isActive(squire, "underline"),
 		strike: isActive(squire, "strike"),
 		code: isActive(squire, "code"),
+		subscript: isActive(squire, "subscript"),
+		superscript: isActive(squire, "superscript"),
 		link: isActive(squire, "link"),
 		bulletList: isActive(squire, "bulletList"),
 		orderedList: isActive(squire, "orderedList"),
@@ -3948,6 +3952,25 @@ function execCommand(squire, command, arg) {
 		case "code":
 			squire.toggleCode();
 			break;
+		case "subscript":
+			if (squire.hasFormat("SUB")) squire.changeFormat(null, { tag: "SUB" });
+			else squire.changeFormat({ tag: "SUB" }, { tag: "SUP" });
+			break;
+		case "superscript":
+			if (squire.hasFormat("SUP")) squire.changeFormat(null, { tag: "SUP" });
+			else squire.changeFormat({ tag: "SUP" }, { tag: "SUB" });
+			break;
+		case "indent":
+		case "outdent": {
+			const path = squire.getPath();
+			const inList = /(?:^|>)[OU]L/.test(path) && !/(?:^|>)BLOCKQUOTE/.test(path);
+			if (command === "indent") {
+				if (inList) squire.increaseListLevel();
+				else squire.increaseQuoteLevel();
+			} else if (inList) squire.decreaseListLevel();
+			else squire.decreaseQuoteLevel();
+			break;
+		}
 		case "paragraph":
 			setParagraph(squire);
 			break;
@@ -4974,23 +4997,19 @@ function createFindReplaceExtension({ surface, barSlot, squire, onChange, render
 const BUILTIN_BUTTONS = Object.freeze({
 	bold: {
 		icon: "bold",
-		label: "bold",
-		shortcut: "Mod+B"
+		label: "bold"
 	},
 	italic: {
 		icon: "italic",
-		label: "italic",
-		shortcut: "Mod+I"
+		label: "italic"
 	},
 	underline: {
 		icon: "underline",
-		label: "underline",
-		shortcut: "Mod+U"
+		label: "underline"
 	},
 	strike: {
 		icon: "strike",
-		label: "strike",
-		shortcut: "Mod+Shift+X"
+		label: "strike"
 	},
 	code: {
 		icon: "code",
@@ -5042,8 +5061,7 @@ const BUILTIN_BUTTONS = Object.freeze({
 	},
 	link: {
 		icon: "link",
-		label: "link",
-		shortcut: "Mod+K"
+		label: "link"
 	},
 	image: {
 		icon: "image",
@@ -5055,22 +5073,28 @@ const BUILTIN_BUTTONS = Object.freeze({
 	},
 	undo: {
 		icon: "undo",
-		label: "undo",
-		shortcut: "Mod+Z"
+		label: "undo"
 	},
 	redo: {
 		icon: "redo",
-		label: "redo",
-		shortcut: "Mod+Shift+Z"
+		label: "redo"
 	},
 	find: {
 		icon: "search",
-		label: "find",
-		shortcut: "Mod+F"
+		label: "find"
 	}
 });
 /** Names of all built-in toolbar buttons. */
 const BUTTON_NAMES = Object.freeze(Object.keys(BUILTIN_BUTTONS));
+/** Built-in commands without a button (they run with `exec()` and shortcuts). */
+const BUTTONLESS_COMMANDS = Object.freeze([
+	"makeLink",
+	"removeLink",
+	"subscript",
+	"superscript",
+	"indent",
+	"outdent"
+]);
 /** The default toolbar layout. */
 const DEFAULT_TOOLBAR = Object.freeze(parseItems("bold italic underline strike code | paragraph h1 h2 h3 | bulletList orderedList blockquote hr | alignLeft alignCenter alignRight | link image clearFormatting | undo redo find"));
 /** The default selection (bubble) menu layout. */
@@ -5118,27 +5142,142 @@ function onButtonsChange(listener) {
 }
 function validateButton(button) {
 	if (!button || typeof button.name !== "string" || !/^[\w-]+$/.test(button.name)) throw new TypeError("Toolbar button needs a name made of letters, digits, _ or -");
-	if (button.name in BUILTIN_BUTTONS) throw new TypeError(`"${button.name}" is a built-in button`);
+	if (button.name in BUILTIN_BUTTONS || BUTTONLESS_COMMANDS.includes(button.name)) throw new TypeError(`"${button.name}" is a built-in command`);
 	if (typeof button.run !== "function") throw new TypeError(`Toolbar button "${button.name}" needs a run() function`);
 	return button;
 }
-const IS_MAC$1 = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || "");
-/** Format `"Mod+Shift+X"` for the current platform: `⇧⌘X` on macOS, `Ctrl+Shift+X` elsewhere. */
-function formatShortcut(shortcut) {
-	const parts = shortcut.split("+");
-	if (!IS_MAC$1) return parts.map((p) => p === "Mod" ? "Ctrl" : p).join("+");
-	const symbols = {
-		Mod: "⌘",
-		Shift: "⇧",
-		Alt: "⌥",
-		Ctrl: "⌃"
+// src/shortcuts.ts
+/** The built-in shortcuts. */
+const DEFAULT_SHORTCUTS = Object.freeze({
+	bold: ["Mod+B"],
+	italic: ["Mod+I"],
+	underline: ["Mod+U"],
+	strike: ["Mod+Shift+X", "Mod+Shift+7"],
+	code: ["Mod+D"],
+	subscript: ["Mod+Shift+5"],
+	superscript: ["Mod+Shift+6"],
+	bulletList: ["Mod+Shift+8"],
+	orderedList: ["Mod+Shift+9"],
+	outdent: ["Mod+["],
+	indent: ["Mod+]"],
+	link: ["Mod+K"],
+	find: ["Mod+F"],
+	undo: ["Mod+Z"],
+	redo: ["Mod+Shift+Z", "Mod+Y"]
+});
+const globalShortcuts = /* @__PURE__ */ new Map();
+const shortcutListeners = /* @__PURE__ */ new Set();
+/** Write shortcut overrides into `target`; `null` deletes an entry, `false` stores "none". */
+function mergeShortcuts(target, map) {
+	for (const [name, value] of Object.entries(map)) if (value == null) target.delete(name);
+	else if (value === false || value === "") target.set(name, []);
+	else target.set(name, (typeof value === "string" ? [value] : [...value]).filter(Boolean));
+}
+/**
+* Override shortcuts for every <vanilia-editor> on the page (mounted editors update).
+*
+*   setShortcuts({ bold: "Mod+Shift+B", find: false, h2: "Mod+Alt+2" });
+*/
+function setShortcuts(map = {}) {
+	mergeShortcuts(globalShortcuts, map);
+	for (const listener of shortcutListeners) listener();
+}
+/** Global overrides set with `setShortcuts()`. */
+function getGlobalShortcuts() {
+	return globalShortcuts;
+}
+/** Subscribe to `setShortcuts()`; returns an unsubscribe function. */
+function onShortcutsChange(listener) {
+	shortcutListeners.add(listener);
+	return () => {
+		shortcutListeners.delete(listener);
 	};
-	return parts.slice(0, -1).sort((a, b) => a === "Shift" ? -1 : b === "Shift" ? 1 : 0).map((p) => symbols[p] ?? p).join("") + parts[parts.length - 1];
 }
-/** `aria-keyshortcuts` value for `"Mod+B"`. */
+const IS_MAC = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || "");
+const MODIFIER_ORDER = [
+	"Alt",
+	"Ctrl",
+	"Meta",
+	"Shift"
+];
+/** Split `"Mod+Shift+X"` into platform modifiers and the key. `+` alone is a valid key. */
+function parse(shortcut) {
+	const parts = shortcut.trim().split(/\+(?!$)/);
+	const key = parts.pop() ?? "";
+	return {
+		mods: new Set(parts.map((p) => {
+			const m = p.trim();
+			if (m === "Mod") return IS_MAC ? "Meta" : "Ctrl";
+			if (m === "Cmd" || m === "Command") return "Meta";
+			if (m === "Control") return "Ctrl";
+			if (m === "Option") return "Alt";
+			return m;
+		})),
+		key
+	};
+}
+/**
+* Squire key-handler names for a shortcut, e.g. `["Ctrl-Shift-x", "Ctrl-Shift-X"]`:
+* modifiers in Squire's order, and both letter cases (Shift may or may not upper-case it).
+*/
+function squireKeys(shortcut) {
+	const { mods, key } = parse(shortcut);
+	const prefix = MODIFIER_ORDER.filter((m) => mods.has(m)).map((m) => `${m}-`).join("");
+	const variants = key.length === 1 ? [key.toLowerCase(), key.toUpperCase()] : [key];
+	return [...new Set(variants)].map((k) => prefix + k);
+}
+/** Format a shortcut for the current platform: `⇧⌘X` on macOS, `Ctrl+Shift+X` elsewhere. */
+function formatShortcut(shortcut) {
+	const { mods, key } = parse(shortcut);
+	const label = key.length === 1 ? key.toUpperCase() : key;
+	if (IS_MAC) {
+		const symbols = {
+			Ctrl: "⌃",
+			Alt: "⌥",
+			Shift: "⇧",
+			Meta: "⌘"
+		};
+		return [
+			"Ctrl",
+			"Alt",
+			"Shift",
+			"Meta"
+		].filter((m) => mods.has(m)).map((m) => symbols[m]).join("").concat(label);
+	}
+	return [...[
+		"Ctrl",
+		"Meta",
+		"Alt",
+		"Shift"
+	].filter((m) => mods.has(m)), label].join("+");
+}
+/** `aria-keyshortcuts` value for a shortcut, e.g. `"Control+Shift+X"`. */
 function ariaShortcut(shortcut) {
-	return shortcut.replace("Mod", IS_MAC$1 ? "Meta" : "Control");
+	const { mods, key } = parse(shortcut);
+	const names = {
+		Ctrl: "Control",
+		Meta: "Meta",
+		Alt: "Alt",
+		Shift: "Shift"
+	};
+	const label = key.length === 1 ? key.toUpperCase() : key;
+	return [...MODIFIER_ORDER.filter((m) => mods.has(m)).map((m) => names[m]), label].join("+");
 }
+/**
+* Squire's own default key handlers that a removed or remapped shortcut must not fall back
+* to. Keys the browser would also format natively (bold, italic, underline, undo, redo) are
+* blocked; the others fall through to the browser (e.g. Ctrl+F opens the browser's find).
+*/
+const SQUIRE_DEFAULT_KEYS = Object.freeze(Object.values(DEFAULT_SHORTCUTS).flat());
+/** Keys whose browser default would edit the content itself. */
+const NATIVE_EDITING_KEYS = new Set([
+	"Mod+B",
+	"Mod+I",
+	"Mod+U",
+	"Mod+Z",
+	"Mod+Y",
+	"Mod+Shift+Z"
+].flatMap(squireKeys));
 // src/theme.ts
 /**
 * Typed access to the `--ve-*` CSS custom properties. CSS stays the source of
@@ -5218,6 +5357,8 @@ function setTheme(tokens = {}) {
 	applyTokens(globalRule.style, tokens);
 }
 // src/vanilia-editor.ts
+/** Built-in commands that a shortcut can run. */
+const COMMANDS = /* @__PURE__ */ new Set([...BUTTON_NAMES, ...BUTTONLESS_COMMANDS]);
 /**
 * <vanilia-editor> — Form-Associated Custom Element (ElementInternals)
 * powered by vendored Fastmail Squire + modular modern Web/CSS API extensions.
@@ -5231,7 +5372,8 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		"required",
 		"upload-url",
 		"toolbar",
-		"bubble-menu"
+		"bubble-menu",
+		"shortcuts"
 	];
 	/** Override icons for every editor on the page (same as the `setIcons` export). */
 	static setIcons(map) {
@@ -5261,6 +5403,10 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	static get buttonNames() {
 		return BUTTON_NAMES;
 	}
+	/** Override keyboard shortcuts for every editor on the page (same as the `setShortcuts` export). */
+	static setShortcuts(map) {
+		setShortcuts(map);
+	}
 	/** Set theme tokens for every editor on the page (same as the `setTheme` export). */
 	static setTheme(tokens) {
 		setTheme(tokens);
@@ -5274,6 +5420,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	#labelOverrides = /* @__PURE__ */ new Map();
 	#t = createTranslator(this.#labelOverrides);
 	#buttons = /* @__PURE__ */ new Map();
+	#shortcutOverrides = /* @__PURE__ */ new Map();
 	#unsubscribers = [];
 	#internals;
 	#squire = null;
@@ -5384,6 +5531,14 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			}
 			tpl.remove();
 		}
+		for (const tpl of this.querySelectorAll(":scope > template[data-ve-shortcuts]")) {
+			try {
+				mergeShortcuts(this.#shortcutOverrides, JSON.parse(tpl.content.textContent || "{}"));
+			} catch (err) {
+				console.error("[vanilia-editor] invalid JSON in <template data-ve-shortcuts>", err);
+			}
+			tpl.remove();
+		}
 		if (this.#pendingValue !== null) {
 			this.#initialHTML = this.#pendingValue;
 			this.#pendingValue = null;
@@ -5398,7 +5553,8 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		this.#unsubscribers = [
 			onIconsChange(() => this.#refreshIcons()),
 			onLabelsChange(() => this.#refreshLabels()),
-			onButtonsChange(() => this.#renderButtons())
+			onButtonsChange(() => this.#renderButtons()),
+			onShortcutsChange(() => this.#renderButtons())
 		];
 		this.#bindShortcuts();
 		if (this.#initialHTML) this.setHTML(this.#initialHTML, { silent: true });
@@ -5415,7 +5571,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		if (name === "placeholder") this.#syncPlaceholder();
 		else if (name === "disabled") this.#applyDisabled(newVal !== null);
 		else if (name === "required") this.#syncFormState();
-		else if (name === "toolbar" || name === "bubble-menu") this.#renderButtons();
+		else if (name === "toolbar" || name === "bubble-menu" || name === "shortcuts") this.#renderButtons();
 	}
 	formDisabledCallback(disabled) {
 		this.#applyDisabled(disabled);
@@ -5509,6 +5665,18 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	setLabels(map = {}) {
 		mergeLabels(this.#labelOverrides, map);
 		this.#refreshLabels();
+	}
+	/**
+	* Override keyboard shortcuts for this editor, by command or button name: a combination
+	* like `"Mod+Shift+B"`, several, `false` to remove them, or `null` to restore the default.
+	*/
+	setShortcuts(map = {}) {
+		mergeShortcuts(this.#shortcutOverrides, map);
+		this.#renderButtons();
+	}
+	/** The shortcuts in effect, by command or button name (`{ bold: ["Mod+B"], ... }`). */
+	getShortcuts() {
+		return Object.fromEntries(this.#effectiveShortcuts());
 	}
 	/** Set theme tokens on this editor (inline `--ve-*` properties). `null` removes one. */
 	setTheme(tokens = {}) {
@@ -5685,19 +5853,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 			this.#bubbleMenu,
 			this.#findReplace
 		];
-		const mod = navigator.platform?.toLowerCase().includes("mac") ? "Meta" : "Ctrl";
-		squire.setKeyHandler(`${mod}-k`, (_ed, event) => {
-			event.preventDefault();
-			this.#openLinkPopover();
-		});
-		squire.setKeyHandler(`${mod}-f`, (_ed, event) => {
-			event.preventDefault();
-			this.#findReplace?.open();
-		});
-		for (const key of [`${mod}-Shift-x`, `${mod}-Shift-X`]) squire.setKeyHandler(key, (_ed, event) => {
-			event.preventDefault();
-			this.exec("strike");
-		});
+		this.#bindShortcuts();
 		const onSelectionState = () => {
 			this.#syncToolbar();
 			this.#emitStateEvent();
@@ -5955,7 +6111,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		if (builtin) return this.#buttonMarkup({
 			name,
 			label: this.#t(builtin.label),
-			shortcut: builtin.shortcut,
+			shortcut: this.#shortcutFor(name),
 			iconHTML: this.#icon(builtin.icon, size),
 			className: `ve-btn${small}`
 		});
@@ -5966,7 +6122,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		return this.#buttonMarkup({
 			name,
 			label: custom.label,
-			shortcut: custom.shortcut,
+			shortcut: this.#shortcutFor(name),
 			iconHTML: iconHTML + text,
 			className: `ve-btn${small}${custom.text ? " ve-btn--text" : ""} ve-btn--custom`
 		});
@@ -5991,20 +6147,45 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 		this.#bindShortcuts();
 	}
 	#boundKeys = [];
-	/** Bind the shortcuts of the custom buttons shown in the toolbar or the selection menu. */
+	/**
+	* The shortcuts in effect, by command or button name. Lookup order: this editor's
+	* overrides, `setShortcuts()`, a custom button's own `shortcut`, the built-in defaults.
+	* Empty when the `shortcuts` attribute is `"none"`.
+	*/
+	#effectiveShortcuts() {
+		const result = /* @__PURE__ */ new Map();
+		if (this.getAttribute("shortcuts") === "none") return result;
+		for (const [name, keys] of Object.entries(DEFAULT_SHORTCUTS)) result.set(name, [...keys]);
+		const custom = new Map([...getDefinedButtons(), ...this.#buttons]);
+		for (const [name, button] of custom) if (button.shortcut) result.set(name, typeof button.shortcut === "string" ? [button.shortcut] : [...button.shortcut]);
+		for (const [name, keys] of getGlobalShortcuts()) result.set(name, [...keys]);
+		for (const [name, keys] of this.#shortcutOverrides) result.set(name, [...keys]);
+		for (const [name, keys] of result) if (!keys.length) result.delete(name);
+		return result;
+	}
+	/** First shortcut of a command or button, for its tooltip. */
+	#shortcutFor(name) {
+		return this.#effectiveShortcuts().get(name)?.[0];
+	}
+	/**
+	* Bind the shortcut map. Squire's own defaults are replaced first: keys the browser
+	* would edit with (bold, undo, ...) are blocked, the rest fall through to the browser.
+	*/
 	#bindShortcuts() {
 		const squire = this.#squire;
 		if (!squire) return;
-		for (const key of this.#boundKeys) squire.setKeyHandler(key, null);
+		const block = (_ed, event) => event.preventDefault();
+		const reset = (key) => squire.setKeyHandler(key, NATIVE_EDITING_KEYS.has(key) ? block : null);
+		for (const key of this.#boundKeys) reset(key);
+		for (const key of SQUIRE_DEFAULT_KEYS.flatMap(squireKeys)) reset(key);
 		this.#boundKeys = [];
-		const shown = /* @__PURE__ */ new Set([...this.#toolbarItems(), ...this.#bubbleItems()]);
-		for (const name of shown) {
-			const button = this.#customButton(name);
-			if (!button?.shortcut) continue;
-			for (const key of squireKeys(button.shortcut)) {
+		for (const [name, shortcuts] of this.#effectiveShortcuts()) {
+			if (!this.#customButton(name) && !(name in DEFAULT_SHORTCUTS) && !COMMANDS.has(name)) continue;
+			for (const key of shortcuts.flatMap(squireKeys)) {
 				squire.setKeyHandler(key, (_ed, event) => {
 					event.preventDefault();
-					this.exec(name);
+					if (name === "find") this.#findReplace?.open();
+					else this.exec(name);
 				});
 				this.#boundKeys.push(key);
 			}
@@ -6129,22 +6310,7 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	}
 };
 if (typeof customElements !== "undefined" && !customElements.get("vanilia-editor")) customElements.define("vanilia-editor", VaniliaEditorElement);
-const IS_MAC = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || "");
-/** Squire key-handler names for `"Mod+Shift+S"`: modifiers in Squire's order, both letter cases. */
-function squireKeys(shortcut) {
-	const parts = shortcut.split("+").map((p) => p.trim());
-	const key = parts.pop() ?? "";
-	const mods = new Set(parts.map((p) => p === "Mod" ? IS_MAC ? "Meta" : "Ctrl" : p));
-	const prefix = [
-		"Alt",
-		"Ctrl",
-		"Meta",
-		"Shift"
-	].filter((m) => mods.has(m)).map((m) => `${m}-`).join("");
-	const variants = key.length === 1 ? [key.toLowerCase(), key.toUpperCase()] : [key];
-	return [...new Set(variants)].map((k) => prefix + k);
-}
 function escapeAttr(str) {
 	return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-export { BUTTON_NAMES, DEFAULT_BUBBLE_MENU, DEFAULT_LABELS, DEFAULT_TOOLBAR, ICON_NAMES, LABEL_NAMES, THEME_TOKENS, VaniliaEditorElement, createBubbleMenuExtension, createFindReplaceExtension, createImageResizeExtension, createTranslator, defineButton, formatHTML, icon, isSafeUrl, normalizeExportHTML, sanitizeToDOMFragment, setIcons, setLabels, setTheme, tokenVar, undefineButton };
+export { BUTTON_NAMES, DEFAULT_BUBBLE_MENU, DEFAULT_LABELS, DEFAULT_SHORTCUTS, DEFAULT_TOOLBAR, ICON_NAMES, LABEL_NAMES, THEME_TOKENS, VaniliaEditorElement, createBubbleMenuExtension, createFindReplaceExtension, createImageResizeExtension, createTranslator, defineButton, formatHTML, formatShortcut, icon, isSafeUrl, normalizeExportHTML, sanitizeToDOMFragment, setIcons, setLabels, setShortcuts, setTheme, tokenVar, undefineButton };
