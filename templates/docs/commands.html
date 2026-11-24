@@ -5,16 +5,29 @@
   works in <code>exec()</code> also works in a <code>toolbar</code> layout, except <code>makeLink</code>, <code>removeLink</code>,
   <code>subscript</code>, <code>superscript</code>, <code>indent</code> and <code>outdent</code>, which have no button.
 </p>
+<p>The badge shows whose code does the work: {{template "squire" .BasePath}} or {{template "vanilia" .BasePath}} (see <a href="{{.BasePath}}/docs/squire">Squire &amp; Vanilia</a>).</p>
 <div class="table-wrap">
   <table>
-    <thead><tr><th>Group</th><th>Commands</th></tr></thead>
+    <thead><tr><th>Command</th><th>What it does</th><th>From</th></tr></thead>
     <tbody>
-      <tr><td>Inline</td><td><code>bold</code> <code>italic</code> <code>underline</code> <code>strike</code> <code>code</code> <code>subscript</code> <code>superscript</code> <code>clearFormatting</code></td></tr>
-      <tr><td>Blocks</td><td><code>paragraph</code> <code>h1</code> <code>h2</code> <code>h3</code> <code>bulletList</code> <code>orderedList</code> <code>blockquote</code> <code>hr</code>, <code>indent</code> <code>outdent</code> (list level, or quote level outside lists)</td></tr>
-      <tr><td>Alignment</td><td><code>alignLeft</code> <code>alignCenter</code> <code>alignRight</code> (aligns the selected image when one is selected)</td></tr>
-      <tr><td>Links</td><td><code>link</code> (opens the link popover), <code>makeLink</code> + URL, <code>removeLink</code></td></tr>
-      <tr><td>Other</td><td><code>image</code> (opens the image popover), <code>find</code>, <code>undo</code>, <code>redo</code></td></tr>
-      <tr><td>Custom</td><td>The name of any <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a> runs its <code>run()</code>.</td></tr>
+      <tr><td><code>bold</code> <code>italic</code> <code>underline</code></td><td>Toggle the format on the selection.</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>strike</code></td><td>Toggle strikethrough (<code>&lt;s&gt;</code>).</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>code</code></td><td>Inline code, or a code block across several lines.</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>subscript</code> <code>superscript</code></td><td>Toggle sub- or superscript (no button).</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>clearFormatting</code></td><td>Remove inline formatting from the selection.</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>paragraph</code></td><td>Turn the blocks into plain paragraphs, taking them out of lists, quotes and code blocks.</td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>h1</code> <code>h2</code> <code>h3</code></td><td>Toggle a heading.</td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>bulletList</code> <code>orderedList</code></td><td>Toggle a list.</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>blockquote</code></td><td>Toggle a quote.</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>indent</code> <code>outdent</code></td><td>List level inside lists, quote level elsewhere (no button).</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>hr</code></td><td>Insert a horizontal rule.</td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>alignLeft</code> <code>alignCenter</code> <code>alignRight</code></td><td>Align text; with an image selected, align the image.</td><td>{{template "squire" .BasePath}} text<br>{{template "vanilia" .BasePath}} images</td></tr>
+      <tr><td><code>link</code></td><td>Open the link popover.</td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>makeLink</code> + URL<br><code>removeLink</code></td><td>Link the selection to a URL, or unlink it (no button).</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>image</code></td><td>Open the image popover (upload or URL).</td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>find</code></td><td>Toggle find &amp; replace.</td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>undo</code> <code>redo</code></td><td>Step through the undo history.</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><em>custom name</em></td><td>Runs a <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a>'s <code>run()</code>.</td><td>{{template "vanilia" .BasePath}}</td></tr>
     </tbody>
   </table>
 </div>

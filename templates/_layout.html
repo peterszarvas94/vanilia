@@ -79,6 +79,8 @@
     </footer>
 {{end}}
 
+{{define "squire"}}<a class="badge badge--squire" href="{{.}}/docs/squire" title="Behavior from Squire, the editing engine Vanilia is built on">Squire</a>{{end}}
+{{define "vanilia"}}<a class="badge badge--vanilia" href="{{.}}/docs/squire" title="Built in Vanilia, on top of Squire">Vanilia</a>{{end}}
 {{define "code"}}<div class="code-block"><button type="button" class="copy-btn" data-on:click="@copy(el)">Copy</button><pre><code data-highlight>{{.}}</code></pre></div>{{end}}
 
 {{define "sidebar"}}<button type="button" class="sidebar-toggle" popovertarget="sidebar" aria-label="Open {{.Section}} menu">

@@ -21,6 +21,7 @@ func TestPagesRender(t *testing.T) {
 		"/examples/labels":    `id="labels-editor"`,
 		"/examples/shortcuts": `id="shortcuts-editor"`,
 		"/docs/shortcuts":     `data-ve-shortcuts`,
+		"/docs/squire":        `class="badge badge--squire"`,
 		"/docs/sanitize":      `bluemonday.NewPolicy()`,
 		"/docs/browsers":      `aria-current="page">Browser support`,
 		"/examples/basic":     `id="basic"`,

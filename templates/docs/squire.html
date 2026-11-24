@@ -1,0 +1,48 @@
+{{define "doc/squire"}}
+<h1>Squire &amp; Vanilia</h1>
+<p>
+  Vanilia is a wrapper around <a href="https://github.com/fastmail/Squire" target="_blank" rel="noopener noreferrer">Squire</a>
+  2.4.11, the rich text engine Fastmail built for its mail editor. Squire does the editing itself; Vanilia turns it
+  into a drop-in element and adds everything around it. Throughout the docs, badges show where a behavior comes from:
+</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Badge</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>{{template "squire" .BasePath}}</td><td>Squire's own behavior. Vanilia calls it or exposes it unchanged, so <a href="https://github.com/fastmail/Squire#api" target="_blank" rel="noopener noreferrer">Squire's docs</a> describe the details.</td></tr>
+      <tr><td>{{template "vanilia" .BasePath}}</td><td>Built in Vanilia, on top of Squire. Not in Squire itself.</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  The public API is Vanilia's either way: you call <code>editor.exec("bold")</code>, not Squire's
+  <code>bold()</code>. The badge tells you whose code does the work. Pages without badges (attributes, events,
+  forms, toolbar, icons, labels, styling, uploads) document Vanilia features only.
+</p>
+
+<h2 id="squire">From Squire</h2>
+<ul>
+  <li>The editing engine: the <code>contenteditable</code> surface, selection handling, typing, Enter and Backspace behavior, and pasting.</li>
+  <li>Inline formatting (bold, italic, underline, strike, code, subscript, superscript), lists and list levels, quotes, text alignment, links, clearing formatting.</li>
+  <li>The undo history.</li>
+  <li>Most default keyboard shortcuts (see <a href="{{.BasePath}}/docs/shortcuts#defaults">Keyboard shortcuts</a>), now remapped through Vanilia's shortcut map.</li>
+  <li>Inserting HTML, plain text and images at the cursor.</li>
+  <li><code>editor.squire</code>: the Squire instance itself, with its <a href="https://github.com/fastmail/Squire#api" target="_blank" rel="noopener noreferrer">full API</a>.</li>
+</ul>
+
+<h2 id="vanilia">Built in Vanilia</h2>
+<ul>
+  <li>The <code>&lt;vanilia-editor&gt;</code> element: attributes, properties, events and form association (<code>name</code>, <code>required</code>, <code>FormData</code>, reset).</li>
+  <li>The toolbar, its layouts and custom buttons, and the selection (bubble) menu.</li>
+  <li>Headings and paragraphs, horizontal rules, and the link and image popovers.</li>
+  <li>Image upload, resize handles, width presets, image alignment and alt text. Squire's own image resizer is turned off.</li>
+  <li>Find &amp; replace.</li>
+  <li>The paste and output sanitizer, and the clean HTML from <code>getHTML()</code>.</li>
+  <li>Configurable keyboard shortcuts, plus <kbd>Ctrl</kbd>+<kbd>K</kbd>, <kbd>Ctrl</kbd>+<kbd>F</kbd> and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>.</li>
+  <li>Labels and translation, icons, themes and all styles.</li>
+</ul>
+<p>
+  Squire is MIT-licensed by Neil Jenkins and Fastmail and is bundled, pinned, into <code>vanilia-editor.js</code>;
+  its license ships as <code>SQUIRE-LICENSE.txt</code>.
+</p>
+{{end}}

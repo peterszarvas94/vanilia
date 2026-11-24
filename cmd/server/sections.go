@@ -19,6 +19,7 @@ type doc struct {
 var docIndex = []doc{
 	{Group: "Getting started", Slug: "install", Title: "Installation"},
 	{Group: "Getting started", Slug: "usage", Title: "Usage"},
+	{Group: "Getting started", Slug: "squire", Title: "Squire & Vanilia"},
 	{Group: "Getting started", Slug: "forms", Title: "Forms"},
 	{Group: "Getting started", Slug: "typescript", Title: "TypeScript"},
 	{Group: "Reference", Slug: "attributes", Title: "Attributes"},

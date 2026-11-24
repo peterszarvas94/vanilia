@@ -6,6 +6,10 @@
 </p>
 {{template "code" `await customElements.whenDefined("vanilia-editor");
 const editor = document.querySelector("vanilia-editor");`}}
+<p>
+  Everything here is Vanilia's API. Members marked {{template "squire" .BasePath}} pass straight through to Squire (see
+  <a href="{{.BasePath}}/docs/squire">Squire &amp; Vanilia</a>); the rest is built in Vanilia.
+</p>
 
 <h2 id="content">Content</h2>
 <div class="table-wrap">
@@ -16,11 +20,11 @@ const editor = document.querySelector("vanilia-editor");`}}
       <tr><td><code>getHTML()</code></td><td>Current content as clean HTML (<code>""</code> when empty).</td></tr>
       <tr><td><code>getFormattedHTML()</code></td><td>Same, indented for display.</td></tr>
       <tr><td><code>getText()</code></td><td>Plain text content.</td></tr>
-      <tr><td><code>getSelectedText()</code></td><td>The selected text (<code>""</code> when nothing is selected).</td></tr>
+      <tr><td><code>getSelectedText()</code></td><td>{{template "squire" .BasePath}} The selected text (<code>""</code> when nothing is selected).</td></tr>
       <tr><td><code>setHTML(html, { silent? })</code></td><td>Replace the content. <code>silent: true</code> skips the <code>input</code> event.</td></tr>
-      <tr><td><code>insertHTML(html)</code></td><td>Insert HTML at the cursor, replacing the selection. Sanitized like pasted content.</td></tr>
-      <tr><td><code>insertText(text)</code></td><td>Insert plain text at the cursor, replacing the selection.</td></tr>
-      <tr><td><code>insertImage(url, alt?)</code></td><td>Insert an image at the cursor. Returns the <code>&lt;img&gt;</code>, or <code>null</code> for an unsafe URL.</td></tr>
+      <tr><td><code>insertHTML(html)</code></td><td>{{template "squire" .BasePath}} Insert HTML at the cursor, replacing the selection. Sanitized like pasted content.</td></tr>
+      <tr><td><code>insertText(text)</code></td><td>{{template "squire" .BasePath}} Insert plain text at the cursor, replacing the selection.</td></tr>
+      <tr><td><code>insertImage(url, alt?)</code></td><td>{{template "squire" .BasePath}} Insert an image at the cursor. Returns the <code>&lt;img&gt;</code>, or <code>null</code> for an unsafe URL.</td></tr>
     </tbody>
   </table>
 </div>
@@ -32,8 +36,8 @@ const editor = document.querySelector("vanilia-editor");`}}
     <tbody>
       <tr><td><code>exec(command, arg?)</code></td><td>Run a <a href="{{.BasePath}}/docs/commands">command</a>, or the <a href="{{.BasePath}}/docs/toolbar#custom-buttons">custom button</a> of that name. <code>arg</code> is the URL for <code>makeLink</code>.</td></tr>
       <tr><td><code>isActive(name, attrs?)</code></td><td>Whether a format is active at the selection: <code>"bold"</code>, <code>"italic"</code>, <code>"underline"</code>, <code>"strike"</code>, <code>"code"</code>, <code>"link"</code>, <code>"bulletList"</code>, <code>"orderedList"</code>, <code>"blockquote"</code>, <code>"paragraph"</code>, or <code>"heading"</code> (optionally <code>{ level: 2 }</code>).</td></tr>
-      <tr><td><code>focus()</code></td><td>Focus the editing surface.</td></tr>
-      <tr><td><code>squire</code></td><td>The underlying <a href="https://github.com/fastmail/Squire#api" target="_blank" rel="noopener noreferrer">Squire</a> instance, for anything the API doesn't cover. <code>null</code> until the element is connected. Read-only.</td></tr>
+      <tr><td><code>focus()</code></td><td>{{template "squire" .BasePath}} Focus the editing surface.</td></tr>
+      <tr><td><code>squire</code></td><td>{{template "squire" .BasePath}} The underlying <a href="https://github.com/fastmail/Squire#api" target="_blank" rel="noopener noreferrer">Squire</a> instance, for anything the API doesn't cover. <code>null</code> until the element is connected. Read-only.</td></tr>
     </tbody>
   </table>
 </div>

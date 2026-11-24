@@ -9,20 +9,25 @@
 <h2 id="defaults">Defaults</h2>
 <div class="table-wrap">
   <table>
-    <thead><tr><th>Command</th><th>Shortcuts</th></tr></thead>
+    <thead><tr><th>Command</th><th>Shortcuts</th><th>From</th></tr></thead>
     <tbody>
-      <tr><td><code>bold</code> / <code>italic</code> / <code>underline</code></td><td><code>Mod+B</code> / <code>Mod+I</code> / <code>Mod+U</code></td></tr>
-      <tr><td><code>strike</code></td><td><code>Mod+Shift+X</code>, <code>Mod+Shift+7</code></td></tr>
-      <tr><td><code>code</code></td><td><code>Mod+D</code></td></tr>
-      <tr><td><code>subscript</code> / <code>superscript</code></td><td><code>Mod+Shift+5</code> / <code>Mod+Shift+6</code></td></tr>
-      <tr><td><code>bulletList</code> / <code>orderedList</code></td><td><code>Mod+Shift+8</code> / <code>Mod+Shift+9</code></td></tr>
-      <tr><td><code>outdent</code> / <code>indent</code></td><td><code>Mod+[</code> / <code>Mod+]</code> (list level, or quote level outside lists)</td></tr>
-      <tr><td><code>link</code></td><td><code>Mod+K</code></td></tr>
-      <tr><td><code>find</code></td><td><code>Mod+F</code></td></tr>
-      <tr><td><code>undo</code> / <code>redo</code></td><td><code>Mod+Z</code> / <code>Mod+Shift+Z</code>, <code>Mod+Y</code></td></tr>
+      <tr><td><code>bold</code> / <code>italic</code> / <code>underline</code></td><td><code>Mod+B</code> / <code>Mod+I</code> / <code>Mod+U</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>strike</code></td><td><code>Mod+Shift+X</code><br><code>Mod+Shift+7</code></td><td>{{template "vanilia" .BasePath}}<br>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>code</code></td><td><code>Mod+D</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>subscript</code> / <code>superscript</code></td><td><code>Mod+Shift+5</code> / <code>Mod+Shift+6</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>bulletList</code> / <code>orderedList</code></td><td><code>Mod+Shift+8</code> / <code>Mod+Shift+9</code></td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>outdent</code> / <code>indent</code></td><td><code>Mod+[</code> / <code>Mod+]</code> (list level, or quote level outside lists)</td><td>{{template "squire" .BasePath}}</td></tr>
+      <tr><td><code>link</code></td><td><code>Mod+K</code></td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>find</code></td><td><code>Mod+F</code></td><td>{{template "vanilia" .BasePath}}</td></tr>
+      <tr><td><code>undo</code> / <code>redo</code></td><td><code>Mod+Z</code> / <code>Mod+Shift+Z</code>, <code>Mod+Y</code></td><td>{{template "squire" .BasePath}}</td></tr>
     </tbody>
   </table>
 </div>
+<p>
+  The defaults marked {{template "squire" .BasePath}} are Squire's own; Vanilia added the ones marked
+  {{template "vanilia" .BasePath}}. Either way, all of them now go through Vanilia's shortcut map, so every one
+  can be changed or removed.
+</p>
 <p>
   <code>Mod</code> is <kbd>⌘</kbd> on macOS and <kbd>Ctrl</kbd> elsewhere. The list is exported as
   <code>DEFAULT_SHORTCUTS</code>. Enter, Tab, Backspace and the other editing keys aren't shortcuts and can't be
