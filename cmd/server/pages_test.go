@@ -20,7 +20,7 @@ func TestPagesRender(t *testing.T) {
 		"/demos/toolbar":     "<vanilia-editor\n  id=\"toolbar-editor\"",
 		"/demos/labels":      `<vanilia-editor id="labels-editor"`,
 		"/demos/shortcuts":   `<vanilia-editor id="shortcuts-editor"`,
-		"/demos/script-tag":  `<script src="/dist/vanilia-editor.iife.js" defer></script>`,
+		"/demos/script-tag":  `<script src="/dist/vanilia-editor.iife.js?v=`,
 		"/demos/htmx":        `import "htmx.org";`,
 		"/examples/toolbar":  `href="/demos/toolbar">Interactive demo`,
 		"/docs/shortcuts":    `data-ve-shortcuts`,

@@ -11,7 +11,7 @@
           <h1>{{.Title}}</h1>
           <p class="lede">{{.Description}}</p>
           <div class="example-preview">
-            {{.HTML}}
+            {{fingerprintHTML .HTML}}
           </div>
           <div class="page-actions">
             <a class="btn" href="{{$.BasePath}}/examples/{{.Slug}}">View code <span aria-hidden="true">→</span></a>

@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -39,20 +40,21 @@ func newServer(basePath string, store *contentStore, uploads *uploadStore) *echo
 	e := echo.New()
 	e.HideBanner = true
 
-	e.Static("/static", "static")
-	e.Static("/assets", "assets")
+	// Pages link these with content fingerprints (?v=hash): cached forever when
+	// fingerprinted, revalidated on every use otherwise (see assets.go)
+	e.Group("/static", assetCacheControl).Static("/", filepath.Join(assetRoot, "static"))
+	e.Group("/assets", assetCacheControl).Static("/", filepath.Join(assetRoot, "assets"))
 
 	// Serve single-file drop-in distribution assets with CORS so other projects can link directly
-	distGroup := e.Group("/dist", func(next echo.HandlerFunc) echo.HandlerFunc {
+	distGroup := e.Group("/dist", assetCacheControl, func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			h := c.Response().Header()
 			h.Set("Access-Control-Allow-Origin", "*")
 			h.Set("Cross-Origin-Resource-Policy", "cross-origin")
-			h.Set("Cache-Control", "public, max-age=300")
 			return next(c)
 		}
 	})
-	distGroup.Static("/", "dist")
+	distGroup.Static("/", filepath.Join(assetRoot, "dist"))
 
 	e.GET("/healthz", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")

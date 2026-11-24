@@ -121,7 +121,7 @@ func TestSanitizeEditorHTMLPreservesLeftRightImageAlignment(t *testing.T) {
 }
 
 func TestDistAssetsServedWithCORS(t *testing.T) {
-	t.Chdir("../..")
+	mustLoadTemplates("../../templates") // also points the file servers at the repo root
 	e := newServer("", newContentStore(10, ""), newUploadStore())
 
 	for _, asset := range []string{"/dist/vanilia-editor.js", "/dist/vanilia-editor.css"} {

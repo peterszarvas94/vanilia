@@ -61,8 +61,10 @@ func init() {
 }
 
 // mustLoadTemplates parses the page templates in dir and the docs pages in dir/docs.
+// Asset files are looked up next to the templates directory.
 func mustLoadTemplates(dir string) {
-	templates = template.Must(template.ParseGlob(filepath.Join(dir, "*.html")))
+	assetRoot = filepath.Dir(filepath.Clean(dir))
+	templates = template.Must(template.New("").Funcs(assetFuncs).ParseGlob(filepath.Join(dir, "*.html")))
 	templates = template.Must(templates.ParseGlob(filepath.Join(dir, "docs", "*.html")))
 }
 

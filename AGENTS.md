@@ -18,6 +18,7 @@
 - The editor is TypeScript in `src/`, built with Vite+ (`vp`) into an ES module (`dist/vanilia-editor.js`, with types) and a classic script (`dist/vanilia-editor.iife.js`, `window.Vanilia`). Squire is pinned in `package.json` (`squire-rte`) and bundled into `dist/vanilia-editor.js`.
 - After changing `src/`, run `npm run build` and commit `dist/`: the Docker image has no Node and serves the committed build.
 - Site JavaScript is Datastar plugins in `static/site.js`. Pages load everything through the import map and one module script in `templates/_layout.html`.
+- Pages link `/static`, `/dist` and `/assets` files through `{{asset "/path"}}` (content-hash `?v=`, see `cmd/server/assets.go`): fingerprinted URLs are cached as immutable, plain ones revalidate. Never hard-code those paths in page templates.
 
 ## Checks (no CI, run locally)
 

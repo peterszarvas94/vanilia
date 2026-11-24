@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{if .Title}}{{.Title}} · {{end}}Vanilia</title>
     <meta name="description" content="Vanilia is a drop-in rich text editor web component: one custom element, one ES module and one stylesheet, no build step." />
-    <link rel="icon" href="{{.BasePath}}/static/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="{{.BasePath}}{{asset "/static/favicon.svg"}}" type="image/svg+xml" />
     <script>
       try {
         const t = localStorage.getItem("vanilia-theme");
@@ -15,21 +15,21 @@
     <script type="importmap">
       {
         "imports": {
-          "vanilia-editor": "{{.BasePath}}/dist/vanilia-editor.js",
-          "datastar": "{{.BasePath}}/static/vendor/datastar.js",
-          "site": "{{.BasePath}}/static/site.js",
-          "htmx.org": "{{.BasePath}}/static/vendor/htmx.esm.js",
-          "alpinejs": "{{.BasePath}}/static/vendor/alpine.esm.js",
-          "alpine": "{{.BasePath}}/static/alpine.js",
-          "playground": "{{.BasePath}}/static/playground.js"
+          "vanilia-editor": "{{.BasePath}}{{asset "/dist/vanilia-editor.js"}}",
+          "datastar": "{{.BasePath}}{{asset "/static/vendor/datastar.js"}}",
+          "site": "{{.BasePath}}{{asset "/static/site.js"}}",
+          "htmx.org": "{{.BasePath}}{{asset "/static/vendor/htmx.esm.js"}}",
+          "alpinejs": "{{.BasePath}}{{asset "/static/vendor/alpine.esm.js"}}",
+          "alpine": "{{.BasePath}}{{asset "/static/alpine.js"}}",
+          "playground": "{{.BasePath}}{{asset "/static/playground.js"}}"
         }
       }
     </script>
-    {{if not .ClassicEditor}}<link rel="modulepreload" href="{{.BasePath}}/dist/vanilia-editor.js" />{{end}}
-    <link rel="modulepreload" href="{{.BasePath}}/static/vendor/datastar.js" />
-    <link rel="modulepreload" href="{{.BasePath}}/static/site.js" />
-    <link rel="stylesheet" href="{{.BasePath}}/dist/vanilia-editor.css" />
-    <link rel="stylesheet" href="{{.BasePath}}/static/site.css" />
+    {{if not .ClassicEditor}}<link rel="modulepreload" href="{{.BasePath}}{{asset "/dist/vanilia-editor.js"}}" />{{end}}
+    <link rel="modulepreload" href="{{.BasePath}}{{asset "/static/vendor/datastar.js"}}" />
+    <link rel="modulepreload" href="{{.BasePath}}{{asset "/static/site.js"}}" />
+    <link rel="stylesheet" href="{{.BasePath}}{{asset "/dist/vanilia-editor.css"}}" />
+    <link rel="stylesheet" href="{{.BasePath}}{{asset "/static/site.css"}}" />
     {{if .ClassicEditor}}
     <!-- This page loads the editor itself, as a classic script (see the page's code) -->
     {{end}}
