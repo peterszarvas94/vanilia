@@ -56,6 +56,8 @@ import {
   NATIVE_EDITING_KEYS,
   onShortcutsChange,
   setShortcuts,
+  deleteShortcuts,
+  restoreDefaultShortcuts,
   SQUIRE_DEFAULT_KEYS,
   squireKeys,
   type Shortcut,
@@ -158,6 +160,16 @@ export class VaniliaEditorElement extends BaseHTMLElement {
   /** Override keyboard shortcuts for every editor on the page (same as the `setShortcuts` export). */
   static setShortcuts(map: ShortcutMap): void {
     setShortcuts(map);
+  }
+
+  /** Remove named shortcuts for every editor on the page. */
+  static deleteShortcuts(...commands: string[]): void {
+    deleteShortcuts(...commands);
+  }
+
+  /** Restore named global shortcuts, or all global overrides without names. */
+  static restoreDefaultShortcuts(...commands: string[]): void {
+    restoreDefaultShortcuts(...commands);
   }
 
   /** Set theme tokens for every editor on the page (same as the `setTheme` export). */
@@ -528,10 +540,24 @@ export class VaniliaEditorElement extends BaseHTMLElement {
 
   /**
    * Override keyboard shortcuts for this editor, by command or button name: a combination
-   * like `"Mod+Shift+B"`, several, `false` to remove them, or `null` to restore the default.
+   * like `"Mod+Shift+B"`, or several combinations.
    */
   setShortcuts(map: ShortcutMap = {}): void {
     mergeShortcuts(this.#shortcutOverrides, map);
+    this.#renderButtons();
+  }
+
+  /** Remove named shortcuts for this editor only. */
+  deleteShortcuts(...commands: string[]): void {
+    for (const name of commands) this.#shortcutOverrides.set(name, []);
+    this.#renderButtons();
+  }
+
+  /** Restore inherited shortcuts for named commands, or all local overrides without names. */
+  restoreDefaultShortcuts(...commands: string[]): void {
+    if (commands.length) {
+      for (const name of commands) this.#shortcutOverrides.delete(name);
+    } else this.#shortcutOverrides.clear();
     this.#renderButtons();
   }
 

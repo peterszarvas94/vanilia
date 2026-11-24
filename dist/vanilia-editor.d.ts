@@ -433,18 +433,22 @@ export declare function undefineButton(name: string): void;
 /** A key combination like `"Mod+Shift+X"`. */
 type Shortcut = string;
 /**
- * Shortcut overrides by command or custom button name: one combination, several, or
- * `false` / `""` / `[]` to remove them. `null` restores the default.
+ * Shortcut overrides by command or custom button name: one combination or several.
+ * An empty array declares no shortcuts in a data-ve-shortcuts template.
  */
-type ShortcutMap = Record<string, Shortcut | readonly Shortcut[] | false | null | undefined>;
+type ShortcutMap = Record<string, Shortcut | readonly Shortcut[]>;
 /** The built-in shortcuts. */
 export declare const DEFAULT_SHORTCUTS: Readonly<Record<string, readonly Shortcut[]>>;
 /**
  * Override shortcuts for every <vanilia-editor> on the page (mounted editors update).
  *
- *   setShortcuts({ bold: "Mod+Shift+B", find: false, h2: "Mod+Alt+2" });
+ *   setShortcuts({ bold: "Mod+Shift+B", h2: "Mod+Alt+2" });
  */
 export declare function setShortcuts(map?: ShortcutMap): void;
+/** Remove named shortcuts for every editor on the page. */
+export declare function deleteShortcuts(...commands: string[]): void;
+/** Restore named global overrides, or all overrides when called without names. */
+export declare function restoreDefaultShortcuts(...commands: string[]): void;
 /** Format a shortcut for the current platform: `⇧⌘X` on macOS, `Ctrl+Shift+X` elsewhere. */
 export declare function formatShortcut(shortcut: Shortcut): string;
 /**
@@ -513,6 +517,10 @@ export declare class VaniliaEditorElement extends BaseHTMLElement {
   static get buttonNames(): readonly BuiltinButtonName[];
   /** Override keyboard shortcuts for every editor on the page (same as the `setShortcuts` export). */
   static setShortcuts(map: ShortcutMap): void;
+  /** Remove named shortcuts for every editor on the page. */
+  static deleteShortcuts(...commands: string[]): void;
+  /** Restore named global shortcuts, or all global overrides without names. */
+  static restoreDefaultShortcuts(...commands: string[]): void;
   /** Set theme tokens for every editor on the page (same as the `setTheme` export). */
   static setTheme(tokens: ThemeTokens): void;
   /** Names of all theme tokens. */
@@ -573,9 +581,13 @@ export declare class VaniliaEditorElement extends BaseHTMLElement {
   setLabels(map?: LabelMap): void;
   /**
    * Override keyboard shortcuts for this editor, by command or button name: a combination
-   * like `"Mod+Shift+B"`, several, `false` to remove them, or `null` to restore the default.
+   * like `"Mod+Shift+B"`, or several combinations.
    */
   setShortcuts(map?: ShortcutMap): void;
+  /** Remove named shortcuts for this editor only. */
+  deleteShortcuts(...commands: string[]): void;
+  /** Restore inherited shortcuts for named commands, or all local overrides without names. */
+  restoreDefaultShortcuts(...commands: string[]): void;
   /** The shortcuts in effect, by command or button name (`{ bold: ["Mod+B"], ... }`). */
   getShortcuts(): Record<string, Shortcut[]>;
   /** Set theme tokens on this editor (inline `--ve-*` properties). `null` removes one. */

@@ -5167,19 +5167,33 @@ const DEFAULT_SHORTCUTS = Object.freeze({
 });
 const globalShortcuts = /* @__PURE__ */ new Map();
 const shortcutListeners = /* @__PURE__ */ new Set();
-/** Write shortcut overrides into `target`; `null` deletes an entry, `false` stores "none". */
+/** Write shortcut combinations into `target`. */
 function mergeShortcuts(target, map) {
-	for (const [name, value] of Object.entries(map)) if (value == null) target.delete(name);
-	else if (value === false || value === "") target.set(name, []);
-	else target.set(name, (typeof value === "string" ? [value] : [...value]).filter(Boolean));
+	const entries = [];
+	for (const [name, value] of Object.entries(map)) {
+		if (typeof value !== "string" && (!Array.isArray(value) || !value.every((key) => typeof key === "string"))) throw new TypeError("Use deleteShortcuts() or restoreDefaultShortcuts() to remove or reset shortcuts.");
+		entries.push([name, (typeof value === "string" ? [value] : [...value]).filter(Boolean)]);
+	}
+	for (const [name, keys] of entries) target.set(name, keys);
 }
 /**
 * Override shortcuts for every <vanilia-editor> on the page (mounted editors update).
 *
-*   setShortcuts({ bold: "Mod+Shift+B", find: false, h2: "Mod+Alt+2" });
+*   setShortcuts({ bold: "Mod+Shift+B", h2: "Mod+Alt+2" });
 */
 function setShortcuts(map = {}) {
 	mergeShortcuts(globalShortcuts, map);
+	for (const listener of shortcutListeners) listener();
+}
+/** Remove named shortcuts for every editor on the page. */
+function deleteShortcuts(...commands) {
+	for (const name of commands) globalShortcuts.set(name, []);
+	for (const listener of shortcutListeners) listener();
+}
+/** Restore named global overrides, or all overrides when called without names. */
+function restoreDefaultShortcuts(...commands) {
+	if (commands.length) for (const name of commands) globalShortcuts.delete(name);
+	else globalShortcuts.clear();
 	for (const listener of shortcutListeners) listener();
 }
 /** Global overrides set with `setShortcuts()`. */
@@ -5406,6 +5420,14 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	/** Override keyboard shortcuts for every editor on the page (same as the `setShortcuts` export). */
 	static setShortcuts(map) {
 		setShortcuts(map);
+	}
+	/** Remove named shortcuts for every editor on the page. */
+	static deleteShortcuts(...commands) {
+		deleteShortcuts(...commands);
+	}
+	/** Restore named global shortcuts, or all global overrides without names. */
+	static restoreDefaultShortcuts(...commands) {
+		restoreDefaultShortcuts(...commands);
 	}
 	/** Set theme tokens for every editor on the page (same as the `setTheme` export). */
 	static setTheme(tokens) {
@@ -5679,10 +5701,21 @@ var VaniliaEditorElement = class extends BaseHTMLElement {
 	}
 	/**
 	* Override keyboard shortcuts for this editor, by command or button name: a combination
-	* like `"Mod+Shift+B"`, several, `false` to remove them, or `null` to restore the default.
+	* like `"Mod+Shift+B"`, or several combinations.
 	*/
 	setShortcuts(map = {}) {
 		mergeShortcuts(this.#shortcutOverrides, map);
+		this.#renderButtons();
+	}
+	/** Remove named shortcuts for this editor only. */
+	deleteShortcuts(...commands) {
+		for (const name of commands) this.#shortcutOverrides.set(name, []);
+		this.#renderButtons();
+	}
+	/** Restore inherited shortcuts for named commands, or all local overrides without names. */
+	restoreDefaultShortcuts(...commands) {
+		if (commands.length) for (const name of commands) this.#shortcutOverrides.delete(name);
+		else this.#shortcutOverrides.clear();
 		this.#renderButtons();
 	}
 	/** The shortcuts in effect, by command or button name (`{ bold: ["Mod+B"], ... }`). */
@@ -6324,4 +6357,4 @@ if (typeof customElements !== "undefined" && !customElements.get("vanilia-editor
 function escapeAttr(str) {
 	return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-export { BUTTON_NAMES, DEFAULT_BUBBLE_MENU, DEFAULT_LABELS, DEFAULT_SHORTCUTS, DEFAULT_TOOLBAR, ICON_NAMES, LABEL_NAMES, THEME_TOKENS, VaniliaEditorElement, createBubbleMenuExtension, createFindReplaceExtension, createImageResizeExtension, createTranslator, defineButton, formatHTML, formatShortcut, icon, isSafeUrl, normalizeExportHTML, sanitizeToDOMFragment, setIcons, setLabels, setShortcuts, setTheme, tokenVar, undefineButton };
+export { BUTTON_NAMES, DEFAULT_BUBBLE_MENU, DEFAULT_LABELS, DEFAULT_SHORTCUTS, DEFAULT_TOOLBAR, ICON_NAMES, LABEL_NAMES, THEME_TOKENS, VaniliaEditorElement, createBubbleMenuExtension, createFindReplaceExtension, createImageResizeExtension, createTranslator, defineButton, deleteShortcuts, formatHTML, formatShortcut, icon, isSafeUrl, normalizeExportHTML, restoreDefaultShortcuts, sanitizeToDOMFragment, setIcons, setLabels, setShortcuts, setTheme, tokenVar, undefineButton };
