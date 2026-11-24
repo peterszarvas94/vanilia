@@ -5,6 +5,12 @@
     <div class="container with-sidebar">
       {{template "sidebar" .}}
       <main id="main" class="prose">
+        <h1>{{.Heading}}</h1>
+        <p class="feature-origin">
+          <span>Feature origin:</span>
+          {{if .IncludesSquire}}{{template "squire" .BasePath}}{{end}}
+          {{template "vanilia" .BasePath}}
+        </p>
         {{.Content}}
         {{template "pager" .}}
       </main>

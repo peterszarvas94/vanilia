@@ -11,27 +11,28 @@ import (
 // doc is one page under /docs, rendered from the "doc/<slug>" template in
 // templates/docs/<slug>.html.
 type doc struct {
-	Group string
-	Slug  string
-	Title string
+	Group          string
+	Slug           string
+	Title          string
+	IncludesSquire bool
 }
 
 var docIndex = []doc{
 	{Group: "Getting started", Slug: "install", Title: "Installation"},
 	{Group: "Getting started", Slug: "usage", Title: "Usage"},
-	{Group: "Getting started", Slug: "squire", Title: "Squire & Vanilia"},
+	{Group: "Getting started", Slug: "squire", Title: "Squire & Vanilia", IncludesSquire: true},
 	{Group: "Getting started", Slug: "forms", Title: "Forms"},
 	{Group: "Getting started", Slug: "typescript", Title: "TypeScript"},
 	{Group: "Reference", Slug: "attributes", Title: "Attributes"},
-	{Group: "Reference", Slug: "api", Title: "Properties & methods"},
+	{Group: "Reference", Slug: "api", Title: "Properties & methods", IncludesSquire: true},
 	{Group: "Reference", Slug: "exports", Title: "Module exports"},
-	{Group: "Reference", Slug: "commands", Title: "Commands"},
+	{Group: "Reference", Slug: "commands", Title: "Commands", IncludesSquire: true},
 	{Group: "Reference", Slug: "events", Title: "Events"},
 	{Group: "Guides", Slug: "toolbar", Title: "Toolbar"},
 	{Group: "Guides", Slug: "styling", Title: "Styling & themes"},
 	{Group: "Guides", Slug: "icons", Title: "Icons"},
 	{Group: "Guides", Slug: "labels", Title: "Labels & translation"},
-	{Group: "Guides", Slug: "shortcuts", Title: "Keyboard shortcuts"},
+	{Group: "Guides", Slug: "shortcuts", Title: "Keyboard shortcuts", IncludesSquire: true},
 	{Group: "Guides", Slug: "uploads", Title: "Image uploads"},
 	{Group: "Guides", Slug: "sanitize", Title: "Sanitizing on the server"},
 	{Group: "Guides", Slug: "browsers", Title: "Browser support"},
@@ -96,7 +97,7 @@ func docsHandler(basePath string) echo.HandlerFunc {
 		if !ok {
 			return echo.NewHTTPError(http.StatusNotFound)
 		}
-		data := pageData{BasePath: basePath, Active: "docs", Title: d.Title + " · Docs", Section: "Docs", Heading: d.Title}
+		data := pageData{BasePath: basePath, Active: "docs", Title: d.Title + " · Docs", Section: "Docs", Heading: d.Title, IncludesSquire: d.IncludesSquire}
 		data.Nav, data.Prev, data.Next = sectionNav(basePath+"/docs", entries, d.Slug)
 		var buf bytes.Buffer
 		if err := templates.ExecuteTemplate(&buf, "doc/"+d.Slug, data); err != nil {

@@ -97,9 +97,10 @@ func mustLoadExamples(dir string) {
 }
 
 type pageData struct {
-	BasePath string
-	Active   string
-	Title    string
+	IncludesSquire bool
+	BasePath       string
+	Active         string
+	Title          string
 	// Docs and examples pages: sidebar, current page and pager
 	Section string
 	Heading string
